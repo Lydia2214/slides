@@ -429,6 +429,49 @@ html,body{width:100%;height:100%;overflow:hidden;
 .qfinal{font-size:clamp(14px,2.8vw,22px);font-weight:900;color:var(--gold);
   letter-spacing:1.5px;animation:glow 3s ease-in-out infinite}
 
+/* ═══════════════════════════════════════
+   QUIZ  知识检测
+═══════════════════════════════════════ */
+#squiz{background:linear-gradient(160deg,#0e0c08 0%,#141008 100%);gap:20px}
+.quiz-top{text-align:center;max-width:680px}
+.quiz-progress{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px}
+.qp-dot{width:28px;height:4px;border-radius:2px;background:rgba(200,151,58,.2);transition:all .4s}
+.qp-dot.done{background:var(--gold)}
+.qp-dot.cur{background:rgba(200,151,58,.6);width:36px}
+.quiz-title{font-size:clamp(16px,3vw,26px);font-weight:900;color:var(--dust);line-height:1.5}
+.quiz-title em{color:var(--gold);font-style:normal}
+.quiz-num{font-size:11px;letter-spacing:2px;color:rgba(200,151,58,.5);margin-bottom:8px}
+/* 选项 */
+.q-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:680px}
+.qopt{background:rgba(255,255,255,.025);border:1.5px solid rgba(200,151,58,.2);
+  border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .3s;
+  font-size:14px;color:rgba(220,205,170,.8);text-align:left;font-family:inherit;
+  display:flex;align-items:flex-start;gap:10px}
+.qopt:hover{border-color:rgba(200,151,58,.5);background:rgba(200,151,58,.04)}
+.qopt.q-right{border-color:rgba(80,200,130,.7);background:rgba(30,120,70,.15);color:#80e8a8}
+.qopt.q-wrong{border-color:rgba(220,80,80,.5);background:rgba(120,20,20,.15);color:rgba(200,140,140,.7);opacity:.6}
+.qopt.q-show{border-color:rgba(80,200,130,.5);background:rgba(30,120,70,.08);color:#80e8a8}
+.qopt-letter{width:22px;height:22px;border-radius:6px;background:rgba(200,151,58,.15);
+  color:rgba(200,151,58,.8);font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.q-feedback{width:100%;max-width:680px;display:none;
+  border-radius:12px;padding:14px 18px;font-size:14px;line-height:1.9}
+.q-feedback.on{display:block;animation:fadeUp .35s forwards}
+.q-feedback.fb-right{background:rgba(30,120,70,.15);border:1px solid rgba(80,200,130,.3);color:#80e8a8}
+.q-feedback.fb-wrong{background:rgba(120,20,20,.12);border:1px solid rgba(220,80,80,.25);color:rgba(220,160,160,.8)}
+.q-feedback strong{color:inherit}
+/* 得分 */
+.quiz-result{width:100%;max-width:680px;text-align:center;display:none}
+.quiz-result.on{display:block;animation:fadeUp .5s forwards}
+.score-ring{width:100px;height:100px;border-radius:50%;
+  border:4px solid rgba(200,151,58,.3);background:rgba(200,151,58,.06);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 16px}
+.score-num{font-size:32px;font-weight:900;color:var(--gold)}
+.score-total{font-size:12px;color:var(--muted)}
+.score-msg{font-size:15px;color:var(--dust);margin-bottom:16px;line-height:1.8}
+.score-msg em{color:var(--gold);font-style:normal}
+
 @media(max-width:620px){
   .slide{padding:20px 16px}
   .ppl{grid-template-columns:1fr}
@@ -436,6 +479,7 @@ html,body{width:100%;height:100%;overflow:hidden;
   .weather-split{grid-template-columns:1fr}
   .s7-grid{grid-template-columns:1fr}
   .scene-panel{padding:12px 16px 48px}
+  .q-opts{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -991,7 +1035,38 @@ html,body{width:100%;height:100%;overflow:hidden;
 </div>
 
 <!-- ════════════════════════════════════
-     S10  总结
+     S10  知识检测
+════════════════════════════════════ -->
+<div class="slide" id="squiz" data-needs-interaction="true">
+  <div class="quiz-top">
+    <div class="label" style="margin-bottom:10px">知识检测 · 看看你真的读懂了吗</div>
+    <div class="quiz-progress">
+      <div class="qp-dot cur" id="qpd0"></div>
+      <div class="qp-dot" id="qpd1"></div>
+      <div class="qp-dot" id="qpd2"></div>
+    </div>
+    <div class="quiz-num" id="qnum">第 1 题 / 共 3 题</div>
+    <div class="quiz-title" id="qtext">滕子京被贬到岳州后，做的第一件大事是？</div>
+  </div>
+  <div class="q-opts" id="qopts">
+    <button class="qopt" onclick="ansQ(0)"><span class="qopt-letter">A</span>辞官回乡，不问世事</button>
+    <button class="qopt" onclick="ansQ(1)"><span class="qopt-letter">B</span>政通人和，重修岳阳楼</button>
+    <button class="qopt" onclick="ansQ(2)"><span class="qopt-letter">C</span>写诗抒发被贬的悲愤</button>
+    <button class="qopt" onclick="ansQ(3)"><span class="qopt-letter">D</span>闭门谢客，等待召回</button>
+  </div>
+  <div class="q-feedback" id="qfb"></div>
+  <div class="quiz-result" id="qresult">
+    <div class="score-ring">
+      <div class="score-num" id="qscore">0</div>
+      <div class="score-total">/ 3</div>
+    </div>
+    <div class="score-msg" id="qmsg"></div>
+    <button class="btn" onclick="quizDone()">查看学习成就 →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     S11  总结
 ════════════════════════════════════ -->
 <div class="slide" id="s10">
   <div class="label" style="margin-bottom:8px">学习完成</div>
@@ -1072,8 +1147,10 @@ const ctrl = (function(){
     if(i===7) startAnswer();
     // S9 流程图
     if(i===8) animFlow();
-    // S10 成就
-    if(i===9) doFinal();
+    // S10 知识检测
+    if(i===9) initQuiz();
+    // S11 成就
+    if(i===10) doFinal();
   }
 
   document.getElementById('app').addEventListener('click', e=>{
@@ -1213,7 +1290,107 @@ function animFlow(){
   });
 }
 
-// ═══════════════ S10 ═══════════════
+// ═══════════════ QUIZ ═══════════════
+const QUIZ=[
+  {
+    q:'滕子京被贬到岳州后，做的第一件大事是？',
+    opts:['辞官回乡，不问世事','政通人和，重修岳阳楼','写诗抒发被贬的悲愤','闭门谢客，等待召回'],
+    ans:1,
+    fb:{right:'正确！"政通人和，百废具兴"——被贬之后仍全力治理，这本身就是"不以己悲"的践行。',
+        wrong:'不对。文章第一段明确写道：滕子京到任后"政通人和，百废具兴"，次年重修岳阳楼。'}
+  },
+  {
+    q:'"不以物喜，不以己悲"描述的是哪类人的心境？',
+    opts:['迁客骚人','登楼观景的游客','古仁人','朝堂上的官员'],
+    ans:2,
+    fb:{right:'正确！这是范仲淹对"古仁人之心"的概括，超越了迁客骚人的喜悲模式。',
+        wrong:'不对。这是"古仁人之心"——区别于"迁客骚人"，情绪不随外物和个人得失而起落。'}
+  },
+  {
+    q:'范仲淹写这篇文章时，他自己的处境是？',
+    opts:['在岳阳楼上亲眼观景','仕途顺利，意气风发','被贬邓州，远离京城','正在游历山水之间'],
+    ans:2,
+    fb:{right:'正确！他自己也被贬在邓州，从未到过岳阳楼。这篇文章是他写给同样被贬的朋友，也是写给自己的。',
+        wrong:'不对。范仲淹因"庆历新政"失败被贬至邓州，凭朋友寄来的一幅画写成此文，一生未曾踏上岳阳楼。'}
+  }
+];
+let qCur=0, qScore=0, qDone=false;
+
+function initQuiz(){
+  qCur=0; qScore=0; qDone=false;
+  showQuestion(0);
+}
+
+function showQuestion(idx){
+  const q=QUIZ[idx];
+  document.getElementById('qnum').textContent=`第 ${idx+1} 题 / 共 3 题`;
+  document.getElementById('qtext').textContent=q.q;
+  const opts=document.getElementById('qopts');
+  const letters=['A','B','C','D'];
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='qopt';
+    btn.onclick=()=>ansQ(i);
+    btn.innerHTML=`<span class="qopt-letter">${letters[i]}</span>${o}`;
+    opts.appendChild(btn);
+  });
+  // 进度点
+  for(let i=0;i<3;i++){
+    const d=document.getElementById('qpd'+i);
+    d.className='qp-dot'+(i<idx?' done':i===idx?' cur':'');
+  }
+  document.getElementById('qfb').className='q-feedback';
+  document.getElementById('qfb').innerHTML='';
+  document.getElementById('qresult').className='quiz-result';
+  opts.style.display='grid';
+}
+
+function ansQ(choice){
+  if(qDone) return;
+  const q=QUIZ[qCur];
+  const btns=document.querySelectorAll('.qopt');
+  const isRight=choice===q.ans;
+  if(isRight) qScore++;
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add(isRight&&i===choice?'q-right':'q-show');
+    else if(i===choice&&!isRight) b.classList.add('q-wrong');
+  });
+  const fb=document.getElementById('qfb');
+  fb.className='q-feedback on '+(isRight?'fb-right':'fb-wrong');
+  fb.innerHTML=(isRight?'✓ ':'✗ ')+(isRight?q.fb.right:q.fb.wrong)
+    +'<br><button class="btn" style="margin-top:10px;font-size:13px;padding:8px 20px" onclick="nextQ()">'
+    +(qCur<2?'下一题 →':'查看结果 →')+'</button>';
+}
+
+function nextQ(){
+  qCur++;
+  if(qCur<3){
+    showQuestion(qCur);
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById('qopts').style.display='none';
+  document.getElementById('qfb').className='q-feedback';
+  document.getElementById('qscore').textContent=qScore;
+  const msgs=['再读一遍，这些知识点值得细细品味。','掌握了大半！再巩固一下重难点。','全部答对！你真正读懂了这篇文章。'];
+  const ems=['继续加油','很不错','非常棒！'];
+  const m=document.getElementById('qmsg');
+  m.innerHTML=`<em>${ems[qScore-1]||'继续努力'}</em>，${msgs[Math.min(qScore,3)-1]||msgs[0]}`;
+  document.getElementById('qresult').classList.add('on');
+  document.getElementById('squiz').dataset.done='true';
+  unlock(4);
+}
+
+function quizDone(){
+  ctrl.advance();
+}
+
+// ═══════════════ S11 ═══════════════
 function doFinal(){
   unlock(4);
   [0,1,2,3,4].forEach((i,idx)=>{
