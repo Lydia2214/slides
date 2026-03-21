@@ -3,277 +3,308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>岳阳楼记 · 情绪解码</title>
+<title>岳阳楼记 · 景为表，情为里</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;
-  --gold:#f0a500;--teal:#4ecdc4;--red:#ff6b6b;--purple:#a78bfa;
-  --text:#e8e8e8;--muted:#8b949e;--border:#30363d;
-}
-html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
-  font-family:'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden}
+html,body{width:100%;height:100%;overflow:hidden;
+  font-family:'PingFang SC','Microsoft YaHei',sans-serif}
 #app{width:100vw;height:100vh;position:relative;overflow:hidden}
 
 /* ── slide system ── */
 .slide{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:48px 64px;
-  opacity:0;pointer-events:none;transition:opacity .45s}
+  align-items:center;justify-content:center;padding:44px 60px;
+  opacity:0;pointer-events:none;transition:opacity .55s ease}
 .slide.active{opacity:1;pointer-events:all}
 
 /* ── progress ── */
-#progress{position:fixed;top:0;left:0;height:3px;z-index:200;
-  background:linear-gradient(90deg,var(--gold),var(--teal));transition:width .5s}
+#progress{position:fixed;top:0;left:0;height:3px;z-index:300;
+  background:linear-gradient(90deg,#c8973a,#e8d08a);transition:width .5s}
 
-/* ── badges top-right ── */
-#badges{position:fixed;top:14px;right:18px;display:flex;gap:6px;z-index:200}
-.bslot{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);
-  background:var(--bg2);display:flex;align-items:center;justify-content:center;
-  font-size:14px;opacity:.25;transition:all .4s}
-.bslot.on{opacity:1;border-color:var(--gold);box-shadow:0 0 10px rgba(240,165,0,.35)}
+/* ── badge strip top-right ── */
+#badges{position:fixed;top:12px;right:16px;display:flex;gap:5px;z-index:300}
+.bs{width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;
+  font-size:13px;opacity:.2;transition:all .5s;backdrop-filter:blur(4px)}
+.bs.on{opacity:1;border-color:rgba(200,151,58,.7);box-shadow:0 0 10px rgba(200,151,58,.35)}
 
 /* ── nav dots ── */
-#nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  display:flex;gap:7px;z-index:200}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--border);
+#nav{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;z-index:300}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);
   cursor:pointer;transition:all .3s}
-.dot.on{background:var(--gold);transform:scale(1.5)}
+.dot.on{background:rgba(200,151,58,.9);transform:scale(1.6)}
 
 /* ── hint ── */
-#hint{position:fixed;bottom:50px;left:50%;transform:translateX(-50%);
-  font-size:11px;color:var(--muted);opacity:.6;pointer-events:none;white-space:nowrap}
+#hint{position:fixed;bottom:44px;left:50%;transform:translateX(-50%);
+  font-size:11px;color:rgba(255,255,255,.3);pointer-events:none;white-space:nowrap;z-index:300}
+
+/* ── global text ── */
+.label{font-size:10px;letter-spacing:3px;color:rgba(200,151,58,.8);font-weight:600}
+.btn{padding:11px 28px;border-radius:7px;background:#c8973a;color:#000;
+  font-weight:700;font-size:14px;border:none;cursor:pointer;transition:all .25s;
+  font-family:inherit;letter-spacing:.5px}
+.btn:hover{background:#e8b84a;box-shadow:0 0 20px rgba(200,151,58,.4);transform:scale(1.03)}
+.btn-o{background:transparent;border:1.5px solid rgba(200,151,58,.5);color:rgba(200,151,58,.9);
+  padding:10px 22px;border-radius:7px;font-size:13.5px;cursor:pointer;
+  transition:all .25s;font-family:inherit}
+.btn-o:hover{border-color:#c8973a;color:#c8973a}
 
 /* ── animations ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
-@keyframes scan{from{left:-100%}to{left:200%}}
-@keyframes glitch{
-  0%,100%{text-shadow:none}
-  20%{text-shadow:-2px 0 var(--teal),2px 0 var(--red)}
-  50%{text-shadow:2px 0 var(--teal),-2px 0 var(--red)}
-  80%{text-shadow:-2px 0 var(--red),2px 0 var(--teal)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.fu{animation:fadeUp .5s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0) rotate(-10deg)}65%{transform:scale(1.15) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes shimmer{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes glow{0%,100%{text-shadow:0 0 20px rgba(200,151,58,.3)}50%{text-shadow:0 0 40px rgba(200,151,58,.7),0 0 80px rgba(200,151,58,.3)}}
 
-/* ── buttons ── */
-.btn{padding:11px 28px;border-radius:8px;background:var(--gold);color:#000;
-  font-weight:700;font-size:14px;border:none;cursor:pointer;transition:all .2s;
-  font-family:inherit}
-.btn:hover{transform:scale(1.04);box-shadow:0 0 18px rgba(240,165,0,.4)}
-.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text);
-  padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;
-  transition:all .2s;font-family:inherit}
-.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+/* ══════════════════════════════════
+   S1  HOOK  — 深夜 · 书桌前
+══════════════════════════════════ */
+#s1{background:radial-gradient(ellipse at 45% 55%,#0e1525 0%,#070b12 70%)}
+.s1-candle{width:2px;height:40px;background:linear-gradient(#f5c842,#e07010,#c05000);
+  border-radius:2px;margin:0 auto 6px;position:relative;animation:shimmer 2s infinite}
+.s1-candle::after{content:'';position:absolute;top:-8px;left:-3px;width:8px;height:12px;
+  background:radial-gradient(ellipse,#ffe090 30%,rgba(255,160,30,.4) 70%,transparent);
+  border-radius:50% 50% 30% 30%;animation:float 1.5s ease-in-out infinite}
+.s1-yr{font-size:11px;letter-spacing:4px;color:rgba(200,151,58,.7);margin-top:20px;
+  opacity:0;animation:fadeUp .7s .5s forwards}
+.s1-scene{font-size:clamp(13px,1.8vw,16px);color:rgba(180,180,180,.6);margin:8px 0;
+  opacity:0;animation:fadeUp .7s 1s forwards}
+.s1-bang{font-size:clamp(20px,4vw,44px);font-weight:900;line-height:1.5;text-align:center;
+  color:#f0e8d0;max-width:660px;opacity:0;animation:fadeUp .8s 1.6s forwards}
+.s1-bang em{color:#c8973a;font-style:normal}
+.s1-q{font-size:clamp(14px,2.2vw,20px);color:rgba(160,200,220,.8);margin-top:14px;
+  opacity:0;animation:fadeUp .7s 2.4s forwards}
+.s1-cta{margin-top:36px;opacity:0;animation:fadeUp .7s 3s forwards}
 
-/* ── label ── */
-.label{font-size:11px;letter-spacing:2.5px;color:var(--gold);font-weight:600}
-
-/* ── card ── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px}
-
-/* ═══════════════════════════════
-   S1  HOOK
-═══════════════════════════════ */
-#s1{background:radial-gradient(ellipse at 50% 60%,#131d2e 0%,var(--bg) 65%)}
-.s1-line{text-align:center;opacity:0}
-.s1-year{font-size:12px;letter-spacing:4px;color:var(--gold);animation:fadeUp .7s .2s forwards}
-.s1-scene{font-size:clamp(14px,2vw,18px);color:var(--muted);margin:10px 0;animation:fadeUp .7s .7s forwards}
-.s1-bang{font-size:clamp(22px,4.5vw,48px);font-weight:900;line-height:1.4;
-  max-width:680px;animation:fadeUp .7s 1.2s forwards}
-.s1-bang em{color:var(--gold);font-style:normal}
-.s1-q{font-size:clamp(15px,2.5vw,22px);color:var(--teal);margin-top:16px;animation:fadeUp .7s 2s forwards}
-.s1-cta{margin-top:36px;animation:fadeUp .7s 2.7s forwards}
-
-/* ═══════════════════════════════
-   S2  BACKGROUND
-═══════════════════════════════ */
-#s2{gap:20px}
+/* ══════════════════════════════════
+   S2  BACKGROUND  — 暖·两人
+══════════════════════════════════ */
+#s2{background:linear-gradient(160deg,#100d06 0%,#18130a 50%,#100e08 100%);gap:18px}
 .ppl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:820px}
-.pcard{background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;
-  padding:22px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
-.pcard::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 50%,rgba(240,165,0,.04));pointer-events:none}
-.pcard:hover{border-color:rgba(240,165,0,.5);transform:translateY(-2px)}
-.pcard.open{border-color:var(--teal)}
-.ptag{font-size:11px;letter-spacing:1.5px;color:var(--gold);margin-bottom:6px}
-.pname{font-size:22px;font-weight:800;margin-bottom:4px}
-.psub{font-size:12px;color:var(--muted)}
-.pdetail{display:none;margin-top:14px;font-size:13.5px;color:var(--muted);line-height:1.9;
-  border-top:1px solid var(--border);padding-top:12px}
-.pcard.open .pdetail{display:block}
-.phint{font-size:11px;color:var(--border);margin-top:10px;transition:color .2s}
-.pcard:hover .phint{color:var(--muted)}
-.letter-box{width:100%;max-width:820px;background:var(--bg2);border:1px solid var(--border);
-  border-radius:16px;padding:22px 28px;font-size:14.5px;line-height:2;color:var(--muted)}
-.letter-box strong{color:var(--text)}
+.pcard{background:rgba(255,255,255,.03);border:1px solid rgba(200,151,58,.2);
+  border-radius:14px;padding:22px;cursor:pointer;transition:all .3s;position:relative}
+.pcard:hover{border-color:rgba(200,151,58,.5);background:rgba(200,151,58,.04)}
+.pcard.open{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.05)}
+.ptag{font-size:10px;letter-spacing:2px;color:rgba(200,151,58,.7);margin-bottom:6px}
+.pname{font-size:22px;font-weight:800;color:#f0e8d0;margin-bottom:4px}
+.psub{font-size:12px;color:rgba(200,200,200,.5)}
+.pdetail{display:none;margin-top:14px;font-size:13.5px;color:rgba(200,190,170,.7);
+  line-height:1.9;border-top:1px solid rgba(200,151,58,.15);padding-top:12px}
+.pcard.open .pdetail{display:block;animation:fadeUp .4s forwards}
+.pcard.open .pdetail strong{color:#e8d0a0}
+.phint{font-size:11px;color:rgba(255,255,255,.2);margin-top:8px}
+.letter-box{width:100%;max-width:820px;background:rgba(255,255,255,.02);
+  border:1px solid rgba(200,151,58,.18);border-radius:14px;padding:20px 28px;
+  font-size:14.5px;line-height:2;color:rgba(200,190,170,.65)}
+.letter-box strong{color:#e8d0b0}
 
-/* ═══════════════════════════════
-   S3  DECODER INTRO
-═══════════════════════════════ */
-#s3{gap:24px}
-.decoder-box{width:100%;max-width:680px;background:var(--bg2);border:1px solid var(--border);
-  border-radius:20px;padding:32px;text-align:center;position:relative;overflow:hidden}
-.decoder-box::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;
-  background:linear-gradient(90deg,transparent,var(--teal),transparent);
-  animation:scan 2.8s linear infinite}
-.formula{display:flex;align-items:center;justify-content:center;gap:14px;
-  flex-wrap:wrap;margin:20px 0}
-.fitem{background:var(--bg);border:1px solid var(--border);border-radius:10px;
-  padding:10px 18px;text-align:center}
-.fitem .zh{font-size:20px;font-weight:800}
-.fitem .en{font-size:10px;color:var(--muted);letter-spacing:1px}
-.farrow{color:var(--gold);font-size:22px}
-.fitem.hi{background:linear-gradient(135deg,rgba(240,165,0,.15),rgba(78,205,196,.1));
-  border-color:var(--gold)}
-.ftags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
-.ftag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;
-  background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.3);color:var(--gold)}
+/* ══════════════════════════════════
+   S3  读懂古人
+══════════════════════════════════ */
+#s3{background:linear-gradient(160deg,#0c1018 0%,#0e1220 100%);gap:22px}
+.secret-box{width:100%;max-width:680px;border:1px solid rgba(200,151,58,.2);
+  border-radius:18px;padding:30px;text-align:center;position:relative;overflow:hidden;
+  background:rgba(255,255,255,.02)}
+.secret-box::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,151,58,.5),transparent);
+  animation:scan 3s linear infinite}
+@keyframes scan{from{left:-100%}to{left:100%}}
+.formula{display:flex;align-items:center;justify-content:center;gap:12px;
+  flex-wrap:wrap;margin:22px 0}
+.fi{background:rgba(0,0,0,.3);border:1px solid rgba(200,151,58,.2);
+  border-radius:10px;padding:12px 20px;text-align:center}
+.fi .zh{font-size:22px;font-weight:800;color:#f0e8d0}
+.fi .en{font-size:9px;color:rgba(200,151,58,.6);letter-spacing:1.5px;margin-top:3px}
+.farr{color:rgba(200,151,58,.6);font-size:20px}
+.fi.hi{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.08)}
+.fi.hi .zh{color:#c8973a}
+.ftags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.ftag{padding:5px 14px;border-radius:20px;font-size:12px;
+  background:rgba(200,151,58,.08);border:1px solid rgba(200,151,58,.2);
+  color:rgba(200,151,58,.8)}
 
-/* ═══════════════════════════════
-   S4 / S5  SCENE DECODE
-═══════════════════════════════ */
-.decode-wrap{width:100%;max-width:760px}
-.dheader{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.dnum{width:32px;height:32px;border-radius:8px;background:var(--gold);color:#000;
-  font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.dtitle{font-size:18px;font-weight:700}
-.text-panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
-  padding:22px;margin-bottom:14px;font-size:14.5px;line-height:2.3;color:var(--muted)}
-.kw{color:var(--text);font-weight:600;cursor:pointer;
-  border-bottom:1px dashed rgba(240,165,0,.6);transition:color .2s}
-.kw:hover{color:var(--gold)}
-.anno{display:none;background:rgba(240,165,0,.08);border-left:3px solid var(--gold);
-  padding:7px 12px;border-radius:0 8px 8px 0;font-size:12.5px;color:var(--gold);
-  margin:3px 0;line-height:1.6;animation:fadeUp .3s forwards}
-.anno.on{display:block}
-.eq-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 22px}
-.eq-q{font-size:14.5px;margin-bottom:14px}
-.emo-row{display:flex;gap:10px;flex-wrap:wrap}
-.eo{padding:9px 16px;border-radius:9px;border:1.5px solid var(--border);
-  background:transparent;color:var(--text);font-size:13.5px;cursor:pointer;
-  transition:all .25s;font-family:inherit}
-.eo:hover{border-color:var(--gold)}
-.eo.right{border-color:var(--teal);background:rgba(78,205,196,.12);color:var(--teal)}
-.eo.wrong{border-color:var(--border);color:var(--muted);opacity:.5}
-.reveal{display:none;margin-top:14px;padding:14px 18px;
-  background:rgba(78,205,196,.07);border:1px solid rgba(78,205,196,.25);border-radius:12px}
+/* ══════════════════════════════════
+   S4  RAINY SCENE  — 阴压·沉重
+══════════════════════════════════ */
+#s4{background:linear-gradient(180deg,#060c18 0%,#080e1c 40%,#060a14 100%);
+  overflow:hidden;gap:16px}
+#rain-canvas{position:absolute;inset:0;pointer-events:none;opacity:.55;z-index:0}
+.decode-wrap{width:100%;max-width:760px;position:relative;z-index:1}
+.dheader{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dnum{width:30px;height:30px;border-radius:7px;background:rgba(80,120,180,.4);
+  color:#a8c8f0;font-weight:900;font-size:13px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1px solid rgba(80,120,180,.4)}
+.dtitle{font-size:17px;font-weight:700;color:#c8d8f0}
+.text-panel{background:rgba(8,16,32,.7);border:1px solid rgba(80,100,140,.3);
+  border-radius:14px;padding:20px 22px;margin-bottom:12px;font-size:14.5px;
+  line-height:2.3;color:rgba(160,180,210,.7);backdrop-filter:blur(4px)}
+.kw{color:#a8c0e0;font-weight:600;cursor:pointer;
+  border-bottom:1px dashed rgba(120,160,220,.5);transition:color .2s}
+.kw:hover,.kw.open{color:#c8deff}
+.anno{display:none;background:rgba(40,70,120,.2);border-left:2px solid rgba(100,140,200,.5);
+  padding:7px 12px;border-radius:0 8px 8px 0;font-size:12.5px;
+  color:rgba(160,200,240,.8);margin:3px 0;line-height:1.6}
+.anno.on{display:block;animation:fadeUp .3s forwards}
+.eq-box{background:rgba(8,16,32,.7);border:1px solid rgba(80,100,140,.3);
+  border-radius:14px;padding:16px 20px;backdrop-filter:blur(4px)}
+.eq-q{font-size:14px;color:#a8c0e0;margin-bottom:12px}
+.emo-row{display:flex;gap:9px;flex-wrap:wrap}
+.eo{padding:9px 16px;border-radius:9px;border:1px solid rgba(80,120,180,.35);
+  background:rgba(20,40,80,.4);color:rgba(160,190,220,.8);font-size:13px;
+  cursor:pointer;transition:all .25s;font-family:inherit}
+.eo:hover{border-color:rgba(100,150,220,.6);color:#c8deff}
+.eo.right{border-color:rgba(78,205,196,.6);background:rgba(78,205,196,.1);color:#7eeae0}
+.eo.wrong{opacity:.35}
+.reveal{display:none;margin-top:12px;padding:14px 16px;
+  background:rgba(30,60,40,.3);border:1px solid rgba(80,160,100,.3);border-radius:10px}
 .reveal.on{display:block;animation:fadeUp .4s forwards}
-.rtag{font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:7px}
-.rtext{font-size:14px;line-height:1.9}
+.rtag{font-size:10px;letter-spacing:2px;color:rgba(80,200,120,.7);margin-bottom:6px}
+.rtext{font-size:13.5px;line-height:1.9;color:rgba(180,210,180,.75)}
+.rtext strong{color:#a8e0b8}
 
-/* ═══════════════════════════════
-   S6  THE REAL CHOICE
-═══════════════════════════════ */
-#s6{gap:22px}
-.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;
+/* ══════════════════════════════════
+   S5  SUNNY SCENE  — 开阔·光亮
+══════════════════════════════════ */
+#s5{background:radial-gradient(ellipse at 50% 0%,#2a1c00 0%,#1a1200 35%,#100d00 70%,#0a0800 100%);
+  overflow:hidden;gap:16px}
+#sun-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:300px;height:200px;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse,rgba(240,180,40,.18) 0%,rgba(200,140,20,.06) 50%,transparent 75%);
+  animation:shimmer 3s ease-in-out infinite}
+#s5 .decode-wrap{z-index:1;position:relative}
+#s5 .text-panel{background:rgba(30,20,0,.6);border-color:rgba(180,140,40,.2);
+  color:rgba(220,200,140,.75)}
+#s5 .kw{color:#e0c870;border-bottom-color:rgba(220,180,60,.4)}
+#s5 .kw:hover,#s5 .kw.open{color:#ffd96a}
+#s5 .anno{background:rgba(80,60,0,.25);border-left-color:rgba(200,160,40,.5);
+  color:rgba(220,195,120,.85)}
+#s5 .dnum{background:rgba(160,120,20,.3);color:#f0d070;border-color:rgba(160,120,20,.4)}
+#s5 .dtitle{color:#e8d090}
+#s5 .eq-box{background:rgba(30,20,0,.6);border-color:rgba(180,140,40,.2)}
+#s5 .eq-q{color:#d4b860}
+#s5 .eo{border-color:rgba(180,140,40,.3);background:rgba(60,40,0,.35);color:rgba(220,190,120,.8)}
+#s5 .eo:hover{border-color:rgba(220,180,60,.6);color:#f0d060}
+
+/* ══════════════════════════════════
+   S6  THE REAL CHOICE  — 过渡
+══════════════════════════════════ */
+#s6{background:linear-gradient(160deg,#0e1020 0%,#100e08 100%);gap:20px}
+.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;
   align-items:center;width:100%;max-width:780px}
-.vcard{background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;
-  padding:22px;text-align:center;cursor:pointer;transition:all .3s}
+.vcard{background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:22px;text-align:center;cursor:pointer;transition:all .3s}
 .vcard:hover{transform:translateY(-3px)}
-.vcard.sel-a{border-color:var(--red);background:rgba(255,107,107,.05)}
-.vcard.sel-b{border-color:var(--teal);background:rgba(78,205,196,.05)}
+.vcard.sel-a{border-color:rgba(80,120,180,.5);background:rgba(40,80,150,.05)}
+.vcard.sel-b{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.06)}
 .vicon{font-size:34px;margin-bottom:10px}
-.vtype{font-size:16px;font-weight:700;margin-bottom:8px}
-.vdesc{font-size:13px;color:var(--muted);line-height:1.8}
-.vvs{font-size:26px;font-weight:900;color:var(--border)}
-.vresult{width:100%;max-width:780px;background:var(--bg2);border:1px solid var(--border);
-  border-radius:16px;padding:20px 26px;display:none}
+.vtype{font-size:16px;font-weight:700;color:#f0e8d0;margin-bottom:8px}
+.vdesc{font-size:13px;color:rgba(200,190,170,.6);line-height:1.85}
+.vvs{font-size:24px;font-weight:900;color:rgba(255,255,255,.2);text-align:center}
+.vresult{width:100%;max-width:780px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(200,151,58,.25);border-radius:16px;padding:20px 26px;display:none}
 .vresult.on{display:block;animation:fadeUp .4s forwards}
-.vq{font-size:22px;font-weight:800;color:var(--gold);text-align:center;
-  letter-spacing:1px;margin:10px 0}
-.vexp{font-size:14px;color:var(--muted);line-height:1.9;text-align:center}
+.vq{font-size:clamp(16px,3vw,24px);font-weight:900;color:#c8973a;text-align:center;
+  letter-spacing:2px;margin:10px 0;line-height:1.8}
+.vexp{font-size:14px;color:rgba(200,190,160,.65);line-height:2;text-align:center}
+.vexp strong{color:#e8d0a0}
 
-/* ═══════════════════════════════
-   S7  THE QUOTE
-═══════════════════════════════ */
-#s7{gap:28px;background:radial-gradient(ellipse at 50% 50%,#161228 0%,var(--bg) 65%)}
-.qs-wrap{width:100%;max-width:680px;text-align:center}
-.qs-pre{font-size:12px;letter-spacing:2.5px;color:var(--muted);margin-bottom:18px}
-.qs-text{font-size:clamp(20px,4vw,38px);font-weight:900;color:var(--gold);
-  line-height:1.8;min-height:1.8em}
-.qcursor{display:inline-block;width:3px;height:.9em;background:var(--gold);
-  vertical-align:middle;margin-left:2px;animation:pulse 1s infinite}
-.qdecode{display:none;width:100%;max-width:680px}
-.qdecode.on{display:block;animation:fadeUp .5s forwards}
-.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
-.qcell{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
-.qcell .phrase{font-size:15px;font-weight:700;color:var(--gold);margin-bottom:8px}
-.qcell .mean{font-size:13px;color:var(--muted);line-height:1.7}
-.qpersonal{display:none;width:100%;max-width:680px;text-align:center}
-.qpersonal.on{display:block;animation:fadeUp .5s forwards}
-.qpers-text{font-size:15px;line-height:2.1;color:var(--muted)}
-.qpers-text strong{color:var(--text)}
+/* ══════════════════════════════════
+   S7  THE QUOTE  — 深夜·悟道
+══════════════════════════════════ */
+#s7{background:radial-gradient(ellipse at 50% 60%,#0d0820 0%,#080612 60%,#040408 100%);gap:28px}
+.qs-pre{font-size:10px;letter-spacing:3.5px;color:rgba(200,151,58,.5)}
+.qt-wrap{text-align:center;max-width:700px}
+.qt-text{font-size:clamp(18px,4.5vw,44px);font-weight:900;color:#c8973a;
+  line-height:1.7;letter-spacing:1px;min-height:1.7em}
+.qt-cursor{display:inline-block;width:3px;height:.85em;background:#c8973a;
+  vertical-align:middle;margin-left:3px;animation:shimmer .9s infinite}
+.qdec{display:none;width:100%;max-width:680px}
+.qdec.on{display:block;animation:fadeUp .5s forwards}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.qcell{background:rgba(255,255,255,.03);border:1px solid rgba(200,151,58,.15);
+  border-radius:12px;padding:18px;text-align:center}
+.qcell .phrase{font-size:15px;font-weight:700;color:#c8973a;margin-bottom:8px;letter-spacing:.5px}
+.qcell .mean{font-size:13px;color:rgba(200,190,160,.6);line-height:1.75}
+.qpers{display:none;width:100%;max-width:680px;text-align:center}
+.qpers.on{display:block;animation:fadeUp .5s forwards}
+.qpers-text{font-size:15px;line-height:2.2;color:rgba(200,190,160,.7)}
+.qpers-text strong{color:#e8d0a0}
+.q-big{font-size:clamp(22px,3.5vw,34px);font-weight:900;color:#c8973a;
+  text-align:center;animation:glow 3s ease-in-out infinite;line-height:1.7;letter-spacing:1px}
 
-/* ═══════════════════════════════
-   S8  MODERN CONNECTION
-═══════════════════════════════ */
-#s8{gap:22px}
-.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+/* ══════════════════════════════════
+   S8  MODERN  — 暖·日常
+══════════════════════════════════ */
+#s8{background:linear-gradient(160deg,#0c0c10 0%,#100e0c 100%);gap:20px}
+.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;
   width:100%;max-width:780px}
-.scard{background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;
-  padding:18px 14px;text-align:center;cursor:pointer;transition:all .3s}
-.scard:hover{border-color:var(--gold);transform:translateY(-3px)}
-.scard.on{border-color:var(--teal);background:rgba(78,205,196,.05)}
-.semoji{font-size:28px;margin-bottom:10px}
-.stitle{font-size:14px;font-weight:700;margin-bottom:6px}
-.sdesc{font-size:12px;color:var(--muted);line-height:1.6}
-.sresp{width:100%;max-width:780px;background:var(--bg2);border:1px solid var(--border);
-  border-radius:16px;padding:20px 26px;display:none}
+.scard{background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .3s}
+.scard:hover{border-color:rgba(200,151,58,.4);transform:translateY(-3px)}
+.scard.on{border-color:rgba(200,151,58,.7);background:rgba(200,151,58,.06)}
+.semoji{font-size:30px;margin-bottom:10px}
+.stitle{font-size:14px;font-weight:700;color:#f0e8d0;margin-bottom:6px}
+.sdesc{font-size:12px;color:rgba(200,190,170,.5);line-height:1.6}
+.sresp{width:100%;max-width:780px;background:rgba(255,255,255,.02);
+  border:1px solid rgba(200,151,58,.2);border-radius:14px;padding:20px 26px;display:none}
 .sresp.on{display:block;animation:fadeUp .4s forwards}
-.slabel{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
-.squote{font-size:17px;color:var(--gold);font-weight:700;margin-bottom:10px}
-.smod{font-size:14px;color:var(--muted);line-height:1.9}
+.slabel{font-size:10px;letter-spacing:2px;color:rgba(200,151,58,.6);margin-bottom:8px}
+.squote{font-size:17px;color:#c8973a;font-weight:700;margin-bottom:10px;letter-spacing:.5px}
+.smod{font-size:14px;color:rgba(200,190,160,.65);line-height:1.95}
+.smod strong{color:#e8d0a0}
 
-/* ═══════════════════════════════
-   S9  STRUCTURE
-═══════════════════════════════ */
-#s9{gap:24px}
+/* ══════════════════════════════════
+   S9  STRUCTURE  — 简净
+══════════════════════════════════ */
+#s9{background:linear-gradient(180deg,#0c1018 0%,#0e1220 100%);gap:22px}
 .flow{width:100%;max-width:680px;display:flex;flex-direction:column;gap:0}
-.frow{opacity:0;transform:translateY(18px);transition:all .5s}
+.frow{opacity:0;transform:translateY(16px);transition:all .55s}
 .frow.on{opacity:1;transform:none}
 .fblocks{display:flex;gap:0}
-.fb{flex:1;background:var(--bg2);border:1px solid var(--border);padding:14px 16px;text-align:center}
-.fb:first-child{border-radius:12px 0 0 12px}
-.fb:last-child{border-radius:0 12px 12px 0}
-.fb:only-child{border-radius:12px}
-.flayer{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px}
-.fcontent{font-size:15px;font-weight:700}
-.fquote{font-size:11px;color:var(--gold);margin-top:4px;line-height:1.5}
-.fb.c1{border-color:rgba(255,107,107,.4)}
-.fb.c2{border-color:rgba(255,165,0,.4)}
-.fb.c3{border-color:rgba(78,205,196,.4)}
-.farr{text-align:center;color:var(--gold);font-size:18px;padding:5px 0;
-  opacity:0;transition:opacity .5s .15s}
+.fb{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);
+  padding:14px 16px;text-align:center}
+.fb:first-child{border-radius:10px 0 0 10px}
+.fb:last-child{border-radius:0 10px 10px 0}
+.fb:only-child{border-radius:10px}
+.flayer{font-size:10px;letter-spacing:2px;color:rgba(200,151,58,.6);margin-bottom:4px}
+.fcontent{font-size:14.5px;font-weight:700;color:#f0e8d0}
+.fquote{font-size:11px;color:rgba(200,160,80,.7);margin-top:5px;line-height:1.5}
+.fb.c1{border-color:rgba(80,120,200,.35)}
+.fb.c2{border-color:rgba(200,151,58,.35)}
+.fb.c3{border-color:rgba(80,180,120,.35)}
+.farr{text-align:center;color:rgba(200,151,58,.5);font-size:16px;padding:4px 0;
+  opacity:0;transition:opacity .5s .1s}
 .farr.on{opacity:1}
 
-/* ═══════════════════════════════
-   S10  FINAL
-═══════════════════════════════ */
-#s10{gap:26px;text-align:center;
-  background:radial-gradient(ellipse at 50% 50%,#0d1f0e 0%,var(--bg) 60%)}
+/* ══════════════════════════════════
+   S10  FINAL  — 暖·成就
+══════════════════════════════════ */
+#s10{background:radial-gradient(ellipse at 50% 40%,#0d1808 0%,#090e06 50%,#060808 100%);
+  gap:24px;text-align:center}
 .fbadges{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.fb2{width:68px;height:68px;border-radius:14px;background:var(--bg2);
-  border:2px solid var(--border);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;font-size:24px;
-  opacity:0;transition:all .5s}
-.fb2 .bl{font-size:9px;color:var(--gold);letter-spacing:.5px;margin-top:3px}
-.fb2.lit{opacity:1;border-color:var(--gold);box-shadow:0 0 16px rgba(240,165,0,.3);
-  animation:pop .4s ease}
-.fkeys{max-width:600px;background:linear-gradient(135deg,rgba(240,165,0,.08),rgba(78,205,196,.04));
-  border:1px solid rgba(240,165,0,.25);border-radius:20px;padding:24px 28px}
-.fktitle{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
-.krows{display:flex;flex-direction:column;gap:11px;text-align:left}
+.fb2{width:66px;height:66px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:2px solid rgba(255,255,255,.1);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:24px;opacity:0;transition:all .5s}
+.fb2 .bl{font-size:9px;color:rgba(200,151,58,.8);letter-spacing:.5px;margin-top:3px}
+.fb2.lit{opacity:1;border-color:rgba(200,151,58,.7);
+  box-shadow:0 0 18px rgba(200,151,58,.25);animation:popIn .4s ease}
+.fkeys{max-width:600px;background:rgba(200,151,58,.05);
+  border:1px solid rgba(200,151,58,.2);border-radius:18px;padding:22px 26px}
+.fktitle{font-size:10px;letter-spacing:2.5px;color:rgba(200,151,58,.7);margin-bottom:14px}
+.krows{display:flex;flex-direction:column;gap:10px;text-align:left}
 .krow{display:flex;gap:12px;align-items:flex-start}
-.kicon{width:26px;height:26px;border-radius:7px;background:rgba(240,165,0,.15);
-  display:flex;align-items:center;justify-content:center;font-size:12px;
-  font-weight:700;color:var(--gold);flex-shrink:0;margin-top:1px}
-.ktext{font-size:13.5px;line-height:1.75;color:var(--muted)}
-.ktext strong{color:var(--text)}
-.fquotefinal{font-size:clamp(16px,3vw,24px);font-weight:800;color:var(--gold)}
+.kicon{width:24px;height:24px;border-radius:6px;background:rgba(200,151,58,.15);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  font-weight:800;color:rgba(200,151,58,.9);flex-shrink:0;margin-top:2px}
+.ktext{font-size:13.5px;line-height:1.75;color:rgba(200,190,160,.65)}
+.ktext strong{color:#e8d0a0}
+.qfinal{font-size:clamp(14px,2.5vw,22px);font-weight:900;color:#c8973a;
+  letter-spacing:1px;animation:glow 3s ease-in-out infinite}
 
 /* ── responsive ── */
-@media(max-width:620px){
-  .slide{padding:24px 18px}
+@media(max-width:600px){
+  .slide{padding:22px 16px}
   .ppl-grid{grid-template-columns:1fr}
   .versus{grid-template-columns:1fr}
   .vvs{display:none}
@@ -286,31 +317,35 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 <div id="app">
 
 <div id="progress" style="width:10%"></div>
-
 <div id="badges">
-  <div class="bslot" id="b0">🔍</div>
-  <div class="bslot" id="b1">🌧️</div>
-  <div class="bslot" id="b2">☀️</div>
-  <div class="bslot" id="b3">💡</div>
-  <div class="bslot" id="b4">🏆</div>
+  <div class="bs" id="b0">🔍</div>
+  <div class="bs" id="b1">🌧️</div>
+  <div class="bs" id="b2">☀️</div>
+  <div class="bs" id="b3">💡</div>
+  <div class="bs" id="b4">🏆</div>
 </div>
-
 <div id="nav"></div>
 <div id="hint">点击任意位置继续</div>
+
+<!-- 雨画布 -->
+<canvas id="rain-canvas"></canvas>
+<!-- 晴光晕 -->
+<div id="sun-glow"></div>
 
 <!-- ════════════════════════════
      S1  HOOK
 ════════════════════════════ -->
 <div class="slide active" id="s1">
-  <div class="s1-line s1-year">公元 1046 年 · 邓州</div>
-  <div class="s1-line s1-scene">一个被贬官员，坐在书桌前，盯着一幅从未去过的地方的画……</div>
-  <div class="s1-line s1-bang">
+  <div class="s1-candle"></div>
+  <div class="s1-yr">公元 1046 年 · 邓州</div>
+  <div class="s1-scene">一个被贬官员，坐在书桌前，盯着一幅从未去过的地方的画……</div>
+  <div class="s1-bang">
     他，<em>一生从未踏上岳阳楼</em>，<br>
     却写出了流传千年的《岳阳楼记》
   </div>
-  <div class="s1-line s1-q">— 那他，到底在写什么？</div>
-  <div class="s1-line s1-cta">
-    <button class="btn" onclick="ctrl.advance()">开始解码 →</button>
+  <div class="s1-q">— 那他，到底在写什么？</div>
+  <div class="s1-cta">
+    <button class="btn" onclick="ctrl.advance()">走进这篇文章 →</button>
   </div>
 </div>
 
@@ -318,106 +353,107 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
      S2  BACKGROUND
 ════════════════════════════ -->
 <div class="slide" id="s2" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:14px">案件背景 · BACKGROUND</div>
+  <div class="label" style="margin-bottom:12px">两个被贬的人</div>
   <div class="ppl-grid">
-    <div class="pcard" id="pc-fan" onclick="openPerson('fan')">
-      <div class="ptag">主角 · 作者</div>
+    <div class="pcard" id="pc-fan" onclick="openP('fan')">
+      <div class="ptag">作者</div>
       <div class="pname">范仲淹</div>
       <div class="psub">北宋政治家 · 文学家</div>
       <div class="pdetail">
         推行"庆历新政"触动权贵，被贬邓州。<br>
-        离开权力中心，却从未放弃对国家的忧虑。<br><br>
-        <strong style="color:var(--text)">此刻他手中握着好友寄来的一幅画——洞庭湖。</strong>
+        离开了权力中心，却从未停止忧国忧民。<br><br>
+        <strong>此刻他手里，握着好友从岳州寄来的一幅画。</strong>
       </div>
-      <div class="phint" id="ph-fan">▸ 点击查看</div>
+      <div class="phint" id="ph-fan">▸ 点击了解</div>
     </div>
-    <div class="pcard" id="pc-teng" onclick="openPerson('teng')">
-      <div class="ptag">委托人 · 好友</div>
+    <div class="pcard" id="pc-teng" onclick="openP('teng')">
+      <div class="ptag">好友 · 委托人</div>
       <div class="pname">滕宗谅</div>
-      <div class="psub">北宋官员 · 同样被贬</div>
+      <div class="psub">北宋官员 · 同样被贬至岳州</div>
       <div class="pdetail">
-        被贬至岳州（今岳阳），重修了岳阳楼。<br>
-        将一幅《洞庭晚秋图》寄给范仲淹，<br><br>
-        <strong style="color:var(--text)">托付：老朋友，帮我写一篇记吧。</strong>
+        被贬后重修了岳阳楼，将一幅洞庭湖图寄给范仲淹：<br><br>
+        <strong>"老朋友，帮我写篇记吧。"</strong><br><br>
+        两个同病相怜的人，隔着千里，一幅画，一封信。
       </div>
-      <div class="phint" id="ph-teng">▸ 点击查看</div>
+      <div class="phint" id="ph-teng">▸ 点击了解</div>
     </div>
   </div>
   <div class="letter-box">
-    两个<strong>同样被贬</strong>的老朋友，一个在邓州，一个在岳州。<br>
-    范仲淹从未见过洞庭湖，却要凭一幅画，写出千古名篇。<br>
-    但他<strong>真正想说的</strong>，根本不是风景——
+    范仲淹<strong>从未见过洞庭湖</strong>，却要凭一幅画写出千古名篇。<br>
+    但他真正想说的，<strong>根本不是风景</strong>——风景只是他的语言。
   </div>
-  <button class="btn" id="s2btn" onclick="s2done()" style="display:none">明白了，开始解码 →</button>
+  <button class="btn" id="s2btn" onclick="s2done()" style="display:none">明白了 →</button>
 </div>
 
 <!-- ════════════════════════════
-     S3  DECODER INTRO
+     S3  读懂古人
 ════════════════════════════ -->
 <div class="slide" id="s3">
-  <div class="label" style="margin-bottom:10px">解码工具 · DECODER</div>
+  <div class="label" style="margin-bottom:10px">读懂古人的方法</div>
   <div style="text-align:center;max-width:600px;margin-bottom:18px">
-    <div style="font-size:clamp(20px,4vw,36px);font-weight:900">古人有一个秘密写法</div>
-    <div style="font-size:15px;color:var(--muted);margin-top:10px">
-      他们从不直接说出内心的感受——而是把情绪<strong style="color:var(--text)">藏进风景里</strong>
+    <div style="font-size:clamp(20px,4vw,38px);font-weight:900;color:#f0e8d0;line-height:1.4">
+      古人从不直接说出感受
+    </div>
+    <div style="font-size:15px;color:rgba(200,190,160,.6);margin-top:10px">
+      他们把情绪<strong style="color:#e8d0a0">藏进风景里</strong>——景物是表，情感才是里
     </div>
   </div>
-  <div class="decoder-box">
+  <div class="secret-box">
     <div class="formula">
-      <div class="fitem"><div class="zh">景</div><div class="en">SCENERY</div></div>
-      <div class="farrow">→</div>
-      <div class="fitem"><div class="zh">情</div><div class="en">EMOTION</div></div>
-      <div class="farrow">→</div>
-      <div class="fitem hi"><div class="zh">志</div><div class="en">ASPIRATION</div></div>
+      <div class="fi"><div class="zh">景</div><div class="en">SCENERY</div></div>
+      <div class="farr">→</div>
+      <div class="fi"><div class="zh">情</div><div class="en">EMOTION</div></div>
+      <div class="farr">→</div>
+      <div class="fi hi"><div class="zh">志</div><div class="en">ASPIRATION</div></div>
     </div>
-    <div style="font-size:13px;color:var(--muted)">
-      风景是伪装，情绪是密码，志向才是真正要说的话
+    <div style="font-size:13px;color:rgba(200,190,160,.55)">
+      看懂了风景背后的情，才能读到范仲淹真正想说的话
     </div>
-    <div class="ftags" style="margin-top:16px">
-      <span class="ftag">🌧️ 悲景藏悲情</span>
-      <span class="ftag">☀️ 乐景藏喜情</span>
-      <span class="ftag">💡 超越两者 = 真正的智慧</span>
+    <div class="ftags" style="margin-top:14px">
+      <span class="ftag">🌧️ 阴雨·沉重·藏着悲</span>
+      <span class="ftag">☀️ 晴光·开阔·藏着喜</span>
+      <span class="ftag">💡 超越两者·才是真境界</span>
     </div>
   </div>
-  <button class="btn" style="margin-top:8px" onclick="ctrl.advance()">装备完毕，进入解码 →</button>
+  <button class="btn" style="margin-top:4px" onclick="ctrl.advance()">读第一层 →</button>
 </div>
 
 <!-- ════════════════════════════
-     S4  RAINY SCENE
+     S4  RAINY  — 阴压沉重
 ════════════════════════════ -->
 <div class="slide" id="s4" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:8px">第一层解码 · LEVEL 1</div>
+  <div class="label" style="margin-bottom:8px;position:relative;z-index:1">景·第一层 — 阴雨</div>
   <div class="decode-wrap">
     <div class="dheader">
-      <div class="dnum">1</div>
-      <div class="dtitle">🌧️ 当下雨的时候……</div>
+      <div class="dnum">一</div>
+      <div class="dtitle">🌧️ 当天气阴沉，大雨不停……</div>
     </div>
     <div class="text-panel">
-      <span class="kw" onclick="tog('a1')">淫雨霏霏，连月不开</span>，
-      <span class="kw" onclick="tog('a2')">阴风怒号，浊浪排空</span>；
+      <span class="kw" onclick="tog('a1','s4')">淫雨霏霏，连月不开</span>，
+      <span class="kw" onclick="tog('a2','s4')">阴风怒号，浊浪排空</span>；
       日星隐曜，山岳潜形……
-      <div class="anno" id="a1">💧 连绵的雨停不下来——这不是在写天气，是他心里的压抑找不到出口</div>
-      <div class="anno" id="a2">💨 风在怒吼——那是被压住的委屈、愤怒，还有走投无路的无力感</div>
+      <div class="anno" id="a1">连绵不断的雨——那是被贬后压在胸口、无处宣泄的郁闷</div>
+      <div class="anno" id="a2">风在怒吼——委屈、愤怒、被放逐的无力感，全在这一句</div>
       <br>登斯楼也，则有
-      <span class="kw" onclick="tog('a3')">去国怀乡，忧谗畏讥</span>，
-      <span class="kw" onclick="tog('a4')">满目萧然，感极而悲者矣</span>。
-      <div class="anno" id="a3">🏠 离开京城、思念故乡、害怕被人说坏话——被贬官员的真实心理</div>
-      <div class="anno" id="a4">😢 看什么都是凄凉，悲到了极点。这就是"迁客骚人"在逆境中的情绪崩溃</div>
+      <span class="kw" onclick="tog('a3','s4')">去国怀乡，忧谗畏讥</span>，
+      <span class="kw" onclick="tog('a4','s4')">满目萧然，感极而悲者矣</span>。
+      <div class="anno" id="a3">离开京城、思念家乡、害怕被人说坏话——每一个被贬官员的真实心声</div>
+      <div class="anno" id="a4">看什么都凄凉，悲到了极点。这就是被逆境压垮时的样子</div>
     </div>
     <div class="eq-box" id="eq1">
-      <div class="eq-q">🔎 解码问题：这段景物背后，藏着什么情绪？</div>
+      <div class="eq-q">这段阴雨描写里，藏着的情绪是？</div>
       <div class="emo-row">
-        <button class="eo" onclick="ansEmo(1,0)">😊 开心喜悦</button>
+        <button class="eo" onclick="ansEmo(1,0)">😊 轻松喜悦</button>
         <button class="eo" onclick="ansEmo(1,1)">😔 悲伤压抑</button>
         <button class="eo" onclick="ansEmo(1,2)">😡 愤怒激动</button>
         <button class="eo" onclick="ansEmo(1,3)">😐 平静淡然</button>
       </div>
       <div class="reveal" id="r1">
-        <div class="rtag">✅ 解码成功</div>
+        <div class="rtag">读对了</div>
         <div class="rtext">
-          正确！阴暗风雨 = <strong style="color:var(--teal)">被贬后的悲伤与压抑</strong>。<br>
-          这是"迁客骚人"面对逆境的第一反应：<strong>环境变差 → 心情变差</strong>。<br>
-          但范仲淹觉得这还不够，继续看第二层……
+          阴暗的风雨 = <strong>被贬后的悲伤与压抑</strong>。<br>
+          这是"迁客骚人"面对逆境的本能反应：环境变差，心情就垮。<br>
+          但范仲淹觉得这还不够，看下一层……
         </div>
       </div>
     </div>
@@ -425,41 +461,41 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
 </div>
 
 <!-- ════════════════════════════
-     S5  SUNNY SCENE
+     S5  SUNNY  — 开阔温暖
 ════════════════════════════ -->
 <div class="slide" id="s5" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:8px">第二层解码 · LEVEL 2</div>
+  <div class="label" style="margin-bottom:8px;position:relative;z-index:1">景·第二层 — 晴光</div>
   <div class="decode-wrap">
     <div class="dheader">
-      <div class="dnum">2</div>
-      <div class="dtitle">☀️ 当天晴的时候……</div>
+      <div class="dnum" style="background:rgba(160,120,20,.3);color:#f0d070;border-color:rgba(160,120,20,.4)">二</div>
+      <div class="dtitle" style="color:#e8d090">☀️ 当天气晴朗，湖面如镜……</div>
     </div>
     <div class="text-panel">
-      至若<span class="kw" onclick="tog('b1')">春和景明，波澜不惊</span>，
+      至若<span class="kw" onclick="tog('b1','s5')">春和景明，波澜不惊</span>，
       上下天光，一碧万顷；
-      <span class="kw" onclick="tog('b2')">沙鸥翔集，锦鳞游泳</span>；
-      <div class="anno" id="b1">🌅 风平浪静的湖面——一切都变好了，心情也跟着好起来</div>
-      <div class="anno" id="b2">🐦 鸟儿飞翔，鱼儿游动，充满生机——看什么都顺眼</div>
+      <span class="kw" onclick="tog('b2','s5')">沙鸥翔集，锦鳞游泳</span>；
+      <div class="anno" id="b1">风平浪静的湖面——一切都变好了，心情也跟着明亮起来</div>
+      <div class="anno" id="b2">鸟儿飞翔，鱼儿游动——充满生机，看什么都顺眼、都美好</div>
       岸芷汀兰，郁郁青青……<br>
       登斯楼也，则有
-      <span class="kw" onclick="tog('b3')">心旷神怡，宠辱偕忘</span>，
-      <span class="kw" onclick="tog('b4')">把酒临风，其喜洋洋者矣</span>。
-      <div class="anno" id="b3">🎉 荣耀和屈辱都忘了？——真的忘了吗？还是暂时被美景麻醉了？</div>
-      <div class="anno" id="b4">🍷 举杯迎风，喜不自胜——但这种快乐，依赖天气，天一变就没了</div>
+      <span class="kw" onclick="tog('b3','s5')">心旷神怡，宠辱偕忘</span>，
+      <span class="kw" onclick="tog('b4','s5')">把酒临风，其喜洋洋者矣</span>。
+      <div class="anno" id="b3">荣耀和屈辱都忘了——真的忘了？还是被美景暂时麻醉了？</div>
+      <div class="anno" id="b4">举杯迎风，喜不自胜——但这种快乐，依赖天气，经不住考验</div>
     </div>
-    <div class="eq-box" id="eq2">
-      <div class="eq-q">🔎 解码问题：这种"天晴就快乐"有什么问题？</div>
+    <div class="eq-box" id="eq2" style="background:rgba(30,20,0,.6);border-color:rgba(180,140,40,.2)">
+      <div class="eq-q" style="color:#d4b860">这种"天晴就快乐"，有什么不够的地方？</div>
       <div class="emo-row">
         <button class="eo" onclick="ansEmo(2,0)">没问题，快乐就是快乐</button>
-        <button class="eo" onclick="ansEmo(2,1)">这种快乐依赖外部条件，天一变就消失</button>
-        <button class="eo" onclick="ansEmo(2,2)">这是假快乐，根本不真实</button>
+        <button class="eo" onclick="ansEmo(2,1)">依赖外部条件，天一变就消失了</button>
+        <button class="eo" onclick="ansEmo(2,2)">这种快乐本来就是虚假的</button>
       </div>
       <div class="reveal" id="r2">
-        <div class="rtag">✅ 解码成功</div>
+        <div class="rtag">读对了</div>
         <div class="rtext">
-          对！这是<strong style="color:var(--teal)">被动的快乐</strong>——好天气给的，不是自己的。<br>
-          依然是迁客骚人的思维：<strong>环境好 → 我好，环境坏 → 我坏</strong>。<br>
-          范仲淹想说：这还远远不够。真正的智者，有更高的境界……
+          这是<strong>被动的快乐</strong>——是天气给的，不是自己的。<br>
+          这还是迁客骚人的思维：环境好，我好；环境坏，我坏。<br>
+          范仲淹想说：还有第三种境界，是真正的自由。
         </div>
       </div>
     </div>
@@ -470,11 +506,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
      S6  THE REAL CHOICE
 ════════════════════════════ -->
 <div class="slide" id="s6" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:14px">第三层解码 · LEVEL 3</div>
-  <div style="text-align:center;margin-bottom:18px;max-width:700px">
-    <div style="font-size:clamp(18px,3.5vw,30px);font-weight:900">范仲淹提出了一个问题</div>
-    <div style="font-size:15px;color:var(--muted);margin-top:8px">
-      同样面对逆境，两种人有截然不同的选择
+  <div class="label" style="margin-bottom:14px">超越两者</div>
+  <div style="text-align:center;margin-bottom:18px;max-width:680px">
+    <div style="font-size:clamp(18px,3.5vw,30px);font-weight:900;color:#f0e8d0">
+      面对同样的逆境，两种人有不同的选择
     </div>
   </div>
   <div class="versus">
@@ -484,7 +519,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <div class="vdesc">
         天好 → 开心<br>
         天坏 → 悲伤<br><br>
-        情绪被<strong style="color:var(--red)">外部环境控制</strong>
+        情绪随外境起落，<br>被环境牵着走
       </div>
     </div>
     <div class="vvs">VS</div>
@@ -494,19 +529,19 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
       <div class="vdesc">
         天好 → 不骄<br>
         天坏 → 不弃<br><br>
-        情绪<strong style="color:var(--teal)">来自内心，不随外物</strong>
+        情绪来自内心，<br>不随外物而动
       </div>
     </div>
   </div>
   <div class="vresult" id="vres">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-align:center">
-      范仲淹给出的答案——
+    <div style="font-size:11px;color:rgba(200,151,58,.5);text-align:center;margin-bottom:6px">
+      范仲淹写下的答案
     </div>
     <div class="vq">不以物喜，不以己悲</div>
     <div class="vexp">
       不因外物的好坏而喜悦或悲伤。<br>
-      这不是"没有情绪"，而是情绪不被外部条件<strong style="color:var(--text)">绑架</strong>。<br>
-      这是写给朋友的话，也是他在人生低谷里写给自己的话。
+      这不是冷漠，而是<strong>情绪不被外部条件绑架</strong>。<br>
+      他写给朋友，也是写给被贬中的自己。
     </div>
   </div>
 </div>
@@ -515,42 +550,46 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
      S7  THE QUOTE
 ════════════════════════════ -->
 <div class="slide" id="s7">
-  <div class="qs-wrap">
-    <div class="qs-pre">解码最终密码 · FINAL DECODE</div>
-    <div class="qs-text" id="qtext">
-      <span id="qline"></span><span class="qcursor" id="qcsr"></span>
+  <div class="qs-pre">他最终写下了这句话</div>
+  <div class="qt-wrap">
+    <div class="qt-text" id="qtext">
+      <span id="qline"></span><span class="qt-cursor" id="qcsr"></span>
     </div>
   </div>
-  <div class="qdecode" id="qdec">
+  <div class="qdec" id="qdec">
     <div class="qgrid">
       <div class="qcell">
         <div class="phrase">先天下之忧而忧</div>
-        <div class="mean">比天下所有人都先感到忧虑——不是为自己，是为苍生，为国家</div>
+        <div class="mean">比天下所有人都先感到忧虑——不是为自己，是为国家和苍生</div>
       </div>
       <div class="qcell">
         <div class="phrase">后天下之乐而乐</div>
-        <div class="mean">等天下所有人都快乐了，才让自己享受快乐</div>
+        <div class="mean">等天下所有人都快乐了，才享受自己的快乐</div>
       </div>
     </div>
   </div>
-  <div class="qpersonal" id="qpers">
+  <div class="qpers" id="qpers">
     <div class="qpers-text">
       写下这句话时，范仲淹<strong>正处于人生最低谷</strong>。<br>
-      他没有在倒霉时怨天尤人，而是选择了一个更大的坐标——<br>
-      <strong>把个人得失放进天下兴亡里，渺小的烦恼就变小了。</strong>
+      他没有在逆境中怨天尤人，而是选择了一个更大的坐标——<br>
+      <strong>把个人的得失，放进天下兴亡里，渺小的烦恼就变小了。</strong>
     </div>
-    <button class="btn" style="margin-top:20px" onclick="ctrl.advance()">继续 →</button>
+    <button class="btn" style="margin-top:22px" onclick="ctrl.advance()">继续 →</button>
   </div>
 </div>
 
 <!-- ════════════════════════════
-     S8  MODERN CONNECTION
+     S8  MODERN
 ════════════════════════════ -->
 <div class="slide" id="s8" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:8px">现代解码 · YOUR LIFE</div>
-  <div style="text-align:center;max-width:600px;margin-bottom:16px">
-    <div style="font-size:clamp(18px,3vw,28px);font-weight:900">这和你有什么关系？</div>
-    <div style="font-size:14px;color:var(--muted);margin-top:8px">选一个你遇到过的情况</div>
+  <div class="label" style="margin-bottom:8px">这和你有什么关系</div>
+  <div style="text-align:center;max-width:580px;margin-bottom:16px">
+    <div style="font-size:clamp(18px,3vw,28px);font-weight:900;color:#f0e8d0">
+      这句话，今天还有用吗？
+    </div>
+    <div style="font-size:14px;color:rgba(200,190,160,.55);margin-top:8px">
+      选一个你遇到过的情况
+    </div>
   </div>
   <div class="scenes">
     <div class="scard" onclick="pickScene(0)">
@@ -561,12 +600,12 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <div class="scard" onclick="pickScene(1)">
       <div class="semoji">😤</div>
       <div class="stitle">被冤枉了</div>
-      <div class="sdesc">明明没做错，却被误解，委屈又愤怒</div>
+      <div class="sdesc">明明没做错，却被误解委屈</div>
     </div>
     <div class="scard" onclick="pickScene(2)">
       <div class="semoji">🏆</div>
       <div class="stitle">取得好成绩</div>
-      <div class="sdesc">考得很好或赢了比赛，有点飘飘然</div>
+      <div class="sdesc">考得很好，有点飘飘然</div>
     </div>
   </div>
   <div class="sresp" id="sresp">
@@ -574,23 +613,24 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <div class="squote" id="sq"></div>
     <div class="smod" id="sm"></div>
   </div>
-  <button class="btn" id="s8btn" onclick="ctrl.advance()" style="display:none">理解了，继续 →</button>
+  <button class="btn" id="s8btn" onclick="ctrl.advance()" style="display:none">继续 →</button>
 </div>
 
 <!-- ════════════════════════════
      S9  STRUCTURE
 ════════════════════════════ -->
 <div class="slide" id="s9">
-  <div class="label" style="margin-bottom:8px">文章结构 · STRUCTURE</div>
-  <div style="text-align:center;font-size:clamp(18px,3vw,28px);font-weight:900;margin-bottom:20px">
-    现在你能解读整篇文章了
+  <div class="label" style="margin-bottom:8px">文章的骨架</div>
+  <div style="text-align:center;font-size:clamp(17px,3vw,28px);font-weight:900;
+    color:#f0e8d0;margin-bottom:20px">
+    现在，你能读懂整篇文章了
   </div>
   <div class="flow" id="flow">
     <div class="frow" id="fr0">
       <div class="fblocks">
         <div class="fb c1">
-          <div class="flayer">景 · SCENERY</div>
-          <div class="fcontent">🌧️ 悲景 &nbsp;+&nbsp; ☀️ 乐景</div>
+          <div class="flayer">景</div>
+          <div class="fcontent">🌧️ 阴雨沉重 &nbsp;+&nbsp; ☀️ 晴光开阔</div>
           <div class="fquote">"淫雨霏霏" / "春和景明"</div>
         </div>
       </div>
@@ -599,8 +639,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <div class="frow" id="fr1">
       <div class="fblocks">
         <div class="fb c2">
-          <div class="flayer">情 · EMOTION</div>
-          <div class="fcontent">😔 迁客悲情 &nbsp;+&nbsp; 😊 迁客喜情</div>
+          <div class="flayer">情</div>
+          <div class="fcontent">😔 悲情 &nbsp;+&nbsp; 😊 喜情（迁客骚人）</div>
           <div class="fquote">"感极而悲" / "喜洋洋者矣"</div>
         </div>
       </div>
@@ -609,53 +649,53 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
     <div class="frow" id="fr2">
       <div class="fblocks">
         <div class="fb c3">
-          <div class="flayer">志 · ASPIRATION</div>
+          <div class="flayer">志</div>
           <div class="fcontent">💡 古仁人之心</div>
           <div class="fquote">"不以物喜，不以己悲" &nbsp;·&nbsp; "先天下之忧而忧，后天下之乐而乐"</div>
         </div>
       </div>
     </div>
   </div>
-  <button class="btn" style="margin-top:4px" onclick="ctrl.advance()">完成解码，查看成就 →</button>
+  <button class="btn" style="margin-top:8px" onclick="ctrl.advance()">查看成就 →</button>
 </div>
 
 <!-- ════════════════════════════
      S10  FINAL
 ════════════════════════════ -->
 <div class="slide" id="s10">
-  <div class="label" style="margin-bottom:8px">解码完成 · MISSION COMPLETE</div>
-  <div style="font-size:clamp(20px,4vw,38px);font-weight:900;text-align:center">
-    你解开了这道千年密码
+  <div class="label" style="margin-bottom:8px">读懂了</div>
+  <div style="font-size:clamp(18px,4vw,36px);font-weight:900;color:#f0e8d0;text-align:center">
+    你读懂了这篇千年前的心事
   </div>
   <div class="fbadges">
     <div class="fb2" id="fb0">🔍<span class="bl">起源</span></div>
     <div class="fb2" id="fb1">🌧️<span class="bl">悲景</span></div>
     <div class="fb2" id="fb2">☀️<span class="bl">乐景</span></div>
     <div class="fb2" id="fb3">💡<span class="bl">超越</span></div>
-    <div class="fb2" id="fb4">🏆<span class="bl">解码</span></div>
+    <div class="fb2" id="fb4">🏆<span class="bl">读懂</span></div>
   </div>
   <div class="fkeys">
     <div class="fktitle">核心知识</div>
     <div class="krows">
       <div class="krow">
         <div class="kicon">景</div>
-        <div class="ktext"><strong>借景抒情</strong> — 用风景表达情感，是古文的核心手法</div>
+        <div class="ktext"><strong>借景抒情</strong> — 用风景承载情感，是古文最核心的表达方式</div>
       </div>
       <div class="krow">
         <div class="kicon">构</div>
-        <div class="ktext"><strong>景 → 情 → 志</strong> — 三层递进结构，由外到内，由景到志</div>
+        <div class="ktext"><strong>景 → 情 → 志</strong> — 三层递进，由外到内，由风景到志向</div>
       </div>
       <div class="krow">
         <div class="kicon">心</div>
-        <div class="ktext"><strong>不以物喜，不以己悲</strong> — 情绪不被外物左右，这是"古仁人"的境界</div>
+        <div class="ktext"><strong>不以物喜，不以己悲</strong> — 情绪不被外物左右，是"古仁人"的境界</div>
       </div>
       <div class="krow">
         <div class="kicon">志</div>
-        <div class="ktext"><strong>先天下之忧而忧，后天下之乐而乐</strong> — 以天下为己任的担当精神</div>
+        <div class="ktext"><strong>先天下之忧而忧，后天下之乐而乐</strong> — 以天下为己任的担当</div>
       </div>
     </div>
   </div>
-  <div class="fquotefinal">先天下之忧而忧，后天下之乐而乐</div>
+  <div class="qfinal">先天下之忧而忧，后天下之乐而乐</div>
 </div>
 
 </div><!-- #app -->
@@ -670,7 +710,7 @@ const ctrl = (function(){
 
   slides.forEach((_,i)=>{
     const d = document.createElement('div');
-    d.className = 'dot' + (i===0?' on':'');
+    d.className = 'dot'+(i===0?' on':'');
     d.onclick = ()=>goTo(i);
     nav.appendChild(d);
   });
@@ -692,151 +732,219 @@ const ctrl = (function(){
   }
 
   function onEnter(i){
+    if(i===3) startRain();
+    else stopRain();
+    if(i===4) showSun(); else hideSun();
     if(i===6) startQuote();
     if(i===8) animFlow();
     if(i===9) doFinal();
   }
 
-  // click-to-advance (skip interactive elements)
   document.getElementById('app').addEventListener('click', e=>{
-    const skip = ['button','input','.pcard','.eo','.scard','.vcard','.kw'];
+    const skip = ['button','.pcard','.eo','.scard','.vcard','.kw'];
     if(skip.some(sel=>e.target.closest(sel))) return;
     advance();
   });
 
   document.addEventListener('keydown', e=>{
     if(e.key==='ArrowRight'||e.key===' ') advance();
-    if(e.key==='ArrowLeft' && cur>0) goTo(cur-1);
+    if(e.key==='ArrowLeft'&&cur>0) goTo(cur-1);
   });
 
-  return { advance, goTo };
+  return {advance, goTo};
 })();
 
+// ═══════════ RAIN ═══════════
+let rainAnim = null;
+const canvas = document.getElementById('rain-canvas');
+const ctx = canvas.getContext('2d');
+let drops = [];
+
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function makeDrop(){
+  return {
+    x: Math.random()*window.innerWidth,
+    y: Math.random()*-window.innerHeight,
+    len: 10+Math.random()*18,
+    spd: 6+Math.random()*8,
+    op: .15+Math.random()*.35
+  };
+}
+
+function startRain(){
+  canvas.style.display='block';
+  drops = Array.from({length:120}, makeDrop);
+  if(rainAnim) cancelAnimationFrame(rainAnim);
+  function frame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drops.forEach(d=>{
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x+d.len*.2, d.y+d.len);
+      ctx.strokeStyle=`rgba(140,180,220,${d.op})`;
+      ctx.lineWidth=1;
+      ctx.stroke();
+      d.y += d.spd;
+      d.x += .8;
+      if(d.y > canvas.height+20){
+        Object.assign(d, makeDrop());
+        d.y = -20;
+      }
+    });
+    rainAnim = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function stopRain(){
+  if(rainAnim){
+    cancelAnimationFrame(rainAnim);
+    rainAnim = null;
+  }
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  canvas.style.display='none';
+}
+
+// ═══════════ SUN GLOW ═══════════
+function showSun(){
+  document.getElementById('sun-glow').style.opacity='1';
+}
+function hideSun(){
+  document.getElementById('sun-glow').style.opacity='0';
+}
+
 // ═══════════ BADGES ═══════════
-const bUnlocked = [false,false,false,false,false];
+const bUnlocked=[false,false,false,false,false];
 function unlock(i){
   if(bUnlocked[i]) return;
-  bUnlocked[i] = true;
-  const el = document.getElementById('b'+i);
+  bUnlocked[i]=true;
+  const el=document.getElementById('b'+i);
   el.classList.add('on');
   el.animate([{transform:'scale(1)'},{transform:'scale(1.5)'},{transform:'scale(1)'}],{duration:400});
 }
 
 // ═══════════ S2 ═══════════
-const pOpen = {fan:false,teng:false};
-function openPerson(id){
+const pOpen={fan:false,teng:false};
+function openP(id){
   if(!pOpen[id]){
-    pOpen[id] = true;
+    pOpen[id]=true;
     document.getElementById('pc-'+id).classList.add('open');
-    document.getElementById('ph-'+id).textContent = '✓ 已查看';
+    document.getElementById('ph-'+id).textContent='✓ 已了解';
   }
-  if(pOpen.fan && pOpen.teng){
-    document.getElementById('s2btn').style.display = 'block';
-  }
+  if(pOpen.fan&&pOpen.teng) document.getElementById('s2btn').style.display='block';
 }
 function s2done(){
-  document.getElementById('s2').dataset.done = 'true';
+  document.getElementById('s2').dataset.done='true';
   unlock(0);
   ctrl.advance();
 }
 
 // ═══════════ ANNOTATIONS ═══════════
-function tog(id){
-  document.getElementById(id).classList.toggle('on');
+function tog(id, slideId){
+  const el=document.getElementById(id);
+  el.classList.toggle('on');
+  // mark kw as open
+  const kws=document.querySelectorAll('#'+slideId+' .kw');
+  // find which kw triggered - just toggle anno
 }
 
 // ═══════════ EMOTION ANSWERS ═══════════
-const correct = {1:1, 2:1};
+const correct={1:1,2:1};
 function ansEmo(slide, choice){
-  const btns = document.querySelectorAll('#eq'+slide+' .eo');
+  const btns=document.querySelectorAll('#eq'+slide+' .eo');
   btns.forEach((b,i)=>{
     b.classList.add(i===correct[slide]?'right':'wrong');
-    b.disabled = true;
+    b.disabled=true;
   });
   document.getElementById('r'+slide).classList.add('on');
-  const sid = slide===1?'s4':'s5';
-  document.getElementById(sid).dataset.done = 'true';
+  const sid=slide===1?'s4':'s5';
+  document.getElementById(sid).dataset.done='true';
   unlock(slide===1?1:2);
-  setTimeout(()=>ctrl.advance(), 1800);
+  setTimeout(()=>ctrl.advance(), 1900);
 }
 
 // ═══════════ S6 CHOICE ═══════════
-let s6done = false;
+let s6done=false;
 function pick(type){
   if(s6done) return;
-  s6done = true;
+  s6done=true;
   document.getElementById('vca').classList.add('sel-a');
   document.getElementById('vcb').classList.add('sel-b');
   document.getElementById('vres').classList.add('on');
-  document.getElementById('s6').dataset.done = 'true';
+  document.getElementById('s6').dataset.done='true';
   unlock(3);
 }
 
 // ═══════════ S7 QUOTE ═══════════
-function typeW(el, txt, spd, cb){
-  let i = 0;
+function typeW(el,txt,spd,cb){
+  let i=0;
   function t(){
-    if(i<txt.length){ el.textContent += txt[i++]; setTimeout(t,spd); }
-    else { document.getElementById('qcsr').style.display='none'; if(cb)cb(); }
+    if(i<txt.length){el.textContent+=txt[i++];setTimeout(t,spd);}
+    else{document.getElementById('qcsr').style.display='none';if(cb)cb();}
   }
   t();
 }
 function startQuote(){
-  const ql = document.getElementById('qline');
-  const qc = document.getElementById('qcsr');
-  ql.textContent = '';
-  qc.style.display = 'inline-block';
+  const ql=document.getElementById('qline');
+  const qc=document.getElementById('qcsr');
+  ql.textContent='';
+  qc.style.display='inline-block';
   setTimeout(()=>{
-    typeW(ql,'先天下之忧而忧，后天下之乐而乐',85,()=>{
+    typeW(ql,'先天下之忧而忧，后天下之乐而乐',90,()=>{
       setTimeout(()=>{
         document.getElementById('qdec').classList.add('on');
         setTimeout(()=>{
           document.getElementById('qpers').classList.add('on');
         },1000);
-      },500);
+      },600);
     });
-  },400);
+  },500);
 }
 
-// ═══════════ S8 SCENARIOS ═══════════
-const scData = [
-  {
-    q:'不以物喜，不以己悲',
-    m:'一次考试的结果不代表你这个人的价值。不因分数低就否定自己，认真分析错在哪里，然后继续前进——这才是"古仁人"的思维。'
-  },
-  {
-    q:'不以物喜，不以己悲',
-    m:'被冤枉的委屈是真实的，但如果你知道自己没做错，别人的评价并不能定义你。把情绪放在心里，把行动放在脚下。'
-  },
-  {
-    q:'先天下之忧而忧，后天下之乐而乐',
-    m:'好成绩值得高兴，但"古仁人"不会因此忘乎所以。范仲淹说：你的快乐，等大家都好了再说。这是格局，也是自我提醒。'
-  }
+// ═══════════ S8 ═══════════
+const scData=[
+  {q:'不以物喜，不以己悲',
+   m:'一次考试的结果，不代表你这个人的全部价值。不因分数低就否定自己，认真分析哪里出了问题，然后继续前进——这才是范仲淹说的"不以己悲"。'},
+  {q:'不以物喜，不以己悲',
+   m:'被冤枉的委屈是真实的，但如果你知道自己没做错，别人的误解不能定义你。把情绪暂时放下，让事实来说话——这就是不被外物左右的底气。'},
+  {q:'先天下之忧而忧，后天下之乐而乐',
+   m:'好成绩值得高兴，但"古仁人"不会因此飘飘然。范仲淹说：等大家都好了，你再好好享受。这不是压抑自己，而是一种更深的自我要求。'}
 ];
 function pickScene(i){
   document.querySelectorAll('.scard').forEach(c=>c.classList.remove('on'));
   document.querySelectorAll('.scard')[i].classList.add('on');
-  document.getElementById('sq').textContent = scData[i].q;
-  document.getElementById('sm').textContent = scData[i].m;
+  document.getElementById('sq').textContent=scData[i].q;
+  document.getElementById('sm').textContent=scData[i].m;
   document.getElementById('sresp').classList.add('on');
-  document.getElementById('s8btn').style.display = 'block';
-  document.getElementById('s8').dataset.done = 'true';
+  document.getElementById('s8btn').style.display='block';
+  document.getElementById('s8').dataset.done='true';
 }
 
 // ═══════════ S9 FLOW ═══════════
 function animFlow(){
   ['fr0','fa0','fr1','fa1','fr2'].forEach((id,idx)=>{
-    setTimeout(()=>document.getElementById(id).classList.add('on'), idx*420);
+    setTimeout(()=>document.getElementById(id).classList.add('on'),idx*430);
   });
 }
 
-// ═══════════ S10 FINAL ═══════════
+// ═══════════ S10 ═══════════
 function doFinal(){
   unlock(4);
   [0,1,2,3,4].forEach((i,idx)=>{
-    setTimeout(()=>document.getElementById('fb'+i).classList.add('lit'), 300+idx*180);
+    setTimeout(()=>document.getElementById('fb'+i).classList.add('lit'),300+idx*180);
   });
 }
+
+// init
+stopRain();
+hideSun();
+document.getElementById('sun-glow').style.transition='opacity 1s';
 </script>
 </body>
 </html>
