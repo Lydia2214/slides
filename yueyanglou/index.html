@@ -3,313 +3,439 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>岳阳楼记 · 景为表，情为里</title>
+<title>岳阳楼记 · 被贬之后，应该怎么活？</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;
-  font-family:'PingFang SC','Microsoft YaHei',sans-serif}
-#app{width:100vw;height:100vh;position:relative;overflow:hidden}
+  font-family:'PingFang SC','Noto Serif SC','Microsoft YaHei',serif}
 
-/* ── slide system ── */
+/* ── 颜色系统 ── */
+:root{
+  --ink:#120f0a;      /* 墨底 */
+  --ink2:#1c1710;     /* 深暖底 */
+  --ink3:#242018;     /* 卡片底 */
+  --gold:#c8973a;     /* 金色 */
+  --gold2:#e8c06a;    /* 淡金 */
+  --dust:#f0ece0;     /* 纸白 */
+  --muted:rgba(220,205,175,.55); /* 灰白 */
+  --rain-sky:#0a0f1c; /* 雨景天 */
+  --rain-water:#0d1525;/* 雨景水 */
+  --sun-sky:#1a3d5a;  /* 晴景天（水墨蓝） */
+  --sun-water:#1e5070;/* 晴景水 */
+  --border:rgba(200,151,58,.18);
+}
+
+/* ── 基础布局 ── */
+#app{width:100vw;height:100vh;position:relative;overflow:hidden;background:var(--ink)}
 .slide{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:44px 60px;
-  opacity:0;pointer-events:none;transition:opacity .55s ease}
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .5s}
 .slide.active{opacity:1;pointer-events:all}
 
-/* ── progress ── */
-#progress{position:fixed;top:0;left:0;height:3px;z-index:300;
-  background:linear-gradient(90deg,#c8973a,#e8d08a);transition:width .5s}
-
-/* ── badge strip top-right ── */
-#badges{position:fixed;top:12px;right:16px;display:flex;gap:5px;z-index:300}
-.bs{width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;
-  font-size:13px;opacity:.2;transition:all .5s;backdrop-filter:blur(4px)}
-.bs.on{opacity:1;border-color:rgba(200,151,58,.7);box-shadow:0 0 10px rgba(200,151,58,.35)}
-
-/* ── nav dots ── */
+/* ── UI 层 ── */
+#progress{position:fixed;top:0;left:0;height:3px;z-index:500;
+  background:linear-gradient(90deg,#c8973a,#e8c06a);transition:width .5s}
+#badges{position:fixed;top:12px;right:16px;display:flex;gap:5px;z-index:500}
+.bs{width:28px;height:28px;border-radius:7px;
+  border:1px solid rgba(200,151,58,.2);background:rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  opacity:.2;transition:all .5s;backdrop-filter:blur(4px)}
+.bs.on{opacity:1;border-color:rgba(200,151,58,.7);
+  box-shadow:0 0 12px rgba(200,151,58,.3)}
 #nav{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  display:flex;gap:6px;z-index:300}
-.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);
-  cursor:pointer;transition:all .3s}
+  display:flex;gap:6px;z-index:500}
+.dot{width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,.18);cursor:pointer;transition:all .3s}
 .dot.on{background:rgba(200,151,58,.9);transform:scale(1.6)}
-
-/* ── hint ── */
 #hint{position:fixed;bottom:44px;left:50%;transform:translateX(-50%);
-  font-size:11px;color:rgba(255,255,255,.3);pointer-events:none;white-space:nowrap;z-index:300}
+  font-size:11px;color:rgba(255,255,255,.25);pointer-events:none;
+  white-space:nowrap;letter-spacing:1px;z-index:500}
 
-/* ── global text ── */
-.label{font-size:10px;letter-spacing:3px;color:rgba(200,151,58,.8);font-weight:600}
-.btn{padding:11px 28px;border-radius:7px;background:#c8973a;color:#000;
-  font-weight:700;font-size:14px;border:none;cursor:pointer;transition:all .25s;
-  font-family:inherit;letter-spacing:.5px}
-.btn:hover{background:#e8b84a;box-shadow:0 0 20px rgba(200,151,58,.4);transform:scale(1.03)}
-.btn-o{background:transparent;border:1.5px solid rgba(200,151,58,.5);color:rgba(200,151,58,.9);
-  padding:10px 22px;border-radius:7px;font-size:13.5px;cursor:pointer;
-  transition:all .25s;font-family:inherit}
-.btn-o:hover{border-color:#c8973a;color:#c8973a}
-
-/* ── animations ── */
+/* ── 动画 ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes popIn{0%{transform:scale(0) rotate(-10deg)}65%{transform:scale(1.15) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
-@keyframes shimmer{0%,100%{opacity:.6}50%{opacity:1}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes glow{0%,100%{text-shadow:0 0 20px rgba(200,151,58,.3)}50%{text-shadow:0 0 40px rgba(200,151,58,.7),0 0 80px rgba(200,151,58,.3)}}
+@keyframes popIn{0%{transform:scale(0) rotate(-8deg)}65%{transform:scale(1.1) rotate(1deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes flicker{0%,100%{opacity:.9}40%{opacity:.6}60%{opacity:1}}
+@keyframes birdFlap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(-0.3)}}
+@keyframes birdFly{from{transform:translateX(-80px)}to{transform:translateX(calc(100vw + 80px))}}
+@keyframes waveShift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes glow{0%,100%{text-shadow:0 0 20px rgba(200,151,58,.2)}
+  50%{text-shadow:0 0 50px rgba(200,151,58,.6),0 0 100px rgba(200,151,58,.2)}}
+@keyframes scan{from{transform:translateX(-100%)}to{transform:translateX(200%)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.fu{animation:fadeUp .55s ease forwards}
 
-/* ══════════════════════════════════
-   S1  HOOK  — 深夜 · 书桌前
-══════════════════════════════════ */
-#s1{background:radial-gradient(ellipse at 45% 55%,#0e1525 0%,#070b12 70%)}
-.s1-candle{width:2px;height:40px;background:linear-gradient(#f5c842,#e07010,#c05000);
-  border-radius:2px;margin:0 auto 6px;position:relative;animation:shimmer 2s infinite}
-.s1-candle::after{content:'';position:absolute;top:-8px;left:-3px;width:8px;height:12px;
-  background:radial-gradient(ellipse,#ffe090 30%,rgba(255,160,30,.4) 70%,transparent);
-  border-radius:50% 50% 30% 30%;animation:float 1.5s ease-in-out infinite}
-.s1-yr{font-size:11px;letter-spacing:4px;color:rgba(200,151,58,.7);margin-top:20px;
-  opacity:0;animation:fadeUp .7s .5s forwards}
-.s1-scene{font-size:clamp(13px,1.8vw,16px);color:rgba(180,180,180,.6);margin:8px 0;
-  opacity:0;animation:fadeUp .7s 1s forwards}
-.s1-bang{font-size:clamp(20px,4vw,44px);font-weight:900;line-height:1.5;text-align:center;
-  color:#f0e8d0;max-width:660px;opacity:0;animation:fadeUp .8s 1.6s forwards}
-.s1-bang em{color:#c8973a;font-style:normal}
-.s1-q{font-size:clamp(14px,2.2vw,20px);color:rgba(160,200,220,.8);margin-top:14px;
-  opacity:0;animation:fadeUp .7s 2.4s forwards}
-.s1-cta{margin-top:36px;opacity:0;animation:fadeUp .7s 3s forwards}
+/* ── 通用组件 ── */
+.label{font-size:10px;letter-spacing:3px;color:rgba(200,151,58,.7);font-weight:600}
+.btn{padding:11px 28px;border-radius:7px;background:var(--gold);color:#1a1206;
+  font-weight:700;font-size:14px;border:none;cursor:pointer;
+  transition:all .25s;font-family:inherit;letter-spacing:.5px}
+.btn:hover{background:var(--gold2);box-shadow:0 0 22px rgba(200,151,58,.4);transform:scale(1.03)}
+.btn-o{background:transparent;border:1.5px solid rgba(200,151,58,.4);
+  color:rgba(200,151,58,.85);padding:10px 22px;border-radius:7px;
+  font-size:13.5px;cursor:pointer;transition:all .25s;font-family:inherit}
+.btn-o:hover{border-color:var(--gold);color:var(--gold)}
+.card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:20px 24px}
 
-/* ══════════════════════════════════
-   S2  BACKGROUND  — 暖·两人
-══════════════════════════════════ */
-#s2{background:linear-gradient(160deg,#100d06 0%,#18130a 50%,#100e08 100%);gap:18px}
-.ppl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:820px}
-.pcard{background:rgba(255,255,255,.03);border:1px solid rgba(200,151,58,.2);
-  border-radius:14px;padding:22px;cursor:pointer;transition:all .3s;position:relative}
-.pcard:hover{border-color:rgba(200,151,58,.5);background:rgba(200,151,58,.04)}
-.pcard.open{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.05)}
+/* ═══════════════════════════════════════
+   S1  悬念开场
+═══════════════════════════════════════ */
+#s1{background:radial-gradient(ellipse at 48% 55%,#1c1508 0%,var(--ink) 70%)}
+/* 蜡烛 */
+.candle-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:4px;animation:float 3s ease-in-out infinite}
+.candle-body{width:10px;height:50px;background:linear-gradient(180deg,#f8e8b0,#d4b060,#a07020);
+  border-radius:3px 3px 1px 1px;position:relative}
+.candle-wick{position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  width:1.5px;height:10px;background:#3a2a10;border-radius:1px}
+.flame{position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  width:12px;height:20px;background:radial-gradient(ellipse at 50% 80%,#fff 0%,#ffe070 35%,#ff9020 70%,transparent 100%);
+  border-radius:50% 50% 40% 40%;animation:flicker 1.8s ease-in-out infinite}
+.flame::after{content:'';position:absolute;inset:2px;
+  background:radial-gradient(ellipse at 50% 85%,rgba(255,255,200,.8) 0%,transparent 70%);
+  border-radius:50% 50% 40% 40%}
+/* 文字 */
+.s1-yr{font-size:11px;letter-spacing:4px;color:rgba(200,151,58,.6);
+  margin-top:18px;opacity:0;animation:fadeUp .7s .4s forwards}
+.s1-sub{font-size:clamp(13px,1.7vw,16px);color:var(--muted);margin:8px 0;
+  opacity:0;animation:fadeUp .7s .9s forwards}
+.s1-q{font-size:clamp(22px,4.5vw,46px);font-weight:900;color:var(--dust);
+  line-height:1.5;text-align:center;max-width:680px;
+  opacity:0;animation:fadeUp .8s 1.5s forwards}
+.s1-q em{color:var(--gold);font-style:normal}
+.s1-hint{font-size:clamp(14px,2vw,19px);color:rgba(160,200,200,.75);
+  margin-top:12px;opacity:0;animation:fadeUp .7s 2.3s forwards}
+.s1-cta{margin-top:34px;opacity:0;animation:fadeUp .7s 3s forwards}
+
+/* ═══════════════════════════════════════
+   S2  两个人的故事
+═══════════════════════════════════════ */
+#s2{background:linear-gradient(160deg,#16120a 0%,#1a1408 100%);gap:18px}
+.ppl{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:820px}
+.pcard{background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:16px;padding:22px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.pcard::before{content:'';position:absolute;top:-40px;right:-40px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(200,151,58,.06) 0%,transparent 70%)}
+.pcard:hover{border-color:rgba(200,151,58,.45);transform:translateY(-2px)}
+.pcard.open{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.04)}
 .ptag{font-size:10px;letter-spacing:2px;color:rgba(200,151,58,.7);margin-bottom:6px}
-.pname{font-size:22px;font-weight:800;color:#f0e8d0;margin-bottom:4px}
-.psub{font-size:12px;color:rgba(200,200,200,.5)}
-.pdetail{display:none;margin-top:14px;font-size:13.5px;color:rgba(200,190,170,.7);
-  line-height:1.9;border-top:1px solid rgba(200,151,58,.15);padding-top:12px}
+.pname{font-size:22px;font-weight:900;color:var(--dust);margin-bottom:4px}
+.psub{font-size:12px;color:rgba(200,190,160,.45)}
+.pdetail{display:none;margin-top:14px;font-size:14px;color:rgba(210,195,165,.65);
+  line-height:2;border-top:1px solid rgba(200,151,58,.12);padding-top:12px}
 .pcard.open .pdetail{display:block;animation:fadeUp .4s forwards}
-.pcard.open .pdetail strong{color:#e8d0a0}
-.phint{font-size:11px;color:rgba(255,255,255,.2);margin-top:8px}
-.letter-box{width:100%;max-width:820px;background:rgba(255,255,255,.02);
-  border:1px solid rgba(200,151,58,.18);border-radius:14px;padding:20px 28px;
-  font-size:14.5px;line-height:2;color:rgba(200,190,170,.65)}
-.letter-box strong{color:#e8d0b0}
+.pdetail strong{color:#ddc890}
+.phint{font-size:11px;color:rgba(255,255,255,.18);margin-top:8px}
+.mystery-box{width:100%;max-width:820px;background:rgba(200,151,58,.05);
+  border:1px solid rgba(200,151,58,.25);border-radius:14px;padding:18px 26px;
+  font-size:14.5px;line-height:2;color:rgba(210,195,165,.65)}
+.mystery-box strong{color:#ddc890}
+.mystery-box .highlight{color:var(--gold);font-weight:700;
+  background:rgba(200,151,58,.1);padding:1px 6px;border-radius:4px}
 
-/* ══════════════════════════════════
-   S3  读懂古人
-══════════════════════════════════ */
-#s3{background:linear-gradient(160deg,#0c1018 0%,#0e1220 100%);gap:22px}
-.secret-box{width:100%;max-width:680px;border:1px solid rgba(200,151,58,.2);
-  border-radius:18px;padding:30px;text-align:center;position:relative;overflow:hidden;
-  background:rgba(255,255,255,.02)}
-.secret-box::before{content:'';position:absolute;top:0;left:-100%;width:200%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(200,151,58,.5),transparent);
-  animation:scan 3s linear infinite}
-@keyframes scan{from{left:-100%}to{left:100%}}
-.formula{display:flex;align-items:center;justify-content:center;gap:12px;
-  flex-wrap:wrap;margin:22px 0}
-.fi{background:rgba(0,0,0,.3);border:1px solid rgba(200,151,58,.2);
-  border-radius:10px;padding:12px 20px;text-align:center}
-.fi .zh{font-size:22px;font-weight:800;color:#f0e8d0}
-.fi .en{font-size:9px;color:rgba(200,151,58,.6);letter-spacing:1.5px;margin-top:3px}
-.farr{color:rgba(200,151,58,.6);font-size:20px}
-.fi.hi{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.08)}
-.fi.hi .zh{color:#c8973a}
-.ftags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
-.ftag{padding:5px 14px;border-radius:20px;font-size:12px;
-  background:rgba(200,151,58,.08);border:1px solid rgba(200,151,58,.2);
-  color:rgba(200,151,58,.8)}
+/* ═══════════════════════════════════════
+   S3  一幅画，两种天气
+═══════════════════════════════════════ */
+#s3{background:var(--ink2);gap:24px}
+.painting-frame{width:100%;max-width:720px;
+  border:2px solid rgba(200,151,58,.3);border-radius:4px;
+  background:rgba(255,255,255,.02);padding:24px;
+  position:relative;overflow:hidden}
+.painting-frame::before{content:'';position:absolute;inset:6px;
+  border:1px solid rgba(200,151,58,.12);border-radius:2px;pointer-events:none}
+.pf-label{font-size:10px;letter-spacing:3px;color:rgba(200,151,58,.5);
+  text-align:center;margin-bottom:16px}
+.weather-split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wx-card{border-radius:10px;overflow:hidden;cursor:pointer;transition:all .3s;
+  border:2px solid transparent}
+.wx-card:hover{border-color:rgba(200,151,58,.4);transform:scale(1.02)}
+.wx-card.picked{border-color:var(--gold)}
+/* 微型场景 */
+.mini-scene{height:120px;position:relative;overflow:hidden}
+.mini-rain .ms-sky{background:linear-gradient(180deg,#0a0e1a 0%,#12182a 100%)}
+.mini-rain .ms-water{background:linear-gradient(180deg,#0d1525 0%,#080e18 100%)}
+.mini-sun .ms-sky{background:linear-gradient(180deg,#1a3d5a 0%,#2a5a78 50%,#3a7898 100%)}
+.mini-sun .ms-water{background:linear-gradient(180deg,#1e6080 0%,#124860 100%)}
+.ms-sky{position:absolute;top:0;width:100%;height:65%}
+.ms-water{position:absolute;bottom:0;width:100%;height:40%}
+.ms-tower-mini{position:absolute;bottom:30%;left:50%;transform:translateX(-50%);
+  width:50px;height:60px;opacity:.8}
+.wx-info{padding:12px 14px;background:rgba(0,0,0,.3)}
+.wx-title{font-size:14px;font-weight:700;color:var(--dust);margin-bottom:4px}
+.wx-desc{font-size:12px;color:var(--muted);line-height:1.6}
+/* 小雨滴 */
+.mini-rains{position:absolute;inset:0;overflow:hidden}
+.mr{position:absolute;width:1px;background:rgba(140,180,220,.4);animation:fall linear infinite}
+@keyframes fall{from{top:-10px;opacity:0}10%{opacity:1}90%{opacity:.8}to{top:100%;opacity:0}}
+/* 小鸟 */
+.mini-birds{position:absolute;top:20%;width:100%;height:20px}
+.mb{position:absolute;font-size:10px;animation:mbfly 4s linear infinite;opacity:.7}
+@keyframes mbfly{from{left:-10%}to{left:110%}}
+/* 问题 */
+.s3-question{max-width:720px;text-align:center;font-size:15px;color:var(--muted);line-height:1.9}
+.s3-question strong{color:var(--dust)}
 
-/* ══════════════════════════════════
-   S4  RAINY SCENE  — 阴压·沉重
-══════════════════════════════════ */
-#s4{background:linear-gradient(180deg,#060c18 0%,#080e1c 40%,#060a14 100%);
-  overflow:hidden;gap:16px}
-#rain-canvas{position:absolute;inset:0;pointer-events:none;opacity:.55;z-index:0}
-.decode-wrap{width:100%;max-width:760px;position:relative;z-index:1}
-.dheader{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.dnum{width:30px;height:30px;border-radius:7px;background:rgba(80,120,180,.4);
-  color:#a8c8f0;font-weight:900;font-size:13px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  border:1px solid rgba(80,120,180,.4)}
-.dtitle{font-size:17px;font-weight:700;color:#c8d8f0}
-.text-panel{background:rgba(8,16,32,.7);border:1px solid rgba(80,100,140,.3);
-  border-radius:14px;padding:20px 22px;margin-bottom:12px;font-size:14.5px;
-  line-height:2.3;color:rgba(160,180,210,.7);backdrop-filter:blur(4px)}
-.kw{color:#a8c0e0;font-weight:600;cursor:pointer;
+/* ═══════════════════════════════════════
+   S4  岳阳楼·阴雨场景
+═══════════════════════════════════════ */
+#s4{padding:0;overflow:hidden}
+/* 完整场景背景 */
+.scene-bg{position:absolute;inset:0;z-index:0}
+.scene-sky{position:absolute;top:0;width:100%;height:62%;
+  background:linear-gradient(180deg,#050810 0%,#0a0f1c 40%,#10182a 80%,#131e2e 100%)}
+.scene-water{position:absolute;bottom:0;width:100%;height:42%;
+  background:linear-gradient(180deg,#0f1a28 0%,#080d16 60%,#050810 100%)}
+/* 波浪 */
+.waves{position:absolute;bottom:0;width:100%;height:100%;overflow:hidden}
+.wave-row{position:absolute;width:200%;height:12px;bottom:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 12'%3E%3Cpath d='M0,6 Q100,0 200,6 Q300,12 400,6 Q500,0 600,6 Q700,12 800,6 L800,12 L0,12 Z' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E") repeat-x;
+  animation:waveShift 6s linear infinite}
+.wave-row.w2{bottom:6px;opacity:.6;animation-duration:9s;animation-direction:reverse}
+.wave-row.w3{bottom:12px;opacity:.4;animation-duration:12s}
+/* 云 */
+.clouds{position:absolute;top:0;width:100%;height:55%;overflow:hidden}
+.cloud{position:absolute;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(20,28,50,.9) 0%,rgba(10,15,30,.7) 60%,transparent 100%)}
+/* 反光 */
+.water-reflect{position:absolute;bottom:0;width:100%;height:42%;opacity:.15;
+  background:linear-gradient(0deg,rgba(40,80,120,.3) 0%,transparent 60%)}
+/* 岳阳楼 SVG 容器 */
+.tower-wrap{position:absolute;bottom:38%;left:50%;transform:translateX(-50%);
+  z-index:2;width:min(380px,70vw)}
+/* canvas 雨 */
+#rain-c{position:absolute;inset:0;z-index:1;pointer-events:none}
+/* 内容面板 */
+.scene-panel{position:absolute;bottom:0;left:0;right:0;z-index:10;
+  padding:16px 24px 50px;
+  background:linear-gradient(0deg,rgba(5,8,16,.95) 0%,rgba(5,8,16,.85) 70%,transparent 100%)}
+.sp-inner{max-width:800px;margin:0 auto}
+.scene-title{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.snum{width:28px;height:28px;border-radius:7px;
+  background:rgba(60,100,160,.5);border:1px solid rgba(80,130,200,.4);
+  color:#a0c4f0;font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stitle-text{font-size:16px;font-weight:700;color:#b0c8e8}
+.text-block{font-size:14px;line-height:2.2;color:rgba(160,185,220,.7);margin-bottom:12px}
+.kw{color:#a0c0e8;font-weight:600;cursor:pointer;
   border-bottom:1px dashed rgba(120,160,220,.5);transition:color .2s}
-.kw:hover,.kw.open{color:#c8deff}
-.anno{display:none;background:rgba(40,70,120,.2);border-left:2px solid rgba(100,140,200,.5);
-  padding:7px 12px;border-radius:0 8px 8px 0;font-size:12.5px;
-  color:rgba(160,200,240,.8);margin:3px 0;line-height:1.6}
-.anno.on{display:block;animation:fadeUp .3s forwards}
-.eq-box{background:rgba(8,16,32,.7);border:1px solid rgba(80,100,140,.3);
-  border-radius:14px;padding:16px 20px;backdrop-filter:blur(4px)}
-.eq-q{font-size:14px;color:#a8c0e0;margin-bottom:12px}
-.emo-row{display:flex;gap:9px;flex-wrap:wrap}
-.eo{padding:9px 16px;border-radius:9px;border:1px solid rgba(80,120,180,.35);
-  background:rgba(20,40,80,.4);color:rgba(160,190,220,.8);font-size:13px;
+.kw:hover{color:#c8deff}
+.anno{display:none;background:rgba(30,55,100,.3);border-left:2px solid rgba(100,150,220,.5);
+  padding:6px 12px;border-radius:0 7px 7px 0;font-size:12.5px;
+  color:rgba(160,200,240,.8);margin:3px 0;line-height:1.6;animation:fadeUp .3s forwards}
+.anno.on{display:block}
+/* 情感选择 */
+.eq{background:rgba(8,14,28,.7);border:1px solid rgba(60,90,150,.3);
+  border-radius:12px;padding:14px 18px;backdrop-filter:blur(6px)}
+.eq-q{font-size:14px;color:rgba(140,180,220,.8);margin-bottom:12px}
+.emo-row{display:flex;gap:8px;flex-wrap:wrap}
+.eo{padding:8px 15px;border-radius:8px;border:1px solid rgba(60,100,160,.4);
+  background:rgba(15,28,55,.5);color:rgba(140,175,215,.8);font-size:13px;
   cursor:pointer;transition:all .25s;font-family:inherit}
-.eo:hover{border-color:rgba(100,150,220,.6);color:#c8deff}
-.eo.right{border-color:rgba(78,205,196,.6);background:rgba(78,205,196,.1);color:#7eeae0}
-.eo.wrong{opacity:.35}
-.reveal{display:none;margin-top:12px;padding:14px 16px;
-  background:rgba(30,60,40,.3);border:1px solid rgba(80,160,100,.3);border-radius:10px}
+.eo:hover{border-color:rgba(100,150,220,.6);color:#b8d8ff}
+.eo.right{border-color:rgba(78,205,196,.6);background:rgba(40,140,130,.15);color:#7ee8e0}
+.eo.wrong{opacity:.3;cursor:default}
+.reveal{display:none;margin-top:12px;padding:13px 16px;
+  background:rgba(20,55,40,.3);border:1px solid rgba(60,150,100,.3);border-radius:10px}
 .reveal.on{display:block;animation:fadeUp .4s forwards}
-.rtag{font-size:10px;letter-spacing:2px;color:rgba(80,200,120,.7);margin-bottom:6px}
-.rtext{font-size:13.5px;line-height:1.9;color:rgba(180,210,180,.75)}
-.rtext strong{color:#a8e0b8}
+.rtag{font-size:10px;letter-spacing:2px;color:rgba(80,200,140,.7);margin-bottom:6px}
+.rtext{font-size:13.5px;line-height:1.9;color:rgba(170,210,180,.75)}
+.rtext strong{color:#a8deb8}
 
-/* ══════════════════════════════════
-   S5  SUNNY SCENE  — 开阔·光亮
-══════════════════════════════════ */
-#s5{background:radial-gradient(ellipse at 50% 0%,#2a1c00 0%,#1a1200 35%,#100d00 70%,#0a0800 100%);
-  overflow:hidden;gap:16px}
-#sun-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);
-  width:300px;height:200px;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse,rgba(240,180,40,.18) 0%,rgba(200,140,20,.06) 50%,transparent 75%);
-  animation:shimmer 3s ease-in-out infinite}
-#s5 .decode-wrap{z-index:1;position:relative}
-#s5 .text-panel{background:rgba(30,20,0,.6);border-color:rgba(180,140,40,.2);
-  color:rgba(220,200,140,.75)}
-#s5 .kw{color:#e0c870;border-bottom-color:rgba(220,180,60,.4)}
-#s5 .kw:hover,#s5 .kw.open{color:#ffd96a}
-#s5 .anno{background:rgba(80,60,0,.25);border-left-color:rgba(200,160,40,.5);
-  color:rgba(220,195,120,.85)}
-#s5 .dnum{background:rgba(160,120,20,.3);color:#f0d070;border-color:rgba(160,120,20,.4)}
-#s5 .dtitle{color:#e8d090}
-#s5 .eq-box{background:rgba(30,20,0,.6);border-color:rgba(180,140,40,.2)}
-#s5 .eq-q{color:#d4b860}
-#s5 .eo{border-color:rgba(180,140,40,.3);background:rgba(60,40,0,.35);color:rgba(220,190,120,.8)}
-#s5 .eo:hover{border-color:rgba(220,180,60,.6);color:#f0d060}
+/* ═══════════════════════════════════════
+   S5  岳阳楼·晴明场景
+═══════════════════════════════════════ */
+#s5{padding:0;overflow:hidden}
+#s5 .scene-sky{background:linear-gradient(180deg,#0e2840 0%,#1a4060 30%,#2a6585 60%,#3a8098 80%,#4090a8 100%)}
+#s5 .scene-water{background:linear-gradient(180deg,#2a7898 0%,#1a5a78 40%,#10404f 80%,#0a2a38 100%)}
+/* 太阳 */
+.sun{position:absolute;top:15%;right:20%;z-index:1;
+  width:60px;height:60px;border-radius:50%;
+  background:radial-gradient(circle,#fffce0 0%,#ffd860 40%,rgba(255,190,40,.4) 60%,transparent 75%);
+  box-shadow:0 0 40px rgba(255,220,80,.3),0 0 80px rgba(255,200,40,.15);
+  animation:float 4s ease-in-out infinite}
+/* 云 (晴天) */
+.cloud-sun{position:absolute;border-radius:40px;
+  background:rgba(255,255,255,.18)}
+/* 鸟 */
+.bird-wrap{position:absolute;top:18%;width:100%;height:60px;z-index:2;pointer-events:none}
+.bird{position:absolute;width:20px;height:8px;animation:birdFly linear infinite}
+.bird::before,.bird::after{content:'';position:absolute;width:10px;height:7px;
+  border-top:2px solid rgba(240,240,255,.7);border-radius:60% 60% 0 0}
+.bird::before{left:0;transform-origin:right bottom;animation:birdFlap .8s ease-in-out infinite}
+.bird::after{right:0;transform-origin:left bottom;animation:birdFlap .8s ease-in-out infinite reverse}
+/* 水面反光 */
+.sun-reflect{position:absolute;bottom:0;left:0;right:0;height:42%;z-index:1;
+  background:linear-gradient(0deg,transparent 0%,rgba(255,220,80,.04) 40%,transparent 100%)}
+#s5 .snum{background:rgba(160,120,0,.4);border-color:rgba(200,160,20,.4);color:#f0d060}
+#s5 .stitle-text{color:#e8d080}
+#s5 .text-block{color:rgba(220,200,130,.75)}
+#s5 .kw{color:#ddc870;border-bottom-color:rgba(220,190,60,.4)}
+#s5 .kw:hover{color:#ffdf70}
+#s5 .anno{background:rgba(80,60,0,.3);border-left-color:rgba(200,170,40,.5);
+  color:rgba(230,210,150,.85)}
+#s5 .eq{background:rgba(15,25,10,.7);border-color:rgba(100,140,60,.3)}
+#s5 .eq-q{color:rgba(210,190,110,.8)}
+#s5 .eo{border-color:rgba(140,120,20,.4);background:rgba(40,30,0,.4);color:rgba(210,190,120,.8)}
+#s5 .eo:hover{border-color:rgba(220,190,40,.5);color:#f0d860}
+#s5 .scene-panel{background:linear-gradient(0deg,rgba(8,20,15,.95) 0%,rgba(8,20,15,.85) 70%,transparent 100%)}
 
-/* ══════════════════════════════════
-   S6  THE REAL CHOICE  — 过渡
-══════════════════════════════════ */
-#s6{background:linear-gradient(160deg,#0e1020 0%,#100e08 100%);gap:20px}
+/* ═══════════════════════════════════════
+   S6  转折：但这不是答案
+═══════════════════════════════════════ */
+#s6{background:linear-gradient(160deg,#120e08 0%,#100e0e 100%);gap:20px}
+.turn-box{width:100%;max-width:780px;background:rgba(200,151,58,.04);
+  border:1px solid rgba(200,151,58,.2);border-radius:16px;padding:22px 28px}
+.turn-q{font-size:clamp(18px,3vw,28px);font-weight:900;color:var(--dust);
+  line-height:1.5;margin-bottom:14px}
+.turn-q em{color:var(--gold);font-style:normal}
+.turn-logic{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.trow{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--muted)}
+.trow .ta{padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap}
+.trow .ta.bad{background:rgba(80,120,180,.12);border:1px solid rgba(80,120,180,.3);color:rgba(140,180,220,.8)}
+.trow .ta.good{background:rgba(200,151,58,.1);border:1px solid rgba(200,151,58,.35);color:var(--gold)}
+.tarr{color:rgba(200,151,58,.4);font-size:16px;flex-shrink:0}
+.trow .tex{color:rgba(200,185,155,.6)}
+/* 对比选择 */
 .versus{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;
   align-items:center;width:100%;max-width:780px}
-.vcard{background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.1);
-  border-radius:16px;padding:22px;text-align:center;cursor:pointer;transition:all .3s}
-.vcard:hover{transform:translateY(-3px)}
-.vcard.sel-a{border-color:rgba(80,120,180,.5);background:rgba(40,80,150,.05)}
-.vcard.sel-b{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.06)}
-.vicon{font-size:34px;margin-bottom:10px}
-.vtype{font-size:16px;font-weight:700;color:#f0e8d0;margin-bottom:8px}
-.vdesc{font-size:13px;color:rgba(200,190,170,.6);line-height:1.85}
-.vvs{font-size:24px;font-weight:900;color:rgba(255,255,255,.2);text-align:center}
-.vresult{width:100%;max-width:780px;background:rgba(255,255,255,.03);
-  border:1px solid rgba(200,151,58,.25);border-radius:16px;padding:20px 26px;display:none}
-.vresult.on{display:block;animation:fadeUp .4s forwards}
-.vq{font-size:clamp(16px,3vw,24px);font-weight:900;color:#c8973a;text-align:center;
-  letter-spacing:2px;margin:10px 0;line-height:1.8}
-.vexp{font-size:14px;color:rgba(200,190,160,.65);line-height:2;text-align:center}
-.vexp strong{color:#e8d0a0}
+.vc{background:rgba(255,255,255,.025);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:all .3s}
+.vc:hover{transform:translateY(-3px)}
+.vc.sel{border-color:rgba(200,151,58,.6);background:rgba(200,151,58,.06)}
+.vicon{font-size:32px;margin-bottom:10px}
+.vtype{font-size:15px;font-weight:700;color:var(--dust);margin-bottom:8px}
+.vdesc{font-size:13px;color:var(--muted);line-height:1.8}
+.vvs{font-size:22px;font-weight:900;color:rgba(255,255,255,.15);text-align:center}
+.vans{width:100%;max-width:780px;display:none}
+.vans.on{display:block;animation:fadeUp .4s forwards}
+.vans-q{font-size:clamp(16px,3vw,24px);font-weight:900;color:var(--gold);
+  text-align:center;letter-spacing:2px;padding:16px;
+  background:rgba(200,151,58,.05);border:1px solid rgba(200,151,58,.2);
+  border-radius:12px;margin-bottom:12px}
+.vans-exp{font-size:14px;color:var(--muted);line-height:2;text-align:center}
+.vans-exp strong{color:#ddc890}
 
-/* ══════════════════════════════════
-   S7  THE QUOTE  — 深夜·悟道
-══════════════════════════════════ */
-#s7{background:radial-gradient(ellipse at 50% 60%,#0d0820 0%,#080612 60%,#040408 100%);gap:28px}
-.qs-pre{font-size:10px;letter-spacing:3.5px;color:rgba(200,151,58,.5)}
-.qt-wrap{text-align:center;max-width:700px}
-.qt-text{font-size:clamp(18px,4.5vw,44px);font-weight:900;color:#c8973a;
-  line-height:1.7;letter-spacing:1px;min-height:1.7em}
-.qt-cursor{display:inline-block;width:3px;height:.85em;background:#c8973a;
-  vertical-align:middle;margin-left:3px;animation:shimmer .9s infinite}
-.qdec{display:none;width:100%;max-width:680px}
-.qdec.on{display:block;animation:fadeUp .5s forwards}
-.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
-.qcell{background:rgba(255,255,255,.03);border:1px solid rgba(200,151,58,.15);
-  border-radius:12px;padding:18px;text-align:center}
-.qcell .phrase{font-size:15px;font-weight:700;color:#c8973a;margin-bottom:8px;letter-spacing:.5px}
-.qcell .mean{font-size:13px;color:rgba(200,190,160,.6);line-height:1.75}
-.qpers{display:none;width:100%;max-width:680px;text-align:center}
-.qpers.on{display:block;animation:fadeUp .5s forwards}
-.qpers-text{font-size:15px;line-height:2.2;color:rgba(200,190,160,.7)}
-.qpers-text strong{color:#e8d0a0}
-.q-big{font-size:clamp(22px,3.5vw,34px);font-weight:900;color:#c8973a;
-  text-align:center;animation:glow 3s ease-in-out infinite;line-height:1.7;letter-spacing:1px}
+/* ═══════════════════════════════════════
+   S7  先忧后乐·范仲淹的宣言
+═══════════════════════════════════════ */
+#s7{background:radial-gradient(ellipse at 50% 60%,#0e0820 0%,#080612 60%,#040408 100%);gap:24px}
+.s7-context{max-width:680px;text-align:center;
+  background:rgba(255,255,255,.02);border:1px solid rgba(200,151,58,.12);
+  border-radius:16px;padding:18px 26px}
+.s7-ctx-label{font-size:10px;letter-spacing:3px;color:rgba(200,151,58,.5);margin-bottom:8px}
+.s7-ctx-text{font-size:14px;color:var(--muted);line-height:2}
+.s7-ctx-text strong{color:#ddc890}
+/* 打字机名句 */
+.s7-quote-wrap{text-align:center;max-width:700px}
+.s7-q-pre{font-size:10px;letter-spacing:4px;color:rgba(200,151,58,.4);margin-bottom:16px}
+.s7-quote{font-size:clamp(18px,4vw,40px);font-weight:900;color:var(--gold);
+  line-height:1.8;letter-spacing:2px;animation:glow 3s ease-in-out infinite}
+.s7-cursor{display:inline-block;width:3px;height:.85em;background:var(--gold);
+  vertical-align:middle;margin-left:2px;animation:flicker .9s infinite}
+.s7-decode{display:none;width:100%;max-width:680px}
+.s7-decode.on{display:block;animation:fadeUp .5s forwards}
+.s7-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.s7-cell{background:rgba(255,255,255,.025);border:1px solid rgba(200,151,58,.12);
+  border-radius:11px;padding:16px;text-align:center}
+.s7-cell .ph{font-size:15px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:.5px}
+.s7-cell .mn{font-size:13px;color:var(--muted);line-height:1.75}
+.s7-personal{display:none;width:100%;max-width:680px;text-align:center}
+.s7-personal.on{display:block;animation:fadeUp .5s forwards}
+.s7-pers-text{font-size:15px;line-height:2.2;color:var(--muted)}
+.s7-pers-text strong{color:#ddc890}
+.s7-final-q{font-size:14px;color:rgba(160,200,200,.65);margin-top:12px;font-style:italic}
 
-/* ══════════════════════════════════
-   S8  MODERN  — 暖·日常
-══════════════════════════════════ */
-#s8{background:linear-gradient(160deg,#0c0c10 0%,#100e0c 100%);gap:20px}
-.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;
-  width:100%;max-width:780px}
-.scard{background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);
-  border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .3s}
-.scard:hover{border-color:rgba(200,151,58,.4);transform:translateY(-3px)}
-.scard.on{border-color:rgba(200,151,58,.7);background:rgba(200,151,58,.06)}
-.semoji{font-size:30px;margin-bottom:10px}
-.stitle{font-size:14px;font-weight:700;color:#f0e8d0;margin-bottom:6px}
-.sdesc{font-size:12px;color:rgba(200,190,170,.5);line-height:1.6}
-.sresp{width:100%;max-width:780px;background:rgba(255,255,255,.02);
-  border:1px solid rgba(200,151,58,.2);border-radius:14px;padding:20px 26px;display:none}
-.sresp.on{display:block;animation:fadeUp .4s forwards}
-.slabel{font-size:10px;letter-spacing:2px;color:rgba(200,151,58,.6);margin-bottom:8px}
-.squote{font-size:17px;color:#c8973a;font-weight:700;margin-bottom:10px;letter-spacing:.5px}
-.smod{font-size:14px;color:rgba(200,190,160,.65);line-height:1.95}
-.smod strong{color:#e8d0a0}
+/* ═══════════════════════════════════════
+   S8  答案揭晓：滕子京为什么重修楼
+═══════════════════════════════════════ */
+#s8{background:linear-gradient(160deg,#0e0c08 0%,#141008 100%);gap:22px}
+.s8-top{text-align:center;max-width:700px}
+.s8-title{font-size:clamp(18px,3.5vw,32px);font-weight:900;color:var(--dust);line-height:1.5}
+.s8-title em{color:var(--gold);font-style:normal}
+.answer-reveal{width:100%;max-width:780px}
+.ar-steps{display:flex;flex-direction:column;gap:0}
+.ar-step{display:flex;align-items:flex-start;gap:16px;
+  padding:14px 0;border-bottom:1px solid rgba(200,151,58,.1);
+  opacity:0;transition:all .5s}
+.ar-step.on{opacity:1;animation:fadeUp .5s forwards}
+.ar-step:last-child{border-bottom:none}
+.ar-num{width:32px;height:32px;border-radius:50%;background:rgba(200,151,58,.15);
+  border:1px solid rgba(200,151,58,.35);color:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  font-weight:800;flex-shrink:0;margin-top:2px}
+.ar-content{flex:1}
+.ar-q{font-size:14.5px;color:var(--dust);font-weight:600;margin-bottom:5px}
+.ar-a{font-size:13.5px;color:var(--muted);line-height:1.85}
+.ar-a em{color:var(--gold);font-style:normal}
+.ar-big{width:100%;max-width:780px;text-align:center;
+  background:rgba(200,151,58,.05);border:1px solid rgba(200,151,58,.2);
+  border-radius:14px;padding:20px;display:none}
+.ar-big.on{display:block;animation:fadeUp .5s forwards}
+.ar-big-text{font-size:clamp(15px,2.5vw,22px);color:#ddc890;
+  font-weight:700;line-height:1.9;letter-spacing:.5px}
 
-/* ══════════════════════════════════
-   S9  STRUCTURE  — 简净
-══════════════════════════════════ */
+/* ═══════════════════════════════════════
+   S9  文章结构
+═══════════════════════════════════════ */
 #s9{background:linear-gradient(180deg,#0c1018 0%,#0e1220 100%);gap:22px}
-.flow{width:100%;max-width:680px;display:flex;flex-direction:column;gap:0}
+.flow{width:100%;max-width:700px;display:flex;flex-direction:column;gap:0}
 .frow{opacity:0;transform:translateY(16px);transition:all .55s}
 .frow.on{opacity:1;transform:none}
 .fblocks{display:flex;gap:0}
-.fb{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);
-  padding:14px 16px;text-align:center}
+.fb{flex:1;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);
+  padding:14px 16px;text-align:center;position:relative;overflow:hidden}
+.fb::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(200,151,58,.04),transparent);
+  animation:scan 3s linear infinite}
 .fb:first-child{border-radius:10px 0 0 10px}
 .fb:last-child{border-radius:0 10px 10px 0}
 .fb:only-child{border-radius:10px}
 .flayer{font-size:10px;letter-spacing:2px;color:rgba(200,151,58,.6);margin-bottom:4px}
-.fcontent{font-size:14.5px;font-weight:700;color:#f0e8d0}
-.fquote{font-size:11px;color:rgba(200,160,80,.7);margin-top:5px;line-height:1.5}
-.fb.c1{border-color:rgba(80,120,200,.35)}
-.fb.c2{border-color:rgba(200,151,58,.35)}
-.fb.c3{border-color:rgba(80,180,120,.35)}
-.farr{text-align:center;color:rgba(200,151,58,.5);font-size:16px;padding:4px 0;
-  opacity:0;transition:opacity .5s .1s}
+.fcontent{font-size:15px;font-weight:700;color:var(--dust)}
+.fquote{font-size:11.5px;color:rgba(200,165,80,.65);margin-top:5px;line-height:1.55}
+.fb.c1{border-color:rgba(80,120,200,.35);background:rgba(30,50,100,.06)}
+.fb.c2{border-color:rgba(200,151,58,.35);background:rgba(100,70,10,.06)}
+.fb.c3{border-color:rgba(80,180,130,.35);background:rgba(20,80,50,.06)}
+.farr{text-align:center;color:rgba(200,151,58,.5);font-size:16px;padding:5px 0;
+  letter-spacing:1px;opacity:0;transition:opacity .5s .12s}
 .farr.on{opacity:1}
+.farr-label{font-size:11px;color:rgba(200,151,58,.4)}
+.s9-note{max-width:700px;text-align:center;font-size:13.5px;color:var(--muted);
+  line-height:1.9;margin-top:4px}
+.s9-note strong{color:#ddc890}
 
-/* ══════════════════════════════════
-   S10  FINAL  — 暖·成就
-══════════════════════════════════ */
-#s10{background:radial-gradient(ellipse at 50% 40%,#0d1808 0%,#090e06 50%,#060808 100%);
+/* ═══════════════════════════════════════
+   S10  总结
+═══════════════════════════════════════ */
+#s10{background:radial-gradient(ellipse at 50% 40%,#0c1808 0%,#080e06 50%,#06080a 100%);
   gap:24px;text-align:center}
 .fbadges{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.fb2{width:66px;height:66px;border-radius:14px;background:rgba(255,255,255,.03);
-  border:2px solid rgba(255,255,255,.1);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;font-size:24px;opacity:0;transition:all .5s}
-.fb2 .bl{font-size:9px;color:rgba(200,151,58,.8);letter-spacing:.5px;margin-top:3px}
-.fb2.lit{opacity:1;border-color:rgba(200,151,58,.7);
-  box-shadow:0 0 18px rgba(200,151,58,.25);animation:popIn .4s ease}
-.fkeys{max-width:600px;background:rgba(200,151,58,.05);
-  border:1px solid rgba(200,151,58,.2);border-radius:18px;padding:22px 26px}
-.fktitle{font-size:10px;letter-spacing:2.5px;color:rgba(200,151,58,.7);margin-bottom:14px}
-.krows{display:flex;flex-direction:column;gap:10px;text-align:left}
+.fb2{width:66px;height:66px;border-radius:14px;
+  background:rgba(255,255,255,.025);border:2px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:24px;opacity:0;transition:all .5s}
+.fb2 .bl{font-size:8.5px;color:rgba(200,151,58,.8);letter-spacing:.5px;margin-top:3px}
+.fb2.lit{opacity:1;border-color:rgba(200,151,58,.65);
+  box-shadow:0 0 16px rgba(200,151,58,.25);animation:popIn .45s ease}
+.fkeys{max-width:620px;background:rgba(200,151,58,.04);
+  border:1px solid rgba(200,151,58,.18);border-radius:18px;padding:22px 26px}
+.fktitle{font-size:10px;letter-spacing:2.5px;color:rgba(200,151,58,.65);margin-bottom:14px}
+.krows{display:flex;flex-direction:column;gap:11px;text-align:left}
 .krow{display:flex;gap:12px;align-items:flex-start}
-.kicon{width:24px;height:24px;border-radius:6px;background:rgba(200,151,58,.15);
+.kicon{width:25px;height:25px;border-radius:6px;background:rgba(200,151,58,.14);
   display:flex;align-items:center;justify-content:center;font-size:11px;
   font-weight:800;color:rgba(200,151,58,.9);flex-shrink:0;margin-top:2px}
-.ktext{font-size:13.5px;line-height:1.75;color:rgba(200,190,160,.65)}
-.ktext strong{color:#e8d0a0}
-.qfinal{font-size:clamp(14px,2.5vw,22px);font-weight:900;color:#c8973a;
-  letter-spacing:1px;animation:glow 3s ease-in-out infinite}
+.ktext{font-size:13.5px;line-height:1.75;color:var(--muted)}
+.ktext strong{color:#ddc890}
+.qfinal{font-size:clamp(14px,2.8vw,22px);font-weight:900;color:var(--gold);
+  letter-spacing:1.5px;animation:glow 3s ease-in-out infinite}
 
-/* ── responsive ── */
-@media(max-width:600px){
-  .slide{padding:22px 16px}
-  .ppl-grid{grid-template-columns:1fr}
-  .versus{grid-template-columns:1fr}
-  .vvs{display:none}
-  .scenes{grid-template-columns:1fr}
-  .qgrid{grid-template-columns:1fr}
+@media(max-width:620px){
+  .slide{padding:20px 16px}
+  .ppl{grid-template-columns:1fr}
+  .versus{grid-template-columns:1fr}.vvs{display:none}
+  .weather-split{grid-template-columns:1fr}
+  .s7-grid{grid-template-columns:1fr}
+  .scene-panel{padding:12px 16px 48px}
 }
 </style>
 </head>
@@ -318,7 +444,7 @@ html,body{width:100%;height:100%;overflow:hidden;
 
 <div id="progress" style="width:10%"></div>
 <div id="badges">
-  <div class="bs" id="b0">🔍</div>
+  <div class="bs" id="b0">📜</div>
   <div class="bs" id="b1">🌧️</div>
   <div class="bs" id="b2">☀️</div>
   <div class="bs" id="b3">💡</div>
@@ -326,349 +452,554 @@ html,body{width:100%;height:100%;overflow:hidden;
 </div>
 <div id="nav"></div>
 <div id="hint">点击任意位置继续</div>
+<canvas id="rain-c" style="display:none;position:absolute;inset:0;z-index:1;pointer-events:none"></canvas>
 
-<!-- 雨画布 -->
-<canvas id="rain-canvas"></canvas>
-<!-- 晴光晕 -->
-<div id="sun-glow"></div>
-
-<!-- ════════════════════════════
-     S1  HOOK
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S1  悬念开场
+════════════════════════════════════ -->
 <div class="slide active" id="s1">
-  <div class="s1-candle"></div>
-  <div class="s1-yr">公元 1046 年 · 邓州</div>
-  <div class="s1-scene">一个被贬官员，坐在书桌前，盯着一幅从未去过的地方的画……</div>
-  <div class="s1-bang">
-    他，<em>一生从未踏上岳阳楼</em>，<br>
-    却写出了流传千年的《岳阳楼记》
+  <div class="candle-wrap">
+    <div class="candle-body">
+      <div class="candle-wick"></div>
+      <div class="flame"></div>
+    </div>
   </div>
-  <div class="s1-q">— 那他，到底在写什么？</div>
+  <div class="s1-yr">公元 1046 年 · 北宋</div>
+  <div class="s1-sub">一个官员被朝廷降职，流放到偏远的岳州……</div>
+  <div class="s1-q">
+    按理说，他应该<em>悲伤颓废</em>。<br>
+    但他做的第一件事，是——<br>
+    <em>重修了一座楼。</em>
+  </div>
+  <div class="s1-hint">— 他为什么这样做？</div>
   <div class="s1-cta">
-    <button class="btn" onclick="ctrl.advance()">走进这篇文章 →</button>
+    <button class="btn" onclick="ctrl.advance()">进入故事 →</button>
   </div>
 </div>
 
-<!-- ════════════════════════════
-     S2  BACKGROUND
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S2  两个人的故事
+════════════════════════════════════ -->
 <div class="slide" id="s2" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:12px">两个被贬的人</div>
-  <div class="ppl-grid">
-    <div class="pcard" id="pc-fan" onclick="openP('fan')">
-      <div class="ptag">作者</div>
+  <div class="label" style="margin-bottom:12px">故事背景 · 两个同病相怜的人</div>
+  <div class="ppl">
+    <div class="pcard" id="pc-t" onclick="openP('t')">
+      <div class="ptag">被贬之人 · 委托者</div>
+      <div class="pname">滕子京</div>
+      <div class="psub">北宋官员 · 庆历四年谪守巴陵郡</div>
+      <div class="pdetail">
+        因"庆历新政"受牵连，被贬至岳州（今岳阳）。<br>
+        但到任后他没有沉溺于失意——<br>
+        <strong>政通人和，百废具兴。</strong>
+        次年重修岳阳楼，广邀天下文人题诗。<br><br>
+        他写信给老友范仲淹，附上一幅《洞庭晚秋图》：<br>
+        <strong>"老朋友，替我写一篇记吧。"</strong>
+      </div>
+      <div class="phint" id="ph-t">▸ 点击了解</div>
+    </div>
+    <div class="pcard" id="pc-f" onclick="openP('f')">
+      <div class="ptag">作者 · 同样被贬</div>
       <div class="pname">范仲淹</div>
-      <div class="psub">北宋政治家 · 文学家</div>
+      <div class="psub">北宋政治家 · 文学家 · 庆历新政主持人</div>
       <div class="pdetail">
-        推行"庆历新政"触动权贵，被贬邓州。<br>
-        离开了权力中心，却从未停止忧国忧民。<br><br>
-        <strong>此刻他手里，握着好友从岳州寄来的一幅画。</strong>
+        主持"庆历新政"改革，触动保守派，被贬邓州。<br>
+        收到老友的画和信，他面对的是同样的处境——<br><br>
+        <strong>两个都被贬的人，一个重修了楼，一个要写一篇记。</strong><br><br>
+        他从未到过岳阳楼，凭一幅画，写出了千年名篇。
       </div>
-      <div class="phint" id="ph-fan">▸ 点击了解</div>
-    </div>
-    <div class="pcard" id="pc-teng" onclick="openP('teng')">
-      <div class="ptag">好友 · 委托人</div>
-      <div class="pname">滕宗谅</div>
-      <div class="psub">北宋官员 · 同样被贬至岳州</div>
-      <div class="pdetail">
-        被贬后重修了岳阳楼，将一幅洞庭湖图寄给范仲淹：<br><br>
-        <strong>"老朋友，帮我写篇记吧。"</strong><br><br>
-        两个同病相怜的人，隔着千里，一幅画，一封信。
-      </div>
-      <div class="phint" id="ph-teng">▸ 点击了解</div>
+      <div class="phint" id="ph-f">▸ 点击了解</div>
     </div>
   </div>
-  <div class="letter-box">
-    范仲淹<strong>从未见过洞庭湖</strong>，却要凭一幅画写出千古名篇。<br>
-    但他真正想说的，<strong>根本不是风景</strong>——风景只是他的语言。
+  <div class="mystery-box">
+    两人都被贬了。滕子京没有沉沦，而是<span class="highlight">政通人和，百废具兴</span>——<br>
+    范仲淹看到这里，心里有一个问题：<strong>他为什么能这样做？这种力量从何而来？</strong>
   </div>
-  <button class="btn" id="s2btn" onclick="s2done()" style="display:none">明白了 →</button>
+  <button class="btn" id="s2btn" onclick="s2done()" style="display:none">带着这个问题，看他写的文章 →</button>
 </div>
 
-<!-- ════════════════════════════
-     S3  读懂古人
-════════════════════════════ -->
-<div class="slide" id="s3">
-  <div class="label" style="margin-bottom:10px">读懂古人的方法</div>
-  <div style="text-align:center;max-width:600px;margin-bottom:18px">
-    <div style="font-size:clamp(20px,4vw,38px);font-weight:900;color:#f0e8d0;line-height:1.4">
-      古人从不直接说出感受
-    </div>
-    <div style="font-size:15px;color:rgba(200,190,160,.6);margin-top:10px">
-      他们把情绪<strong style="color:#e8d0a0">藏进风景里</strong>——景物是表，情感才是里
+<!-- ════════════════════════════════════
+     S3  一幅画，两种天气
+════════════════════════════════════ -->
+<div class="slide" id="s3" data-needs-interaction="true">
+  <div class="label" style="margin-bottom:10px">洞庭晚秋图 · 范仲淹看到了什么</div>
+  <div class="painting-frame">
+    <div class="pf-label">《洞庭晚秋图》— 滕子京所寄</div>
+    <div class="weather-split">
+      <!-- 雨景 -->
+      <div class="wx-card" id="wx-rain" onclick="pickWeather('rain')">
+        <div class="mini-scene mini-rain">
+          <div class="ms-sky"></div>
+          <div class="ms-water"></div>
+          <div class="mini-rains" id="mini-rain-drops"></div>
+          <svg class="ms-tower-mini" viewBox="0 0 50 65" fill="rgba(15,22,40,0.9)">
+            <rect x="5" y="55" width="40" height="10" rx="1"/>
+            <rect x="10" y="42" width="30" height="14"/>
+            <path d="M3,42 Q25,34 47,42 Z"/>
+            <rect x="15" y="28" width="20" height="15"/>
+            <path d="M8,28 Q25,20 42,28 Z"/>
+            <rect x="20" y="18" width="10" height="11"/>
+            <path d="M14,18 Q25,11 36,18 Z"/>
+          </svg>
+        </div>
+        <div class="wx-info">
+          <div class="wx-title">🌧️ 阴雨连绵</div>
+          <div class="wx-desc">淫雨霏霏，连月不开<br>阴风怒号，浊浪排空</div>
+        </div>
+      </div>
+      <!-- 晴景 -->
+      <div class="wx-card" id="wx-sun" onclick="pickWeather('sun')">
+        <div class="mini-scene mini-sun">
+          <div class="ms-sky"></div>
+          <div class="ms-water"></div>
+          <div class="mini-birds">
+            <span class="mb" style="animation-duration:5s;top:10%">〜</span>
+            <span class="mb" style="animation-duration:7s;top:40%;animation-delay:-2s">〜</span>
+          </div>
+          <svg class="ms-tower-mini" viewBox="0 0 50 65" fill="rgba(40,28,10,0.85)">
+            <rect x="5" y="55" width="40" height="10" rx="1"/>
+            <rect x="10" y="42" width="30" height="14"/>
+            <path d="M3,42 Q25,34 47,42 Z"/>
+            <rect x="15" y="28" width="20" height="15"/>
+            <path d="M8,28 Q25,20 42,28 Z"/>
+            <rect x="20" y="18" width="10" height="11"/>
+            <path d="M14,18 Q25,11 36,18 Z"/>
+          </svg>
+        </div>
+        <div class="wx-info">
+          <div class="wx-title">☀️ 春和景明</div>
+          <div class="wx-desc">波澜不惊，上下天光<br>沙鸥翔集，一碧万顷</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="secret-box">
-    <div class="formula">
-      <div class="fi"><div class="zh">景</div><div class="en">SCENERY</div></div>
-      <div class="farr">→</div>
-      <div class="fi"><div class="zh">情</div><div class="en">EMOTION</div></div>
-      <div class="farr">→</div>
-      <div class="fi hi"><div class="zh">志</div><div class="en">ASPIRATION</div></div>
-    </div>
-    <div style="font-size:13px;color:rgba(200,190,160,.55)">
-      看懂了风景背后的情，才能读到范仲淹真正想说的话
-    </div>
-    <div class="ftags" style="margin-top:14px">
-      <span class="ftag">🌧️ 阴雨·沉重·藏着悲</span>
-      <span class="ftag">☀️ 晴光·开阔·藏着喜</span>
-      <span class="ftag">💡 超越两者·才是真境界</span>
-    </div>
+  <div class="s3-question">
+    范仲淹在这幅画里看到了两种天气，两种景象。<br>
+    <strong>登上岳阳楼的人，面对这两种天气，心情会一样吗？</strong>
   </div>
-  <button class="btn" style="margin-top:4px" onclick="ctrl.advance()">读第一层 →</button>
+  <button class="btn" id="s3btn" onclick="s3done()" style="display:none">进入第一个场景 →</button>
 </div>
 
-<!-- ════════════════════════════
-     S4  RAINY  — 阴压沉重
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S4  岳阳楼·阴雨场景（完整插画）
+════════════════════════════════════ -->
 <div class="slide" id="s4" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:8px;position:relative;z-index:1">景·第一层 — 阴雨</div>
-  <div class="decode-wrap">
-    <div class="dheader">
-      <div class="dnum">一</div>
-      <div class="dtitle">🌧️ 当天气阴沉，大雨不停……</div>
+  <!-- 场景背景 -->
+  <div class="scene-bg">
+    <div class="scene-sky">
+      <!-- 云层 SVG -->
+      <svg style="position:absolute;top:0;left:0;width:100%;height:100%" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid slice">
+        <ellipse cx="150" cy="80" rx="180" ry="70" fill="rgba(15,22,45,0.9)"/>
+        <ellipse cx="300" cy="60" rx="220" ry="55" fill="rgba(12,18,38,0.85)"/>
+        <ellipse cx="600" cy="90" rx="250" ry="80" fill="rgba(18,26,50,0.92)"/>
+        <ellipse cx="820" cy="70" rx="200" ry="65" fill="rgba(14,20,42,0.88)"/>
+        <ellipse cx="500" cy="40" rx="280" ry="50" fill="rgba(10,14,30,0.7)"/>
+      </svg>
     </div>
-    <div class="text-panel">
-      <span class="kw" onclick="tog('a1','s4')">淫雨霏霏，连月不开</span>，
-      <span class="kw" onclick="tog('a2','s4')">阴风怒号，浊浪排空</span>；
-      日星隐曜，山岳潜形……
-      <div class="anno" id="a1">连绵不断的雨——那是被贬后压在胸口、无处宣泄的郁闷</div>
-      <div class="anno" id="a2">风在怒吼——委屈、愤怒、被放逐的无力感，全在这一句</div>
-      <br>登斯楼也，则有
-      <span class="kw" onclick="tog('a3','s4')">去国怀乡，忧谗畏讥</span>，
-      <span class="kw" onclick="tog('a4','s4')">满目萧然，感极而悲者矣</span>。
-      <div class="anno" id="a3">离开京城、思念家乡、害怕被人说坏话——每一个被贬官员的真实心声</div>
-      <div class="anno" id="a4">看什么都凄凉，悲到了极点。这就是被逆境压垮时的样子</div>
+    <!-- 岳阳楼 SVG（主体） -->
+    <div class="tower-wrap" style="bottom:36%">
+      <svg viewBox="0 0 400 260" fill="rgba(12,18,35,0.92)" xmlns="http://www.w3.org/2000/svg">
+        <!-- 城台基座 -->
+        <rect x="30" y="220" width="340" height="35" rx="2"/>
+        <rect x="10" y="212" width="380" height="12" rx="2"/>
+        <!-- 一层柱廊 -->
+        <rect x="60" y="175" width="280" height="40"/>
+        <rect x="72" y="175" width="7" height="40" fill="rgba(0,0,0,.15)"/>
+        <rect x="98" y="175" width="7" height="40" fill="rgba(0,0,0,.15)"/>
+        <rect x="295" y="175" width="7" height="40" fill="rgba(0,0,0,.15)"/>
+        <rect x="321" y="175" width="7" height="40" fill="rgba(0,0,0,.15)"/>
+        <!-- 一层屋顶 -->
+        <path d="M22,175 Q60,150 200,143 Q340,150 378,175 Z"/>
+        <!-- 一层翘角 -->
+        <path d="M22,175 Q4,162 8,148 Q18,157 26,167 Z"/>
+        <path d="M378,175 Q396,162 392,148 Q382,157 374,167 Z"/>
+        <!-- 二层 -->
+        <rect x="95" y="117" width="210" height="30"/>
+        <rect x="108" y="117" width="6" height="30" fill="rgba(0,0,0,.15)"/>
+        <rect x="286" y="117" width="6" height="30" fill="rgba(0,0,0,.15)"/>
+        <!-- 二层屋顶 -->
+        <path d="M58,117 Q95,95 200,88 Q305,95 342,117 Z"/>
+        <!-- 二层翘角 -->
+        <path d="M58,117 Q42,107 46,95 Q55,103 62,111 Z"/>
+        <path d="M342,117 Q358,107 354,95 Q345,103 338,111 Z"/>
+        <!-- 三层 -->
+        <rect x="132" y="64" width="136" height="26"/>
+        <rect x="144" y="64" width="5" height="26" fill="rgba(0,0,0,.15)"/>
+        <rect x="251" y="64" width="5" height="26" fill="rgba(0,0,0,.15)"/>
+        <!-- 三层屋顶 -->
+        <path d="M102,64 Q132,46 200,40 Q268,46 298,64 Z"/>
+        <!-- 三层翘角 -->
+        <path d="M102,64 Q88,56 92,45 Q100,51 106,58 Z"/>
+        <path d="M298,64 Q312,56 308,45 Q300,51 294,58 Z"/>
+        <!-- 脊顶 -->
+        <rect x="196" y="18" width="8" height="24"/>
+        <path d="M184,28 Q200,8 216,28 Q200,23 184,28 Z"/>
+        <!-- 倒影（水中） -->
+        <g opacity="0.2" transform="translate(0,270) scale(1,-1) translate(0,-260)">
+          <rect x="60" y="175" width="280" height="40"/>
+          <path d="M22,175 Q60,150 200,143 Q340,150 378,175 Z"/>
+          <rect x="95" y="117" width="210" height="30"/>
+        </g>
+      </svg>
     </div>
-    <div class="eq-box" id="eq1">
-      <div class="eq-q">这段阴雨描写里，藏着的情绪是？</div>
-      <div class="emo-row">
-        <button class="eo" onclick="ansEmo(1,0)">😊 轻松喜悦</button>
-        <button class="eo" onclick="ansEmo(1,1)">😔 悲伤压抑</button>
-        <button class="eo" onclick="ansEmo(1,2)">😡 愤怒激动</button>
-        <button class="eo" onclick="ansEmo(1,3)">😐 平静淡然</button>
+    <div class="scene-water">
+      <div class="waves">
+        <div class="wave-row"></div>
+        <div class="wave-row w2"></div>
+        <div class="wave-row w3"></div>
       </div>
-      <div class="reveal" id="r1">
-        <div class="rtag">读对了</div>
-        <div class="rtext">
-          阴暗的风雨 = <strong>被贬后的悲伤与压抑</strong>。<br>
-          这是"迁客骚人"面对逆境的本能反应：环境变差，心情就垮。<br>
-          但范仲淹觉得这还不够，看下一层……
+    </div>
+  </div>
+  <!-- 内容面板 -->
+  <div class="scene-panel">
+    <div class="sp-inner">
+      <div class="scene-title">
+        <div class="snum">一</div>
+        <div class="stitle-text">🌧️ 若夫淫雨霏霏——迁客骚人登此楼，则有……</div>
+      </div>
+      <div class="text-block">
+        <span class="kw" onclick="tog('ra1')">淫雨霏霏，连月不开，阴风怒号，浊浪排空</span>；
+        日星隐曜，山岳潜形……
+        <div class="anno" id="ra1">阴风怒号——不只是在写天气，是被压住的委屈与无力感向外涌出</div>
+        <br>登斯楼也，则有
+        <span class="kw" onclick="tog('ra2')">去国怀乡，忧谗畏讥</span>，
+        <span class="kw" onclick="tog('ra3')">满目萧然，感极而悲者矣</span>。
+        <div class="anno" id="ra2">离开京城、思念故乡、害怕被人说坏话——每个被贬官员的真实心声</div>
+        <div class="anno" id="ra3">看什么都凄凉，悲到极点——这就是"迁客骚人"被逆境压垮时的状态</div>
+      </div>
+      <div class="eq" id="eq1">
+        <div class="eq-q">这种阴雨下的心情，用一个词形容是？</div>
+        <div class="emo-row">
+          <button class="eo" onclick="ansEmo(1,0)">轻松愉快</button>
+          <button class="eo" onclick="ansEmo(1,1)">悲伤压抑</button>
+          <button class="eo" onclick="ansEmo(1,2)">无所谓</button>
+          <button class="eo" onclick="ansEmo(1,3)">愤怒激动</button>
+        </div>
+        <div class="reveal" id="r1">
+          <div class="rtag">理解正确</div>
+          <div class="rtext">
+            阴雨连绵 → <strong>悲伤压抑</strong>。被贬官员本就心情低落，再遇阴沉天气，雪上加霜。<br>
+            这就是"迁客骚人"的模式：<strong>外部环境坏 → 心情垮</strong>。<br>
+            但滕子京……他被贬了，却"政通人和"。他是"迁客骚人"吗？
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════
-     S5  SUNNY  — 开阔温暖
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S5  岳阳楼·晴明场景（完整插画）
+════════════════════════════════════ -->
 <div class="slide" id="s5" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:8px;position:relative;z-index:1">景·第二层 — 晴光</div>
-  <div class="decode-wrap">
-    <div class="dheader">
-      <div class="dnum" style="background:rgba(160,120,20,.3);color:#f0d070;border-color:rgba(160,120,20,.4)">二</div>
-      <div class="dtitle" style="color:#e8d090">☀️ 当天气晴朗，湖面如镜……</div>
+  <div class="scene-bg">
+    <div class="scene-sky">
+      <!-- 太阳 -->
+      <div class="sun"></div>
+      <!-- 晴天白云 SVG -->
+      <svg style="position:absolute;top:0;left:0;width:100%;height:100%" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid slice">
+        <ellipse cx="180" cy="100" rx="120" ry="35" fill="rgba(255,255,255,.12)"/>
+        <ellipse cx="160" cy="95" rx="70" ry="28" fill="rgba(255,255,255,.1)"/>
+        <ellipse cx="700" cy="80" rx="100" ry="30" fill="rgba(255,255,255,.1)"/>
+        <ellipse cx="680" cy="75" rx="60" ry="22" fill="rgba(255,255,255,.08)"/>
+      </svg>
     </div>
-    <div class="text-panel">
-      至若<span class="kw" onclick="tog('b1','s5')">春和景明，波澜不惊</span>，
-      上下天光，一碧万顷；
-      <span class="kw" onclick="tog('b2','s5')">沙鸥翔集，锦鳞游泳</span>；
-      <div class="anno" id="b1">风平浪静的湖面——一切都变好了，心情也跟着明亮起来</div>
-      <div class="anno" id="b2">鸟儿飞翔，鱼儿游动——充满生机，看什么都顺眼、都美好</div>
-      岸芷汀兰，郁郁青青……<br>
-      登斯楼也，则有
-      <span class="kw" onclick="tog('b3','s5')">心旷神怡，宠辱偕忘</span>，
-      <span class="kw" onclick="tog('b4','s5')">把酒临风，其喜洋洋者矣</span>。
-      <div class="anno" id="b3">荣耀和屈辱都忘了——真的忘了？还是被美景暂时麻醉了？</div>
-      <div class="anno" id="b4">举杯迎风，喜不自胜——但这种快乐，依赖天气，经不住考验</div>
+    <!-- 飞鸟 -->
+    <div class="bird-wrap">
+      <div class="bird" style="top:20%;animation-duration:12s;animation-delay:0s"></div>
+      <div class="bird" style="top:55%;animation-duration:15s;animation-delay:-4s;width:14px;height:6px"></div>
+      <div class="bird" style="top:35%;animation-duration:18s;animation-delay:-8s;opacity:.5"></div>
     </div>
-    <div class="eq-box" id="eq2" style="background:rgba(30,20,0,.6);border-color:rgba(180,140,40,.2)">
-      <div class="eq-q" style="color:#d4b860">这种"天晴就快乐"，有什么不够的地方？</div>
-      <div class="emo-row">
-        <button class="eo" onclick="ansEmo(2,0)">没问题，快乐就是快乐</button>
-        <button class="eo" onclick="ansEmo(2,1)">依赖外部条件，天一变就消失了</button>
-        <button class="eo" onclick="ansEmo(2,2)">这种快乐本来就是虚假的</button>
+    <!-- 岳阳楼（晴天色调） -->
+    <div class="tower-wrap" style="bottom:36%">
+      <svg viewBox="0 0 400 260" fill="rgba(38,24,8,0.85)" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="220" width="340" height="35" rx="2"/>
+        <rect x="10" y="212" width="380" height="12" rx="2"/>
+        <rect x="60" y="175" width="280" height="40"/>
+        <rect x="72" y="175" width="7" height="40" fill="rgba(0,0,0,.12)"/>
+        <rect x="98" y="175" width="7" height="40" fill="rgba(0,0,0,.12)"/>
+        <rect x="295" y="175" width="7" height="40" fill="rgba(0,0,0,.12)"/>
+        <rect x="321" y="175" width="7" height="40" fill="rgba(0,0,0,.12)"/>
+        <path d="M22,175 Q60,150 200,143 Q340,150 378,175 Z"/>
+        <path d="M22,175 Q4,162 8,148 Q18,157 26,167 Z"/>
+        <path d="M378,175 Q396,162 392,148 Q382,157 374,167 Z"/>
+        <rect x="95" y="117" width="210" height="30"/>
+        <rect x="108" y="117" width="6" height="30" fill="rgba(0,0,0,.12)"/>
+        <rect x="286" y="117" width="6" height="30" fill="rgba(0,0,0,.12)"/>
+        <path d="M58,117 Q95,95 200,88 Q305,95 342,117 Z"/>
+        <path d="M58,117 Q42,107 46,95 Q55,103 62,111 Z"/>
+        <path d="M342,117 Q358,107 354,95 Q345,103 338,111 Z"/>
+        <rect x="132" y="64" width="136" height="26"/>
+        <rect x="144" y="64" width="5" height="26" fill="rgba(0,0,0,.12)"/>
+        <rect x="251" y="64" width="5" height="26" fill="rgba(0,0,0,.12)"/>
+        <path d="M102,64 Q132,46 200,40 Q268,46 298,64 Z"/>
+        <path d="M102,64 Q88,56 92,45 Q100,51 106,58 Z"/>
+        <path d="M298,64 Q312,56 308,45 Q300,51 294,58 Z"/>
+        <rect x="196" y="18" width="8" height="24"/>
+        <path d="M184,28 Q200,8 216,28 Q200,23 184,28 Z"/>
+        <!-- 水面倒影（晴天更清晰） -->
+        <g opacity="0.35" transform="translate(0,270) scale(1,-1) translate(0,-260)">
+          <rect x="60" y="175" width="280" height="40"/>
+          <path d="M22,175 Q60,150 200,143 Q340,150 378,175 Z"/>
+          <rect x="95" y="117" width="210" height="30"/>
+          <path d="M58,117 Q95,95 200,88 Q305,95 342,117 Z"/>
+        </g>
+      </svg>
+    </div>
+    <div class="scene-water">
+      <div class="sun-reflect"></div>
+      <div class="waves">
+        <div class="wave-row" style="opacity:.15"></div>
+        <div class="wave-row w2" style="opacity:.1"></div>
       </div>
-      <div class="reveal" id="r2">
-        <div class="rtag">读对了</div>
-        <div class="rtext">
-          这是<strong>被动的快乐</strong>——是天气给的，不是自己的。<br>
-          这还是迁客骚人的思维：环境好，我好；环境坏，我坏。<br>
-          范仲淹想说：还有第三种境界，是真正的自由。
+    </div>
+  </div>
+  <!-- 内容面板 -->
+  <div class="scene-panel">
+    <div class="sp-inner">
+      <div class="scene-title">
+        <div class="snum">二</div>
+        <div class="stitle-text">☀️ 至若春和景明——迁客骚人登此楼，则有……</div>
+      </div>
+      <div class="text-block">
+        至若<span class="kw" onclick="tog('sb1')">春和景明，波澜不惊，上下天光，一碧万顷</span>；
+        <span class="kw" onclick="tog('sb2')">沙鸥翔集，锦鳞游泳</span>，岸芷汀兰，郁郁青青……
+        <div class="anno" id="sb1">湖面如镜，天水一色——一切都变得开阔、宁静、美好</div>
+        <div class="anno" id="sb2">鸟儿飞翔，鱼儿游动——生机勃勃，看什么都顺眼</div>
+        <br>登斯楼也，则有
+        <span class="kw" onclick="tog('sb3')">心旷神怡，宠辱偕忘</span>，
+        <span class="kw" onclick="tog('sb4')">把酒临风，其喜洋洋者矣</span>。
+        <div class="anno" id="sb3">荣耀和屈辱都忘了——但这是真的忘了，还是被美景暂时麻醉了？</div>
+        <div class="anno" id="sb4">举杯迎风，喜不自胜——但这种快乐，来自天气，不是来自自己内心</div>
+      </div>
+      <div class="eq" id="eq2">
+        <div class="eq-q">这种"天晴就快乐"，跟上一幕的"阴雨就悲伤"，本质上有什么共同点？</div>
+        <div class="emo-row">
+          <button class="eo" onclick="ansEmo(2,0)">没有共同点，一个悲一个喜</button>
+          <button class="eo" onclick="ansEmo(2,1)">都是被外部环境控制的，不是自己内心做主</button>
+          <button class="eo" onclick="ansEmo(2,2)">都是很正常的情绪反应</button>
+        </div>
+        <div class="reveal" id="r2">
+          <div class="rtag">理解正确</div>
+          <div class="rtext">
+            一悲一喜，但本质一样：<strong>情绪都由外部决定</strong>。<br>
+            天气好 → 我好，天气坏 → 我坏。这就是"迁客骚人"的局限。<br>
+            而滕子京被贬，外部环境那么坏，他为什么能"政通人和"？
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════
-     S6  THE REAL CHOICE
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S6  转折：古仁人之心
+════════════════════════════════════ -->
 <div class="slide" id="s6" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:14px">超越两者</div>
-  <div style="text-align:center;margin-bottom:18px;max-width:680px">
-    <div style="font-size:clamp(18px,3.5vw,30px);font-weight:900;color:#f0e8d0">
-      面对同样的逆境，两种人有不同的选择
+  <div class="label" style="margin-bottom:16px">超越两种情绪 · 古仁人之心</div>
+  <div class="turn-box">
+    <div class="turn-q">
+      范仲淹说：<em>"予尝求古仁人之心，或异二者之为。"</em>
+    </div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.9">
+      他发现，真正有智慧的人，既不是"阴雨就悲"，也不是"晴天才喜"。<br>
+      他们有另一种力量——
+    </div>
+    <div class="turn-logic">
+      <div class="trow">
+        <div class="ta bad">迁客骚人</div>
+        <div class="tarr">→</div>
+        <div class="tex">阴雨 → 悲伤 ／ 晴天 → 喜悦（情绪由外境决定）</div>
+      </div>
+      <div class="trow">
+        <div class="ta good">古仁人</div>
+        <div class="tarr">→</div>
+        <div class="tex">阴雨也不崩溃 ／ 晴天也不忘形（情绪来自内心）</div>
+      </div>
     </div>
   </div>
   <div class="versus">
-    <div class="vcard" id="vca" onclick="pick('a')">
+    <div class="vc" id="vca" onclick="pickV('a')">
       <div class="vicon">😔</div>
       <div class="vtype">迁客骚人</div>
       <div class="vdesc">
-        天好 → 开心<br>
-        天坏 → 悲伤<br><br>
-        情绪随外境起落，<br>被环境牵着走
+        外境决定心境<br>
+        被贬 → 只能悲伤<br>
+        晴天 → 才能快乐
       </div>
     </div>
     <div class="vvs">VS</div>
-    <div class="vcard" id="vcb" onclick="pick('b')">
+    <div class="vc" id="vcb" onclick="pickV('b')">
       <div class="vicon">🧘</div>
       <div class="vtype">古仁人</div>
       <div class="vdesc">
-        天好 → 不骄<br>
-        天坏 → 不弃<br><br>
-        情绪来自内心，<br>不随外物而动
+        心境不随外境变<br>
+        被贬 → 仍可有为<br>
+        顺境 → 不骄不躁
       </div>
     </div>
   </div>
-  <div class="vresult" id="vres">
-    <div style="font-size:11px;color:rgba(200,151,58,.5);text-align:center;margin-bottom:6px">
-      范仲淹写下的答案
-    </div>
-    <div class="vq">不以物喜，不以己悲</div>
-    <div class="vexp">
-      不因外物的好坏而喜悦或悲伤。<br>
-      这不是冷漠，而是<strong>情绪不被外部条件绑架</strong>。<br>
-      他写给朋友，也是写给被贬中的自己。
+  <div class="vans" id="vans">
+    <div class="vans-q">不以物喜，不以己悲</div>
+    <div class="vans-exp">
+      不因外物的好坏而喜悦，不因自身的得失而悲伤。<br>
+      这就是<strong>滕子京能在被贬后仍"政通人和"的原因</strong>——<br>
+      他的内心，不被"被贬"这件事所定义。
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════
-     S7  THE QUOTE
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S7  先忧后乐·范仲淹的宣言
+════════════════════════════════════ -->
 <div class="slide" id="s7">
-  <div class="qs-pre">他最终写下了这句话</div>
-  <div class="qt-wrap">
-    <div class="qt-text" id="qtext">
-      <span id="qline"></span><span class="qt-cursor" id="qcsr"></span>
+  <div class="s7-context">
+    <div class="s7-ctx-label">写这篇文章时，范仲淹的处境</div>
+    <div class="s7-ctx-text">
+      他<strong>自己也正在被贬</strong>，在邓州，远离京城。<br>
+      这篇写给朋友的"记"，也是他写给<strong>自己的话</strong>。
     </div>
   </div>
-  <div class="qdec" id="qdec">
-    <div class="qgrid">
-      <div class="qcell">
-        <div class="phrase">先天下之忧而忧</div>
-        <div class="mean">比天下所有人都先感到忧虑——不是为自己，是为国家和苍生</div>
+  <div class="s7-quote-wrap">
+    <div class="s7-q-pre">他写下了这一句</div>
+    <div class="s7-quote">
+      <span id="s7line"></span><span class="s7-cursor" id="s7csr"></span>
+    </div>
+  </div>
+  <div class="s7-decode" id="s7dec">
+    <div class="s7-grid">
+      <div class="s7-cell">
+        <div class="ph">先天下之忧而忧</div>
+        <div class="mn">比天下所有人都先感到忧虑——<br>不是为自己，是为国家和百姓</div>
       </div>
-      <div class="qcell">
-        <div class="phrase">后天下之乐而乐</div>
-        <div class="mean">等天下所有人都快乐了，才享受自己的快乐</div>
+      <div class="s7-cell">
+        <div class="ph">后天下之乐而乐</div>
+        <div class="mn">等天下所有人都快乐了，<br>才让自己享受快乐</div>
       </div>
     </div>
   </div>
-  <div class="qpers" id="qpers">
-    <div class="qpers-text">
-      写下这句话时，范仲淹<strong>正处于人生最低谷</strong>。<br>
-      他没有在逆境中怨天尤人，而是选择了一个更大的坐标——<br>
-      <strong>把个人的得失，放进天下兴亡里，渺小的烦恼就变小了。</strong>
+  <div class="s7-personal" id="s7pers">
+    <div class="s7-pers-text">
+      在人生最低谷，他没有怨天尤人，<br>
+      而是选择了一个<strong>更大的坐标</strong>——<br>
+      <strong>把个人得失放进天下兴亡里，渺小的失意就变小了。</strong>
     </div>
-    <button class="btn" style="margin-top:22px" onclick="ctrl.advance()">继续 →</button>
+    <div class="s7-final-q">"微斯人，吾谁与归？"——他在呼唤同道，也在勉励自己</div>
+    <button class="btn" style="margin-top:20px" onclick="ctrl.advance()">继续 →</button>
   </div>
 </div>
 
-<!-- ════════════════════════════
-     S8  MODERN
-════════════════════════════ -->
-<div class="slide" id="s8" data-needs-interaction="true">
-  <div class="label" style="margin-bottom:8px">这和你有什么关系</div>
-  <div style="text-align:center;max-width:580px;margin-bottom:16px">
-    <div style="font-size:clamp(18px,3vw,28px);font-weight:900;color:#f0e8d0">
-      这句话，今天还有用吗？
-    </div>
-    <div style="font-size:14px;color:rgba(200,190,160,.55);margin-top:8px">
-      选一个你遇到过的情况
+<!-- ════════════════════════════════════
+     S8  答案揭晓
+════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="s8-top">
+    <div class="label" style="margin-bottom:10px">回到最初的问题</div>
+    <div class="s8-title">
+      被贬之后，<em>他为什么</em><br>还要重修岳阳楼？
     </div>
   </div>
-  <div class="scenes">
-    <div class="scard" onclick="pickScene(0)">
-      <div class="semoji">📝</div>
-      <div class="stitle">考试考砸了</div>
-      <div class="sdesc">努力了但没考好，觉得自己太差劲</div>
-    </div>
-    <div class="scard" onclick="pickScene(1)">
-      <div class="semoji">😤</div>
-      <div class="stitle">被冤枉了</div>
-      <div class="sdesc">明明没做错，却被误解委屈</div>
-    </div>
-    <div class="scard" onclick="pickScene(2)">
-      <div class="semoji">🏆</div>
-      <div class="stitle">取得好成绩</div>
-      <div class="sdesc">考得很好，有点飘飘然</div>
+  <div class="answer-reveal">
+    <div class="ar-steps">
+      <div class="ar-step" id="as0">
+        <div class="ar-num">①</div>
+        <div class="ar-content">
+          <div class="ar-q">迁客骚人的反应</div>
+          <div class="ar-a">被贬 → 心情随外境起落 → 可能就此消沉，怨天尤人，一蹶不振</div>
+        </div>
+      </div>
+      <div class="ar-step" id="as1">
+        <div class="ar-num">②</div>
+        <div class="ar-content">
+          <div class="ar-q">滕子京的选择</div>
+          <div class="ar-a">被贬 → 依然"政通人和，百废具兴" → 重修岳阳楼，广邀天下文人<br>
+          他的内心<em>没有被"被贬"这件事所击垮</em></div>
+        </div>
+      </div>
+      <div class="ar-step" id="as2">
+        <div class="ar-num">③</div>
+        <div class="ar-content">
+          <div class="ar-q">范仲淹的回答</div>
+          <div class="ar-a">这就是"古仁人之心"——<em>不以物喜，不以己悲</em><br>
+          外部发生了最坏的事，内心仍然可以选择怎么活</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="sresp" id="sresp">
-    <div class="slabel">范仲淹的智慧</div>
-    <div class="squote" id="sq"></div>
-    <div class="smod" id="sm"></div>
+  <div class="ar-big" id="arbig">
+    <div class="ar-big-text">
+      滕子京重修岳阳楼，不是因为他不难过，<br>
+      而是因为他选择了<em style="color:var(--gold)">不被难过所定义</em>。<br>
+      这，就是范仲淹写这篇文章真正想说的话。
+    </div>
   </div>
-  <button class="btn" id="s8btn" onclick="ctrl.advance()" style="display:none">继续 →</button>
+  <button class="btn" id="s8btn" onclick="ctrl.advance()" style="display:none;margin-top:8px">看文章结构 →</button>
 </div>
 
-<!-- ════════════════════════════
-     S9  STRUCTURE
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S9  文章结构
+════════════════════════════════════ -->
 <div class="slide" id="s9">
-  <div class="label" style="margin-bottom:8px">文章的骨架</div>
-  <div style="text-align:center;font-size:clamp(17px,3vw,28px);font-weight:900;
-    color:#f0e8d0;margin-bottom:20px">
-    现在，你能读懂整篇文章了
-  </div>
+  <div class="label" style="margin-bottom:8px">文章结构 · 景→情→志</div>
+  <div style="text-align:center;font-size:clamp(17px,3vw,26px);font-weight:900;
+    color:var(--dust);margin-bottom:18px">现在，你能读懂整篇文章的逻辑了</div>
   <div class="flow" id="flow">
     <div class="frow" id="fr0">
       <div class="fblocks">
-        <div class="fb c1">
-          <div class="flayer">景</div>
-          <div class="fcontent">🌧️ 阴雨沉重 &nbsp;+&nbsp; ☀️ 晴光开阔</div>
-          <div class="fquote">"淫雨霏霏" / "春和景明"</div>
+        <div class="fb" style="border-radius:10px;border-color:rgba(200,151,58,.3);background:rgba(100,70,10,.06)">
+          <div class="flayer">引子</div>
+          <div class="fcontent">滕子京谪守巴陵郡 · 政通人和 · 重修岳阳楼</div>
+          <div class="fquote">"百废具兴" — 这本身就是答案的伏笔</div>
         </div>
       </div>
     </div>
     <div class="farr" id="fa0">↓</div>
     <div class="frow" id="fr1">
       <div class="fblocks">
-        <div class="fb c2">
-          <div class="flayer">情</div>
-          <div class="fcontent">😔 悲情 &nbsp;+&nbsp; 😊 喜情（迁客骚人）</div>
-          <div class="fquote">"感极而悲" / "喜洋洋者矣"</div>
+        <div class="fb c1">
+          <div class="flayer">景</div>
+          <div class="fcontent">🌧️ 阴雨景 &nbsp;+&nbsp; ☀️ 晴明景</div>
+          <div class="fquote">"淫雨霏霏" · "春和景明"</div>
         </div>
       </div>
     </div>
-    <div class="farr" id="fa1">↓ 超越</div>
+    <div class="farr" id="fa1">↓</div>
     <div class="frow" id="fr2">
       <div class="fblocks">
+        <div class="fb c2">
+          <div class="flayer">情（迁客骚人）</div>
+          <div class="fcontent">😔 感极而悲 &nbsp;+&nbsp; 😊 喜洋洋者</div>
+          <div class="fquote">情随景动，被外境控制</div>
+        </div>
+      </div>
+    </div>
+    <div class="farr" id="fa2">↓ 超越</div>
+    <div class="frow" id="fr3">
+      <div class="fblocks">
         <div class="fb c3">
-          <div class="flayer">志</div>
-          <div class="fcontent">💡 古仁人之心</div>
-          <div class="fquote">"不以物喜，不以己悲" &nbsp;·&nbsp; "先天下之忧而忧，后天下之乐而乐"</div>
+          <div class="flayer">志（古仁人之心）</div>
+          <div class="fcontent">💡 不以物喜，不以己悲 · 先天下之忧而忧</div>
+          <div class="fquote">这才是范仲淹要说的话，也是滕子京行动的注脚</div>
         </div>
       </div>
     </div>
   </div>
-  <button class="btn" style="margin-top:8px" onclick="ctrl.advance()">查看成就 →</button>
+  <div class="s9-note">
+    文章的高明之处：先写两种<strong>景</strong>和两种<strong>情</strong>（迁客骚人的局限），<br>
+    再以"古仁人之心"作<strong>志</strong>，形成对比，让"先忧后乐"显得格外有分量。
+  </div>
+  <button class="btn" style="margin-top:10px" onclick="ctrl.advance()">查看学习成就 →</button>
 </div>
 
-<!-- ════════════════════════════
-     S10  FINAL
-════════════════════════════ -->
+<!-- ════════════════════════════════════
+     S10  总结
+════════════════════════════════════ -->
 <div class="slide" id="s10">
-  <div class="label" style="margin-bottom:8px">读懂了</div>
-  <div style="font-size:clamp(18px,4vw,36px);font-weight:900;color:#f0e8d0;text-align:center">
-    你读懂了这篇千年前的心事
+  <div class="label" style="margin-bottom:8px">学习完成</div>
+  <div style="font-size:clamp(18px,3.5vw,34px);font-weight:900;color:var(--dust);text-align:center;line-height:1.4">
+    你读懂了这篇千年前的<br>心事与宣言
   </div>
   <div class="fbadges">
-    <div class="fb2" id="fb0">🔍<span class="bl">起源</span></div>
+    <div class="fb2" id="fb0">📜<span class="bl">背景</span></div>
     <div class="fb2" id="fb1">🌧️<span class="bl">悲景</span></div>
     <div class="fb2" id="fb2">☀️<span class="bl">乐景</span></div>
     <div class="fb2" id="fb3">💡<span class="bl">超越</span></div>
@@ -679,19 +1010,19 @@ html,body{width:100%;height:100%;overflow:hidden;
     <div class="krows">
       <div class="krow">
         <div class="kicon">景</div>
-        <div class="ktext"><strong>借景抒情</strong> — 用风景承载情感，是古文最核心的表达方式</div>
+        <div class="ktext"><strong>借景抒情</strong> — 两种天气对应两种心境，风景是情感的载体</div>
       </div>
       <div class="krow">
         <div class="kicon">构</div>
-        <div class="ktext"><strong>景 → 情 → 志</strong> — 三层递进，由外到内，由风景到志向</div>
+        <div class="ktext"><strong>引—景—情—志</strong> — 四层递进：背景铺垫→写景→写情→点明志向</div>
       </div>
       <div class="krow">
-        <div class="kicon">心</div>
-        <div class="ktext"><strong>不以物喜，不以己悲</strong> — 情绪不被外物左右，是"古仁人"的境界</div>
+        <div class="kicon">比</div>
+        <div class="ktext"><strong>对比手法</strong> — 迁客骚人 vs 古仁人，两种境界形成强烈对比</div>
       </div>
       <div class="krow">
         <div class="kicon">志</div>
-        <div class="ktext"><strong>先天下之忧而忧，后天下之乐而乐</strong> — 以天下为己任的担当</div>
+        <div class="ktext"><strong>先天下之忧而忧，后天下之乐而乐</strong> — 不是说教，是范仲淹身处逆境时的人生宣言</div>
       </div>
     </div>
   </div>
@@ -701,7 +1032,7 @@ html,body{width:100%;height:100%;overflow:hidden;
 </div><!-- #app -->
 
 <script>
-// ═══════════ SLIDE CONTROLLER ═══════════
+// ═══════════════ 幻灯片控制器 ═══════════════
 const ctrl = (function(){
   const slides = Array.from(document.querySelectorAll('.slide'));
   const total = slides.length;
@@ -732,20 +1063,24 @@ const ctrl = (function(){
   }
 
   function onEnter(i){
-    if(i===3) startRain();
-    else stopRain();
-    if(i===4) showSun(); else hideSun();
+    // 场景切换
+    if(i===3){ startRain(); }
+    else { stopRain(); }
+    // S7 打字效果
     if(i===6) startQuote();
+    // S8 答案逐步展示
+    if(i===7) startAnswer();
+    // S9 流程图
     if(i===8) animFlow();
+    // S10 成就
     if(i===9) doFinal();
   }
 
   document.getElementById('app').addEventListener('click', e=>{
-    const skip = ['button','.pcard','.eo','.scard','.vcard','.kw'];
+    const skip = ['button','.pcard','.eo','.scard','.vc','.wx-card','.kw'];
     if(skip.some(sel=>e.target.closest(sel))) return;
     advance();
   });
-
   document.addEventListener('keydown', e=>{
     if(e.key==='ArrowRight'||e.key===' ') advance();
     if(e.key==='ArrowLeft'&&cur>0) goTo(cur-1);
@@ -754,90 +1089,24 @@ const ctrl = (function(){
   return {advance, goTo};
 })();
 
-// ═══════════ RAIN ═══════════
-let rainAnim = null;
-const canvas = document.getElementById('rain-canvas');
-const ctx = canvas.getContext('2d');
-let drops = [];
-
-function resizeCanvas(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
-function makeDrop(){
-  return {
-    x: Math.random()*window.innerWidth,
-    y: Math.random()*-window.innerHeight,
-    len: 10+Math.random()*18,
-    spd: 6+Math.random()*8,
-    op: .15+Math.random()*.35
-  };
-}
-
-function startRain(){
-  canvas.style.display='block';
-  drops = Array.from({length:120}, makeDrop);
-  if(rainAnim) cancelAnimationFrame(rainAnim);
-  function frame(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drops.forEach(d=>{
-      ctx.beginPath();
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x+d.len*.2, d.y+d.len);
-      ctx.strokeStyle=`rgba(140,180,220,${d.op})`;
-      ctx.lineWidth=1;
-      ctx.stroke();
-      d.y += d.spd;
-      d.x += .8;
-      if(d.y > canvas.height+20){
-        Object.assign(d, makeDrop());
-        d.y = -20;
-      }
-    });
-    rainAnim = requestAnimationFrame(frame);
-  }
-  frame();
-}
-
-function stopRain(){
-  if(rainAnim){
-    cancelAnimationFrame(rainAnim);
-    rainAnim = null;
-  }
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  canvas.style.display='none';
-}
-
-// ═══════════ SUN GLOW ═══════════
-function showSun(){
-  document.getElementById('sun-glow').style.opacity='1';
-}
-function hideSun(){
-  document.getElementById('sun-glow').style.opacity='0';
-}
-
-// ═══════════ BADGES ═══════════
-const bUnlocked=[false,false,false,false,false];
+// ═══════════════ 成就徽章 ═══════════════
+const bU=[false,false,false,false,false];
 function unlock(i){
-  if(bUnlocked[i]) return;
-  bUnlocked[i]=true;
+  if(bU[i]) return; bU[i]=true;
   const el=document.getElementById('b'+i);
   el.classList.add('on');
   el.animate([{transform:'scale(1)'},{transform:'scale(1.5)'},{transform:'scale(1)'}],{duration:400});
 }
 
-// ═══════════ S2 ═══════════
-const pOpen={fan:false,teng:false};
+// ═══════════════ S2 ═══════════════
+const pO={t:false,f:false};
 function openP(id){
-  if(!pOpen[id]){
-    pOpen[id]=true;
+  if(!pO[id]){
+    pO[id]=true;
     document.getElementById('pc-'+id).classList.add('open');
     document.getElementById('ph-'+id).textContent='✓ 已了解';
   }
-  if(pOpen.fan&&pOpen.teng) document.getElementById('s2btn').style.display='block';
+  if(pO.t&&pO.f) document.getElementById('s2btn').style.display='block';
 }
 function s2done(){
   document.getElementById('s2').dataset.done='true';
@@ -845,95 +1114,106 @@ function s2done(){
   ctrl.advance();
 }
 
-// ═══════════ ANNOTATIONS ═══════════
-function tog(id, slideId){
-  const el=document.getElementById(id);
-  el.classList.toggle('on');
-  // mark kw as open
-  const kws=document.querySelectorAll('#'+slideId+' .kw');
-  // find which kw triggered - just toggle anno
+// ═══════════════ S3 ═══════════════
+function initMiniRain(){
+  const c=document.getElementById('mini-rain-drops');
+  if(!c) return;
+  c.innerHTML='';
+  for(let i=0;i<18;i++){
+    const d=document.createElement('div');
+    d.className='mr';
+    d.style.cssText=`left:${Math.random()*100}%;height:${8+Math.random()*10}px;
+      animation-duration:${0.6+Math.random()*0.6}s;
+      animation-delay:${-Math.random()}s`;
+    c.appendChild(d);
+  }
+}
+const wPick={rain:false,sun:false};
+function pickWeather(id){
+  document.getElementById('wx-'+id).classList.toggle('picked');
+  wPick[id]=true;
+  if(wPick.rain&&wPick.sun) document.getElementById('s3btn').style.display='block';
+}
+function s3done(){
+  document.getElementById('s3').dataset.done='true';
+  ctrl.advance();
+}
+// 初始化小雨
+setTimeout(initMiniRain,100);
+
+// ═══════════════ 批注 ═══════════════
+function tog(id){
+  document.getElementById(id).classList.toggle('on');
 }
 
-// ═══════════ EMOTION ANSWERS ═══════════
-const correct={1:1,2:1};
-function ansEmo(slide, choice){
+// ═══════════════ 情感选择 ═══════════════
+const answerKey={1:1,2:1};
+function ansEmo(slide,choice){
   const btns=document.querySelectorAll('#eq'+slide+' .eo');
   btns.forEach((b,i)=>{
-    b.classList.add(i===correct[slide]?'right':'wrong');
+    b.classList.add(i===answerKey[slide]?'right':'wrong');
     b.disabled=true;
   });
   document.getElementById('r'+slide).classList.add('on');
   const sid=slide===1?'s4':'s5';
   document.getElementById(sid).dataset.done='true';
   unlock(slide===1?1:2);
-  setTimeout(()=>ctrl.advance(), 1900);
+  setTimeout(()=>ctrl.advance(),2000);
 }
 
-// ═══════════ S6 CHOICE ═══════════
-let s6done=false;
-function pick(type){
-  if(s6done) return;
-  s6done=true;
-  document.getElementById('vca').classList.add('sel-a');
-  document.getElementById('vcb').classList.add('sel-b');
-  document.getElementById('vres').classList.add('on');
+// ═══════════════ S6 ═══════════════
+let s6d=false;
+function pickV(type){
+  if(s6d) return; s6d=true;
+  document.getElementById('vca').classList.add('sel');
+  document.getElementById('vcb').classList.add('sel');
+  document.getElementById('vans').classList.add('on');
   document.getElementById('s6').dataset.done='true';
   unlock(3);
 }
 
-// ═══════════ S7 QUOTE ═══════════
+// ═══════════════ S7 打字机 ═══════════════
 function typeW(el,txt,spd,cb){
   let i=0;
   function t(){
     if(i<txt.length){el.textContent+=txt[i++];setTimeout(t,spd);}
-    else{document.getElementById('qcsr').style.display='none';if(cb)cb();}
+    else{document.getElementById('s7csr').style.display='none';if(cb)cb();}
   }
   t();
 }
 function startQuote(){
-  const ql=document.getElementById('qline');
-  const qc=document.getElementById('qcsr');
-  ql.textContent='';
-  qc.style.display='inline-block';
+  const ql=document.getElementById('s7line');
+  const qc=document.getElementById('s7csr');
+  ql.textContent=''; qc.style.display='inline-block';
   setTimeout(()=>{
-    typeW(ql,'先天下之忧而忧，后天下之乐而乐',90,()=>{
+    typeW(ql,'先天下之忧而忧，后天下之乐而乐',88,()=>{
       setTimeout(()=>{
-        document.getElementById('qdec').classList.add('on');
-        setTimeout(()=>{
-          document.getElementById('qpers').classList.add('on');
-        },1000);
-      },600);
+        document.getElementById('s7dec').classList.add('on');
+        setTimeout(()=>document.getElementById('s7pers').classList.add('on'),1000);
+      },500);
     });
-  },500);
+  },400);
 }
 
-// ═══════════ S8 ═══════════
-const scData=[
-  {q:'不以物喜，不以己悲',
-   m:'一次考试的结果，不代表你这个人的全部价值。不因分数低就否定自己，认真分析哪里出了问题，然后继续前进——这才是范仲淹说的"不以己悲"。'},
-  {q:'不以物喜，不以己悲',
-   m:'被冤枉的委屈是真实的，但如果你知道自己没做错，别人的误解不能定义你。把情绪暂时放下，让事实来说话——这就是不被外物左右的底气。'},
-  {q:'先天下之忧而忧，后天下之乐而乐',
-   m:'好成绩值得高兴，但"古仁人"不会因此飘飘然。范仲淹说：等大家都好了，你再好好享受。这不是压抑自己，而是一种更深的自我要求。'}
-];
-function pickScene(i){
-  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('on'));
-  document.querySelectorAll('.scard')[i].classList.add('on');
-  document.getElementById('sq').textContent=scData[i].q;
-  document.getElementById('sm').textContent=scData[i].m;
-  document.getElementById('sresp').classList.add('on');
-  document.getElementById('s8btn').style.display='block';
-  document.getElementById('s8').dataset.done='true';
+// ═══════════════ S8 逐步答案 ═══════════════
+function startAnswer(){
+  [0,1,2].forEach((i)=>{
+    setTimeout(()=>document.getElementById('as'+i).classList.add('on'),400+i*600);
+  });
+  setTimeout(()=>{
+    document.getElementById('arbig').classList.add('on');
+    document.getElementById('s8btn').style.display='block';
+  },400+3*600);
 }
 
-// ═══════════ S9 FLOW ═══════════
+// ═══════════════ S9 流程图 ═══════════════
 function animFlow(){
-  ['fr0','fa0','fr1','fa1','fr2'].forEach((id,idx)=>{
-    setTimeout(()=>document.getElementById(id).classList.add('on'),idx*430);
+  ['fr0','fa0','fr1','fa1','fr2','fa2','fr3'].forEach((id,idx)=>{
+    setTimeout(()=>document.getElementById(id).classList.add('on'),idx*380);
   });
 }
 
-// ═══════════ S10 ═══════════
+// ═══════════════ S10 ═══════════════
 function doFinal(){
   unlock(4);
   [0,1,2,3,4].forEach((i,idx)=>{
@@ -941,10 +1221,48 @@ function doFinal(){
   });
 }
 
-// init
+// ═══════════════ 雨动画 ═══════════════
+const canvas=document.getElementById('rain-c');
+const ctx=canvas.getContext('2d');
+let drops=[], rainAF=null;
+
+function resizeC(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+}
+resizeC();
+window.addEventListener('resize',resizeC);
+
+function mkDrop(){
+  return{x:Math.random()*window.innerWidth,y:Math.random()*-window.innerHeight*.8,
+    len:12+Math.random()*20,spd:7+Math.random()*9,op:.12+Math.random()*.3};
+}
+function startRain(){
+  canvas.style.display='block';
+  drops=Array.from({length:140},mkDrop);
+  if(rainAF) cancelAnimationFrame(rainAF);
+  function frame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drops.forEach(d=>{
+      ctx.beginPath();
+      ctx.moveTo(d.x,d.y);
+      ctx.lineTo(d.x+d.len*.18,d.y+d.len);
+      ctx.strokeStyle=`rgba(130,170,215,${d.op})`;
+      ctx.lineWidth=.8;
+      ctx.stroke();
+      d.y+=d.spd; d.x+=.7;
+      if(d.y>canvas.height+20) Object.assign(d,mkDrop(),{y:-20});
+    });
+    rainAF=requestAnimationFrame(frame);
+  }
+  frame();
+}
+function stopRain(){
+  if(rainAF){cancelAnimationFrame(rainAF);rainAF=null;}
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  canvas.style.display='none';
+}
 stopRain();
-hideSun();
-document.getElementById('sun-glow').style.transition='opacity 1s';
 </script>
 </body>
 </html>
