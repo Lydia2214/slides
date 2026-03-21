@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>赤壁之战 · 探索课堂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fffbf0;
+  --ink:#2d1b00;
+  --o:#f97316;   /* 橙 */
+  --p:#8b5cf6;   /* 紫 */
+  --g:#22c55e;   /* 绿 */
+  --pk:#ec4899;  /* 粉 */
+  --c:#0ea5e9;   /* 蓝 */
+  --r:#e11d48;   /* 红 */
+  --w:#ffffff;
+  --sh:5px 5px 0 var(--ink);
+  --bd:3px solid var(--ink);
+  --rr:16px;
+}
+html,body{width:100%;height:100%;background:#c8a76a;overflow:hidden;font-family:'Noto Sans SC',sans-serif}
+
+/* ===== Canvas ===== */
+#deck{
+  position:absolute;
+  background:var(--bg);
+  background-image:radial-gradient(circle,rgba(249,115,22,.07) 2px,transparent 2px);
+  background-size:48px 48px;
+  overflow:hidden;
+}
+
+/* ===== Chrome ===== */
+.prog-bar{position:absolute;top:0;left:0;right:0;height:7px;background:rgba(45,27,0,.1);z-index:200}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--o),var(--pk));transition:width .5s ease;width:10%}
+.page-ctr{position:absolute;top:16px;right:24px;font-size:13px;font-weight:700;color:rgba(45,27,0,.3);z-index:200;font-family:'Nunito',sans-serif;letter-spacing:.5px}
+.hint-bar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(45,27,0,.28);z-index:200;font-family:'Nunito',sans-serif;pointer-events:none;transition:opacity .4s;display:flex;align-items:center;gap:6px}
+.hint-bar .hd{width:6px;height:6px;border-radius:50%;background:var(--o);animation:hpulse 1.2s ease-in-out infinite}
+@keyframes hpulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
+.hint-bar.hidden{opacity:0}
+
+/* ===== Slides ===== */
+.slide{
+  position:absolute;inset:0;display:none;
+  padding:60px 80px 64px;
+  flex-direction:column;align-items:center;justify-content:center;
+}
+.slide.active{display:flex}
+
+/* step reveal system */
+[data-step]{opacity:0;transform:translateY(18px);transition:opacity .45s ease,transform .45s cubic-bezier(.34,1.4,.64,1)}
+[data-step].on{opacity:1;transform:none}
+
+/* ===== Shared components ===== */
+.card{background:var(--w);border:var(--bd);box-shadow:var(--sh);border-radius:var(--rr);padding:24px 28px}
+.tag{display:inline-block;border:2px solid;border-radius:99px;padding:4px 16px;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif}
+.big-q{font-size:30px;font-weight:900;color:var(--ink);text-align:center;line-height:1.4;margin-bottom:6px}
+.sub-q{font-size:17px;color:rgba(45,27,0,.5);text-align:center}
+
+/* choice buttons (shared) */
+.choice-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.choice-btn{
+  background:var(--w);border:var(--bd);border-radius:var(--rr);box-shadow:4px 4px 0 var(--ink);
+  padding:14px 26px;font-size:17px;font-weight:700;cursor:pointer;
+  font-family:'Noto Sans SC',sans-serif;color:var(--ink);
+  transition:transform .15s,box-shadow .15s;
+  display:flex;align-items:center;gap:10px;
+}
+.choice-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:6px 6px 0 var(--ink)}
+.choice-btn:active:not(:disabled){transform:translateY(2px);box-shadow:2px 2px 0 var(--ink)}
+.choice-btn.correct{background:rgba(34,197,94,.15);border-color:var(--g);box-shadow:4px 4px 0 var(--g);color:var(--g);pointer-events:none}
+.choice-btn.wrong{background:rgba(225,29,72,.08);border-color:var(--r);box-shadow:4px 4px 0 var(--r);color:var(--r);pointer-events:none;animation:shake .4s ease}
+.choice-btn:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* feedback pop */
+.feedback{font-size:18px;font-weight:700;text-align:center;padding:12px 24px;border-radius:var(--rr);border:2px solid;opacity:0;transform:scale(.8);transition:all .4s cubic-bezier(.34,1.6,.64,1);pointer-events:none}
+.feedback.show{opacity:1;transform:scale(1)}
+.feedback.ok{background:rgba(34,197,94,.12);border-color:var(--g);color:#15803d}
+.feedback.no{background:rgba(225,29,72,.08);border-color:var(--r);color:#be123c}
+
+/* ===================================================
+   S1: COVER
+   =================================================== */
+#s1{text-align:center;gap:0;background:linear-gradient(160deg,#fff8e8 0%,#fff0d0 100%)}
+.cover-tag{margin-bottom:28px}
+.cover-title{font-size:64px;font-weight:900;color:var(--ink);letter-spacing:4px;font-family:'Nunito',sans-serif;line-height:1;margin-bottom:24px}
+.cover-vs{display:flex;align-items:center;justify-content:center;gap:32px;margin-bottom:32px}
+.cvs-block{text-align:center}
+.cvs-num{font-size:100px;font-weight:900;line-height:1;font-family:'Nunito',sans-serif}
+.cvs-label{font-size:16px;color:rgba(45,27,0,.45);margin-top:4px;font-weight:700}
+.cvs-sep{font-size:48px;font-weight:900;color:rgba(45,27,0,.2);font-family:'Nunito',sans-serif}
+.cover-q{font-size:20px;color:rgba(45,27,0,.55);margin-bottom:0}
+.cover-btn{
+  margin-top:32px;
+  background:var(--o);color:#fff;border:var(--bd);box-shadow:var(--sh);
+  border-radius:99px;padding:16px 52px;font-size:19px;font-weight:900;
+  cursor:pointer;font-family:'Nunito',sans-serif;letter-spacing:1px;
+  transition:transform .15s,box-shadow .15s;
+}
+.cover-btn:hover{transform:translateY(-3px);box-shadow:8px 8px 0 var(--ink)}
+.cover-btn:active{transform:translateY(2px);box-shadow:3px 3px 0 var(--ink)}
+
+/* ===================================================
+   S2: 三方兵力谜题
+   =================================================== */
+#s2{gap:24px}
+.army-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:100%;margin-top:8px}
+.army-card{
+  border:var(--bd);border-radius:var(--rr);background:var(--w);box-shadow:var(--sh);
+  padding:22px 18px;text-align:center;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;min-height:210px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;
+}
+.army-card:hover:not(.revealed):not(.animating){transform:translateY(-4px);box-shadow:8px 8px 0 var(--ink)}
+.army-card.animating{pointer-events:none}
+.army-icon{font-size:54px;margin-bottom:10px}
+.army-name{font-size:22px;font-weight:900;margin-bottom:4px}
+.army-hint{font-size:13px;color:rgba(45,27,0,.4);margin-bottom:12px}
+.army-mystery{font-size:48px;color:rgba(45,27,0,.12);font-weight:900;font-family:'Nunito',sans-serif}
+.army-reveal{display:none;flex-direction:column;align-items:center;gap:8px;width:100%}
+.army-card.revealed .army-mystery{display:none}
+.army-card.revealed .army-reveal{display:flex}
+.army-card.revealed{cursor:default}
+.soldier-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;max-width:200px;margin:0 auto}
+.sol{font-size:15px;opacity:0;transition:opacity .08s}
+.army-num-big{font-size:24px;font-weight:900;margin-top:4px}
+.army-badge{font-size:12px;font-weight:700;padding:3px 12px;border-radius:99px;border:2px solid;margin-top:2px}
+.s2-summary{opacity:0;transform:translateY(12px);transition:all .5s ease;text-align:center}
+.s2-summary.show{opacity:1;transform:none}
+.summary-highlight{font-size:20px;font-weight:700;color:var(--ink);padding:12px 28px;background:rgba(249,115,22,.1);border:2px solid var(--o);border-radius:var(--rr);display:inline-block}
+
+/* ===================================================
+   S3: 草船借箭谜题
+   =================================================== */
+#s3{gap:22px}
+.fog-scene{
+  width:100%;max-width:720px;height:140px;border-radius:var(--rr);border:var(--bd);
+  box-shadow:var(--sh);background:linear-gradient(180deg,#1a2a3a 0%,#2a3d52 60%,#1e4060 100%);
+  position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
+}
+.fog-layer{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 120%,rgba(200,220,255,.18) 0%,transparent 60%)}
+.fog-text{color:rgba(255,255,255,.75);font-size:14px;font-weight:700;text-align:center;letter-spacing:.5px;line-height:1.8;z-index:1;padding:0 20px}
+.boats-row{display:flex;gap:14px;justify-content:center;margin-top:8px}
+.boat{font-size:28px;filter:brightness(.4);animation:bobUp 2.2s ease-in-out infinite;z-index:1}
+.boat:nth-child(2){animation-delay:.3s}
+.boat:nth-child(3){animation-delay:.6s}
+.boat:nth-child(4){animation-delay:.9s}
+@keyframes bobUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* ===================================================
+   S4: 草船借箭揭秘
+   =================================================== */
+#s4{gap:20px}
+.timeline{width:100%;max-width:880px}
+.tl-step{
+  display:flex;gap:16px;opacity:0;transform:translateX(-20px);
+  transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.4,.64,1);
+  margin-bottom:12px;
+}
+.tl-step.on{opacity:1;transform:none}
+.tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:44px}
+.tl-num{
+  width:44px;height:44px;border-radius:50%;background:var(--c);border:var(--bd);
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;
+  color:#fff;box-shadow:3px 3px 0 var(--ink);z-index:1;
+}
+.tl-line{width:2px;background:rgba(45,27,0,.12);flex:1;min-height:10px;margin:2px 0}
+.tl-right{flex:1;padding:0 0 0 4px}
+.tl-title{font-size:16px;font-weight:900;color:var(--ink);line-height:44px}
+.tl-detail{
+  font-size:14px;color:rgba(45,27,0,.65);line-height:1.75;
+  background:rgba(14,165,233,.06);border-radius:10px;padding:10px 14px;
+  border-left:3px solid var(--c);margin-top:4px;
+}
+
+/* ===================================================
+   S5: 铁链连船谜题
+   =================================================== */
+#s5{gap:24px}
+.chain-visual{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  padding:18px 24px;background:rgba(14,165,233,.06);border:var(--bd);border-radius:var(--rr);
+  box-shadow:var(--sh);width:100%;max-width:680px;
+}
+.ship-emoji{font-size:44px}
+.chain-link{font-size:20px;color:rgba(45,27,0,.4);margin:0 2px;letter-spacing:-2px}
+.chain-label{font-size:13px;color:rgba(45,27,0,.5);text-align:center;margin-top:6px;font-weight:700}
+.s5-choices{display:flex;gap:24px;justify-content:center;width:100%}
+.big-choice{
+  flex:1;max-width:260px;border:var(--bd);border-radius:var(--rr);
+  box-shadow:var(--sh);background:var(--w);cursor:pointer;
+  padding:24px 18px;text-align:center;
+  transition:transform .15s,box-shadow .15s;
+}
+.big-choice:hover:not(:disabled){transform:translateY(-4px);box-shadow:8px 8px 0 var(--ink)}
+.big-choice:active:not(:disabled){transform:translateY(2px);box-shadow:2px 2px 0 var(--ink)}
+.big-choice .bc-icon{font-size:52px;margin-bottom:10px}
+.big-choice .bc-text{font-size:18px;font-weight:900}
+.big-choice.chosen-y{background:rgba(34,197,94,.1);border-color:var(--g);box-shadow:5px 5px 0 var(--g)}
+.big-choice.chosen-n{background:rgba(14,165,233,.08);border-color:var(--c);box-shadow:5px 5px 0 var(--c)}
+.big-choice:disabled{cursor:not-allowed}
+.s5-reveal{
+  width:100%;max-width:680px;
+  opacity:0;transform:translateY(14px);
+  transition:all .5s cubic-bezier(.34,1.4,.64,1);pointer-events:none;
+}
+.s5-reveal.show{opacity:1;transform:none;pointer-events:auto}
+.s5-reveal-inner{
+  display:flex;gap:14px;align-items:stretch;
+}
+.s5-card{
+  flex:1;border:var(--bd);border-radius:var(--rr);box-shadow:var(--sh);
+  padding:16px 18px;background:var(--w);text-align:center;
+}
+.s5-card h4{font-size:15px;font-weight:900;margin-bottom:6px}
+.s5-card p{font-size:13px;color:rgba(45,27,0,.6);line-height:1.7}
+.s5-arrow{font-size:28px;color:var(--r);align-self:center;font-weight:900;flex-shrink:0}
+
+/* ===================================================
+   S6: 火攻三要素翻牌
+   =================================================== */
+#s6{gap:24px}
+.flip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%;max-width:860px}
+.flip-wrap{perspective:1200px;height:220px;cursor:pointer}
+.flip-inner{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;transition:transform .65s cubic-bezier(.4,0,.2,1);
+}
+.flip-wrap.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{
+  position:absolute;inset:0;border:var(--bd);border-radius:var(--rr);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;text-align:center;
+}
+.flip-front{background:var(--w);box-shadow:var(--sh)}
+.flip-back{transform:rotateY(180deg);box-shadow:var(--sh)}
+.flip-front .ff-icon{font-size:56px;margin-bottom:12px}
+.flip-front .ff-q{font-size:16px;color:rgba(45,27,0,.4);font-weight:700}
+.flip-back .fb-icon{font-size:36px;margin-bottom:8px}
+.flip-back .fb-title{font-size:18px;font-weight:900;margin-bottom:8px}
+.flip-back .fb-desc{font-size:13px;color:rgba(45,27,0,.65);line-height:1.7}
+.flip-progress{font-size:14px;color:rgba(45,27,0,.4);text-align:center;font-weight:700}
+
+/* ===================================================
+   S7: 多米诺连锁反应
+   =================================================== */
+#s7{gap:24px}
+.domino-track{
+  display:flex;align-items:center;gap:0;width:100%;max-width:900px;padding:0 10px;
+}
+.domino-node{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:.2;transition:opacity .5s ease,transform .5s cubic-bezier(.34,1.4,.64,1);
+  flex:1;text-align:center;transform:scale(.85);
+}
+.domino-node.fired{opacity:1;transform:scale(1)}
+.dn-icon{
+  font-size:40px;width:80px;height:80px;border:var(--bd);border-radius:50%;
+  background:var(--w);box-shadow:var(--sh);
+  display:flex;align-items:center;justify-content:center;
+}
+.domino-node.fired .dn-icon{background:var(--o);animation:iconPop .4s cubic-bezier(.34,1.6,.64,1)}
+@keyframes iconPop{0%{transform:scale(.7)}100%{transform:scale(1)}}
+.dn-label{font-size:13px;font-weight:700;color:var(--ink);line-height:1.4}
+.domino-arrow{font-size:22px;color:rgba(45,27,0,.2);transition:color .5s,transform .3s;flex-shrink:0;margin:0 4px;margin-bottom:32px}
+.domino-arrow.fired{color:var(--r);transform:scale(1.3)}
+.domino-trigger-btn{
+  background:var(--r);color:#fff;border:var(--bd);box-shadow:var(--sh);
+  border-radius:99px;padding:14px 40px;font-size:17px;font-weight:900;
+  cursor:pointer;font-family:'Noto Sans SC',sans-serif;
+  transition:transform .15s,box-shadow .15s;
+}
+.domino-trigger-btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:8px 8px 0 var(--ink)}
+.domino-trigger-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:var(--sh)}
+.domino-result{
+  opacity:0;transform:translateY(12px);transition:all .5s cubic-bezier(.34,1.4,.64,1);
+  text-align:center;font-size:22px;font-weight:900;color:var(--ink);
+}
+.domino-result.show{opacity:1;transform:none}
+
+/* ===================================================
+   S8: 小测验
+   =================================================== */
+#s8{gap:18px}
+.quiz-wrap{width:100%;max-width:760px}
+.quiz-tabs{display:flex;gap:10px;margin-bottom:18px}
+.qtab{
+  padding:8px 22px;border-radius:99px;background:rgba(45,27,0,.08);
+  font-size:14px;font-weight:700;cursor:pointer;border:2px solid transparent;
+  font-family:'Nunito',sans-serif;transition:all .2s;color:rgba(45,27,0,.5);
+}
+.qtab.active{background:var(--p);color:#fff;border-color:var(--ink)}
+.qtab.done-c{background:var(--g);color:#fff;border-color:var(--ink)}
+.qtab.done-w{background:var(--r);color:#fff;border-color:var(--ink)}
+.qpanel{display:none}
+.qpanel.active{display:block}
+.qtext{
+  font-size:18px;font-weight:700;color:var(--ink);
+  padding:16px 20px;background:var(--w);border:var(--bd);border-radius:var(--rr);
+  box-shadow:var(--sh);margin-bottom:14px;line-height:1.6;
+}
+.qopts{display:flex;flex-direction:column;gap:9px}
+.qopt{
+  background:var(--w);border:2px solid rgba(45,27,0,.18);border-radius:12px;
+  padding:12px 18px;text-align:left;cursor:pointer;font-size:15px;font-weight:700;
+  font-family:'Noto Sans SC',sans-serif;color:var(--ink);display:flex;align-items:center;gap:12px;
+  transition:border-color .2s,background .2s,transform .15s;
+}
+.qopt:hover:not(:disabled){border-color:var(--p);background:rgba(139,92,246,.05);transform:translateX(4px)}
+.qopt .olet{
+  width:30px;height:30px;border-radius:50%;background:rgba(45,27,0,.08);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+  font-family:'Nunito',sans-serif;font-weight:900;transition:all .2s;
+}
+.qopt.correct{border-color:var(--g);background:rgba(34,197,94,.08)}
+.qopt.correct .olet{background:var(--g);color:#fff}
+.qopt.wrong{border-color:var(--r);background:rgba(225,29,72,.06)}
+.qopt.wrong .olet{background:var(--r);color:#fff}
+.qopt:disabled{cursor:not-allowed}
+.qans{
+  display:none;padding:12px 18px;margin-top:10px;
+  background:rgba(34,197,94,.08);border-radius:12px;border-left:4px solid var(--g);
+  font-size:14px;color:rgba(45,27,0,.7);line-height:1.75;animation:fdDown .3s ease;
+}
+.qans.show{display:block}
+@keyframes fdDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.score-badge{
+  display:none;text-align:center;padding:30px;animation:popIn .5s ease;
+}
+.score-badge.show{display:block}
+@keyframes popIn{0%{transform:scale(.3);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.sb-icon{font-size:72px;margin-bottom:8px}
+.sb-title{font-size:24px;font-weight:900;color:var(--ink)}
+.sb-sub{font-size:16px;color:rgba(45,27,0,.5);margin-top:6px}
+
+/* ===================================================
+   S9: 总结口诀
+   =================================================== */
+#s9{gap:28px;text-align:center}
+.rhyme-box{
+  width:100%;max-width:720px;background:var(--w);border:var(--bd);border-radius:var(--rr);
+  box-shadow:var(--sh);padding:32px 40px;
+}
+.rhyme-title{font-size:15px;font-weight:700;color:rgba(45,27,0,.4);letter-spacing:2px;margin-bottom:18px}
+.rhyme-lines{display:flex;flex-direction:column;gap:6px}
+.rhyme-line{font-size:26px;font-weight:700;color:var(--ink);letter-spacing:2px;line-height:1.6;min-height:1.6em}
+.cursor{display:inline-block;width:3px;height:1em;background:var(--o);margin-left:2px;vertical-align:middle;animation:blink .7s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.mindmap-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:800px}
+.mm-card{border:var(--bd);border-radius:var(--rr);padding:14px 12px;text-align:center;background:var(--w);box-shadow:4px 4px 0 var(--ink)}
+.mm-icon{font-size:28px;margin-bottom:6px}
+.mm-title{font-size:14px;font-weight:900;margin-bottom:6px;color:var(--ink)}
+.mm-items{font-size:12px;color:rgba(45,27,0,.55);line-height:1.7}
+.end-btn{
+  background:linear-gradient(135deg,var(--o),var(--pk));color:#fff;
+  border:var(--bd);box-shadow:var(--sh);border-radius:99px;
+  padding:14px 44px;font-size:18px;font-weight:900;cursor:pointer;
+  font-family:'Nunito',sans-serif;letter-spacing:1px;
+  transition:transform .15s,box-shadow .15s;
+}
+.end-btn:hover{transform:translateY(-3px);box-shadow:8px 8px 0 var(--ink)}
+
+/* ===================================================
+   S-MAP: 赤壁地图探索
+   =================================================== */
+#s-map{gap:8px;padding:44px 70px 50px}
+.map-layout{display:flex;gap:16px;width:100%;max-width:1060px;flex:1;min-height:0;align-items:stretch}
+.map-svg-wrap{flex:1;border:var(--bd);border-radius:var(--rr);overflow:hidden;box-shadow:var(--sh);background:#f5e8c4;min-height:0;display:flex;align-items:center}
+.battle-map{width:100%;height:auto;display:block}
+.map-side{width:268px;flex-shrink:0;border:var(--bd);border-radius:var(--rr);background:var(--w);box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 16px;text-align:center;overflow:hidden}
+.mip-placeholder{opacity:.55}
+.mip-ph-icon{font-size:42px;margin-bottom:10px}
+.mip-ph-txt{font-size:13px;font-weight:700;color:rgba(45,27,0,.5);line-height:1.75}
+.mip-content{width:100%;text-align:left;animation:mipIn .38s cubic-bezier(.34,1.4,.64,1)}
+@keyframes mipIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.mip-icon{font-size:34px;text-align:center;margin-bottom:6px}
+.mip-title{font-size:14px;font-weight:900;color:var(--ink);text-align:center;margin-bottom:6px}
+.mip-faction-tag{font-size:11px;font-weight:700;padding:2px 12px;border-radius:99px;border:2px solid;margin:0 auto 10px;display:block;text-align:center}
+.mip-body{font-size:12px;color:rgba(45,27,0,.62);line-height:1.78;margin-bottom:8px}
+.mip-geo{font-size:11px;font-weight:700;background:rgba(249,115,22,.07);border-left:3px solid var(--o);padding:7px 10px;border-radius:0 8px 8px 0;color:rgba(45,27,0,.7);line-height:1.65}
+.map-pin-g{cursor:pointer}
+.map-pin-g .pin-circle{transition:transform .2s,filter .2s;transform-box:fill-box;transform-origin:center}
+.map-pin-g:hover .pin-circle{transform:scale(1.13)}
+.map-pin-g.visited .pin-circle{filter:brightness(.8)}
+.map-pin-g.active .pin-circle{filter:drop-shadow(0 0 8px rgba(249,115,22,.7))}
+.map-check{transition:opacity .35s}
+.map-progress{font-size:13px;font-weight:700;color:rgba(45,27,0,.45);text-align:center}
+.map-progress .mphi{color:var(--o);font-size:16px;font-family:'Nunito',sans-serif}
+.map-summary-bar{font-size:14px;font-weight:700;background:rgba(249,115,22,.1);border:2px solid var(--o);border-radius:var(--rr);padding:8px 24px;color:var(--ink);text-align:center;opacity:0;transform:translateY(10px);transition:all .5s cubic-bezier(.34,1.4,.64,1);pointer-events:none}
+.map-summary-bar.show{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="deck" data-w="1280" data-h="720">
+
+  <div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+  <div class="page-ctr" id="pageCtr">1 / 9</div>
+  <div class="hint-bar hidden" id="hintBar"><span class="hd"></span><span id="hintTxt">点击任意处继续</span></div>
+
+  <!-- ====================================================
+       S1: 封面
+       认知目标：好奇缺口——用悬念数字吸引探索欲
+       ==================================================== -->
+  <div class="slide active" id="s1">
+    <div>
+      <div class="tag" style="border-color:var(--o);color:var(--o);background:rgba(249,115,22,.1);margin-bottom:24px">🏯 小学历史探索课</div>
+    </div>
+    <div class="cover-title">赤壁之战</div>
+    <div class="cover-vs">
+      <div class="cvs-block">
+        <div class="cvs-num" style="color:var(--r)">5万</div>
+        <div class="cvs-label">孙刘联军</div>
+      </div>
+      <div class="cvs-sep">VS</div>
+      <div class="cvs-block">
+        <div class="cvs-num" style="color:var(--ink)">80万</div>
+        <div class="cvs-label">曹操大军</div>
+      </div>
+    </div>
+    <div class="cover-q">如果你是那个5万人的将军，你会怎么做？</div>
+    <button class="cover-btn" data-interactive onclick="ctrl.goto(1)">🔍 开始探索</button>
+  </div>
+
+  <!-- ====================================================
+       S2: 三方兵力谜题
+       认知目标：先验知识激活 + 数量感知
+       交互：点击三张卡片，依次揭示各方兵力，建立规模感
+       ==================================================== -->
+  <div class="slide" id="s2" data-needs-interaction="true">
+    <div class="big-q">三方势力各有多少兵？🤔</div>
+    <div class="sub-q">点击每张卡片，猜猜看——然后揭开答案！</div>
+    <div class="army-grid">
+
+      <div class="army-card" id="ac-cao" data-interactive onclick="revealArmy('cao')">
+        <div class="army-icon">⚔️</div>
+        <div class="army-name" style="color:var(--r)">曹操（魏）</div>
+        <div class="army-hint">北方霸主 · 南下统一</div>
+        <div class="army-mystery">?</div>
+        <div class="army-reveal">
+          <div class="soldier-strip" id="ss-cao"></div>
+          <div class="army-num-big" style="color:var(--r)">号称 80万</div>
+          <div class="army-badge" style="border-color:var(--r);color:var(--r)">实际约20余万</div>
+        </div>
+      </div>
+
+      <div class="army-card" id="ac-sun" data-interactive onclick="revealArmy('sun')">
+        <div class="army-icon">🛡️</div>
+        <div class="army-name" style="color:var(--c)">孙权（吴）</div>
+        <div class="army-hint">江东之主 · 精锐水军</div>
+        <div class="army-mystery">?</div>
+        <div class="army-reveal">
+          <div class="soldier-strip" id="ss-sun"></div>
+          <div class="army-num-big" style="color:var(--c)">约 3万</div>
+          <div class="army-badge" style="border-color:var(--c);color:var(--c)">精锐水战部队</div>
+        </div>
+      </div>
+
+      <div class="army-card" id="ac-liu" data-interactive onclick="revealArmy('liu')">
+        <div class="army-icon">🌿</div>
+        <div class="army-name" style="color:var(--g)">刘备（蜀）</div>
+        <div class="army-hint">仁义之君 · 刚败一仗</div>
+        <div class="army-mystery">?</div>
+        <div class="army-reveal">
+          <div class="soldier-strip" id="ss-liu"></div>
+          <div class="army-num-big" style="color:var(--g)">约 2万</div>
+          <div class="army-badge" style="border-color:var(--g);color:var(--g)">刚打了败仗</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="s2-summary" id="s2summary">
+      <div class="summary-highlight">⚡ 5万 联手 对抗 80万 ——以少胜多，需要绝妙的计谋！</div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       S-MAP: 赤壁地图探索
+       认知目标：关系性知识——地理位置与战略的关系
+       交互：点击4个营地，揭示地理如何左右战局
+       ==================================================== -->
+  <div class="slide" id="s-map" data-needs-interaction="true">
+    <div class="big-q" style="margin-bottom:2px">🗺️ 他们在哪里打仗？</div>
+    <div class="sub-q" style="margin-bottom:10px">点击地图上每个营地，探索地理位置如何影响战局！</div>
+    <div class="map-layout">
+
+      <!-- Left: SVG Map -->
+      <div class="map-svg-wrap">
+        <svg viewBox="0 0 860 272" xmlns="http://www.w3.org/2000/svg" class="battle-map">
+          <defs>
+            <pattern id="dotpat" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="0.8" fill="rgba(45,27,0,0.07)"/>
+            </pattern>
+            <marker id="windHead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#8b5cf6"/>
+            </marker>
+          </defs>
+
+          <!-- Parchment background -->
+          <rect width="860" height="272" fill="#f5e8c4"/>
+          <rect width="860" height="272" fill="url(#dotpat)"/>
+
+          <!-- Territory tints -->
+          <rect x="0" y="0" width="860" height="118" fill="rgba(225,29,72,0.04)"/>
+          <rect x="0" y="168" width="860" height="104" fill="rgba(14,165,233,0.05)"/>
+
+          <!-- Yangtze River body -->
+          <path d="M 0,118 C 120,103 240,132 385,120 S 545,107 705,127 S 800,147 860,140 L 860,175 C 800,188 705,174 545,168 S 385,180 240,177 S 80,167 0,172 Z"
+            fill="#7ec8e3" opacity="0.78"/>
+          <!-- River shimmers -->
+          <path d="M 0,130 C 120,116 240,144 385,133 S 545,120 705,140 S 800,159 860,154"
+            fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 0,154 C 120,148 240,164 385,154 S 545,144 705,160 S 800,170 860,166"
+            fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- River label -->
+          <text x="42" y="155" font-size="13" fill="rgba(255,255,255,0.9)" font-weight="bold" font-family="Noto Sans SC,sans-serif" letter-spacing="3">长 江</text>
+
+          <!-- Mountains south bank (left group) -->
+          <g fill="#b89a5a" stroke="#8b6a30" stroke-width="1.2" opacity="0.78">
+            <polygon points="32,268 84,206 136,268"/>
+            <polygon points="105,268 168,192 231,268"/>
+            <polygon points="200,268 258,200 316,268"/>
+          </g>
+          <!-- Snow caps -->
+          <g fill="rgba(255,255,255,0.55)">
+            <polygon points="84,206 76,224 92,224"/>
+            <polygon points="168,192 160,212 176,212"/>
+            <polygon points="258,200 250,220 266,220"/>
+          </g>
+          <!-- Forest south bank (right) -->
+          <g fill="#5a9e6a" opacity="0.48">
+            <circle cx="700" cy="232" r="14"/>
+            <circle cx="724" cy="224" r="11"/>
+            <circle cx="744" cy="234" r="13"/>
+            <circle cx="720" cy="248" r="9"/>
+          </g>
+          <!-- Mountains south bank (right group) -->
+          <g fill="#b89a5a" stroke="#8b6a30" stroke-width="1.2" opacity="0.65">
+            <polygon points="780,268 828,212 860,268"/>
+          </g>
+
+          <!-- Direction labels -->
+          <text x="18" y="58" font-size="10.5" fill="rgba(225,29,72,0.52)" font-weight="bold" font-family="Noto Sans SC,sans-serif" letter-spacing="1">↑ 北方（曹操来处）</text>
+          <text x="18" y="262" font-size="10.5" fill="rgba(14,165,233,0.58)" font-weight="bold" font-family="Noto Sans SC,sans-serif" letter-spacing="1">↓ 南方（江东孙权）</text>
+
+          <!-- Battle approach line (Cao to chibi) -->
+          <path d="M 342,100 L 408,170" stroke="rgba(225,29,72,0.3)" stroke-width="2" stroke-dasharray="6,4" fill="none"/>
+          <!-- Retreat path (华容道) -->
+          <path d="M 342,97 L 295,44" stroke="rgba(45,27,0,0.2)" stroke-width="1.5" stroke-dasharray="5,5" fill="none"/>
+          <text x="276" y="40" font-size="9" fill="rgba(45,27,0,0.38)" font-family="Noto Sans SC,sans-serif">华容道↗</text>
+          <!-- Alliance water route -->
+          <path d="M 588,215 L 672,155" stroke="rgba(34,197,94,0.35)" stroke-width="2" stroke-dasharray="6,4" fill="none"/>
+
+          <!-- ===== PIN 1: 乌林·曹营 (north bank) ===== -->
+          <g id="pin-wulin" class="map-pin-g" onclick="mapClick('wulin')" data-interactive>
+            <circle cx="342" cy="86" r="30" fill="#fee2e2" stroke="#e11d48" stroke-width="2.5" class="pin-circle"/>
+            <text x="342" y="94" text-anchor="middle" font-size="21">⚔️</text>
+            <line x1="342" y1="116" x2="342" y2="126" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="342" cy="128" rx="9" ry="3" fill="rgba(45,27,0,0.11)"/>
+            <text x="342" y="143" text-anchor="middle" font-size="10" fill="#c81830" font-weight="bold" font-family="Noto Sans SC,sans-serif">乌林·曹营</text>
+          </g>
+
+          <!-- ===== PIN 2: 赤壁·主战场 (south bank) ===== -->
+          <g id="pin-chibi" class="map-pin-g" onclick="mapClick('chibi')" data-interactive>
+            <circle cx="418" cy="200" r="30" fill="#fff7ed" stroke="#f97316" stroke-width="2.5" class="pin-circle"/>
+            <text x="418" y="208" text-anchor="middle" font-size="21">🔥</text>
+            <line x1="418" y1="230" x2="418" y2="240" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="418" cy="242" rx="9" ry="3" fill="rgba(45,27,0,0.11)"/>
+            <text x="418" y="257" text-anchor="middle" font-size="10" fill="#c2560a" font-weight="bold" font-family="Noto Sans SC,sans-serif">赤壁·主战场</text>
+          </g>
+
+          <!-- ===== PIN 3: 夏口·刘备 (east, river edge) ===== -->
+          <g id="pin-xiakou" class="map-pin-g" onclick="mapClick('xiakou')" data-interactive>
+            <circle cx="672" cy="90" r="30" fill="#f0fdf4" stroke="#22c55e" stroke-width="2.5" class="pin-circle"/>
+            <text x="672" y="98" text-anchor="middle" font-size="21">🌿</text>
+            <line x1="672" y1="120" x2="672" y2="130" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="672" cy="132" rx="9" ry="3" fill="rgba(45,27,0,0.11)"/>
+            <text x="672" y="147" text-anchor="middle" font-size="10" fill="#15803d" font-weight="bold" font-family="Noto Sans SC,sans-serif">夏口·刘备</text>
+          </g>
+
+          <!-- ===== PIN 4: 柴桑·周瑜 (south-east bank) ===== -->
+          <g id="pin-chaisang" class="map-pin-g" onclick="mapClick('chaisang')" data-interactive>
+            <circle cx="590" cy="207" r="30" fill="#eff6ff" stroke="#0ea5e9" stroke-width="2.5" class="pin-circle"/>
+            <text x="590" y="215" text-anchor="middle" font-size="21">⚓</text>
+            <line x1="590" y1="237" x2="590" y2="247" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="590" cy="249" rx="9" ry="3" fill="rgba(45,27,0,0.11)"/>
+            <text x="590" y="264" text-anchor="middle" font-size="10" fill="#0369a1" font-weight="bold" font-family="Noto Sans SC,sans-serif">柴桑·周瑜</text>
+          </g>
+
+          <!-- Wind direction (top-right) -->
+          <g transform="translate(800,52)">
+            <circle r="26" fill="rgba(255,255,255,0.75)" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/>
+            <line x1="10" y1="10" x2="-10" y2="-10" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" marker-end="url(#windHead)"/>
+            <circle cx="10" cy="10" r="3" fill="#8b5cf6" opacity="0.45"/>
+            <text x="0" y="40" text-anchor="middle" font-size="9" fill="#7c3aed" font-weight="bold" font-family="Noto Sans SC,sans-serif">东南风</text>
+          </g>
+
+          <!-- Checkmarks (hidden initially) -->
+          <g id="check-wulin"    class="map-check" opacity="0" transform="translate(342,62)"><circle r="11" fill="#22c55e" stroke="white" stroke-width="1.5"/><text x="0" y="5" text-anchor="middle" font-size="12" fill="white" font-weight="bold">✓</text></g>
+          <g id="check-chibi"   class="map-check" opacity="0" transform="translate(418,176)"><circle r="11" fill="#22c55e" stroke="white" stroke-width="1.5"/><text x="0" y="5" text-anchor="middle" font-size="12" fill="white" font-weight="bold">✓</text></g>
+          <g id="check-xiakou"  class="map-check" opacity="0" transform="translate(672,66)"><circle r="11" fill="#22c55e" stroke="white" stroke-width="1.5"/><text x="0" y="5" text-anchor="middle" font-size="12" fill="white" font-weight="bold">✓</text></g>
+          <g id="check-chaisang" class="map-check" opacity="0" transform="translate(590,183)"><circle r="11" fill="#22c55e" stroke="white" stroke-width="1.5"/><text x="0" y="5" text-anchor="middle" font-size="12" fill="white" font-weight="bold">✓</text></g>
+        </svg>
+      </div>
+
+      <!-- Right: Info panel -->
+      <div class="map-side" id="mapSide">
+        <div class="mip-placeholder" id="mapPlaceholder">
+          <div class="mip-ph-icon">👆</div>
+          <div class="mip-ph-txt">点击左侧地图<br>上的营地<br>探索地理秘密！</div>
+        </div>
+        <div class="mip-content" id="mapContent" style="display:none">
+          <div class="mip-icon" id="mipIcon"></div>
+          <div class="mip-title" id="mipTitle"></div>
+          <div class="mip-faction-tag" id="mipFaction"></div>
+          <div class="mip-body" id="mipBody"></div>
+          <div class="mip-geo" id="mipGeo"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="map-progress">已探索 <span class="mphi" id="mapCount">0</span> / 4 个营地</div>
+    <div class="map-summary-bar" id="mapSummaryBar">🎯 地理决定策略！孙刘联军用<strong>地利</strong>把劣势变成了优势</div>
+  </div>
+
+  <!-- ====================================================
+       S3: 草船借箭谜题
+       认知目标：好奇缺口 + 检索练习
+       交互：场景描述 → 4选1猜测 → 揭秘
+       ==================================================== -->
+  <div class="slide" id="s3" data-needs-interaction="true">
+    <div class="big-q">深夜大雾，20艘船悄悄靠近曹营…<br>你猜，船上装的是什么？🌫️</div>
+    <div class="fog-scene">
+      <div class="fog-layer"></div>
+      <div style="z-index:1;text-align:center">
+        <div class="boats-row">
+          <div class="boat">⛵</div><div class="boat">⛵</div>
+          <div class="boat">⛵</div><div class="boat">⛵</div>
+        </div>
+        <div class="fog-text">深夜 · 大雾弥漫 · 江面上一片寂静<br>船上有一排排黑色的轮廓，悄悄靠近曹军水寨…</div>
+      </div>
+    </div>
+    <div class="choice-row" id="s3choices">
+      <button class="choice-btn" data-interactive data-ans="w" onclick="s3pick(this,'w')">⚔️ A. 精兵强将</button>
+      <button class="choice-btn" data-interactive data-ans="c" onclick="s3pick(this,'c')">🎋 B. 稻草人偶</button>
+      <button class="choice-btn" data-interactive data-ans="w" onclick="s3pick(this,'w')">🔥 C. 燃料炸弹</button>
+      <button class="choice-btn" data-interactive data-ans="w" onclick="s3pick(this,'w')">🌾 D. 军中粮草</button>
+    </div>
+    <div class="feedback" id="s3fb"></div>
+    <div style="opacity:0;transition:opacity .4s;text-align:center" id="s3extra">
+      <div style="font-size:15px;color:rgba(45,27,0,.55);line-height:1.7">
+        诸葛亮为什么想到这个办法？点击继续，看完整的故事 →
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       S4: 草船借箭揭秘
+       认知目标：程序性知识——5步时间轴逐步揭示
+       交互：每次点击/按空格 → 下一步出现
+       ==================================================== -->
+  <div class="slide" id="s4">
+    <div class="big-q" style="margin-bottom:4px">草船借箭 · 全过程 🏹</div>
+    <div class="sub-q" style="margin-bottom:16px">点击任意处，一步一步揭开谜底</div>
+    <div class="timeline">
+      <div class="tl-step" data-step="1">
+        <div class="tl-left"><div class="tl-num" style="background:var(--r)">1</div><div class="tl-line"></div></div>
+        <div class="tl-right">
+          <div class="tl-title">周瑜刁难：3天内交10万支箭</div>
+          <div class="tl-detail">周瑜故意刁难诸葛亮，限他3天造出10万支箭。正常根本不可能！诸葛亮却笑着说：「好，立军令状！」</div>
+        </div>
+      </div>
+      <div class="tl-step" data-step="2">
+        <div class="tl-left"><div class="tl-num" style="background:var(--p)">2</div><div class="tl-line"></div></div>
+        <div class="tl-right">
+          <div class="tl-title">诸葛亮夜观星象，预判大雾</div>
+          <div class="tl-detail">诸葛亮仰望星空，推算出第三天黎明前会有超大的雾！他早有妙计，只是在等这个天气窗口。</div>
+        </div>
+      </div>
+      <div class="tl-step" data-step="3">
+        <div class="tl-left"><div class="tl-num" style="background:var(--c)">3</div><div class="tl-line"></div></div>
+        <div class="tl-right">
+          <div class="tl-title">20艘草船，趁大雾驶向曹营</div>
+          <div class="tl-detail">每艘船上绑满稻草人，用青布遮住。趁浓雾，船队悄悄靠近曹操水寨，还让士兵擂鼓呐喊！</div>
+        </div>
+      </div>
+      <div class="tl-step" data-step="4">
+        <div class="tl-left"><div class="tl-num" style="background:var(--o)">4</div><div class="tl-line"></div></div>
+        <div class="tl-right">
+          <div class="tl-title">曹军看不清，万箭齐发！</div>
+          <div class="tl-detail">曹操被惊醒，雾里啥也看不清，以为有人偷袭，急令放箭！一万多弓箭手拼命射，箭全扎进了稻草人。</div>
+        </div>
+      </div>
+      <div class="tl-step" data-step="5">
+        <div class="tl-left"><div class="tl-num" style="background:var(--g)">5</div></div>
+        <div class="tl-right">
+          <div class="tl-title">天亮撤退！箭超十万，周瑜服了</div>
+          <div class="tl-detail">天亮雾散，船队顺风回营，草人身上箭超十万！周瑜长叹：「孔明神机妙算，吾不如也。」</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       S5: 铁链连船谜题
+       认知目标：纠正先验误解（反直觉）
+       交互：好主意/坏主意 → 揭示两面性 → 揭示悲剧转折
+       ==================================================== -->
+  <div class="slide" id="s5" data-needs-interaction="true">
+    <div class="big-q">曹操做了这件事——⛓️</div>
+    <div class="chain-visual">
+      <div style="text-align:center">
+        <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap">
+          <span class="ship-emoji">⛵</span>
+          <span class="chain-link">⛓⛓</span>
+          <span class="ship-emoji">⛵</span>
+          <span class="chain-link">⛓⛓</span>
+          <span class="ship-emoji">⛵</span>
+          <span class="chain-link">⛓⛓</span>
+          <span class="ship-emoji">⛵</span>
+          <span class="chain-link">⛓⛓</span>
+          <span class="ship-emoji">⛵</span>
+        </div>
+        <div class="chain-label">北方士兵晕船，曹操把战船全部用铁链锁在一起</div>
+      </div>
+    </div>
+    <div class="sub-q" style="margin-top:4px">你来判断一下：这是个好主意吗？</div>
+    <div class="s5-choices">
+      <div class="big-choice" id="s5yes" data-interactive onclick="s5pick('yes')">
+        <div class="bc-icon">👍</div>
+        <div class="bc-text">好主意！</div>
+        <div style="font-size:13px;color:rgba(45,27,0,.4);margin-top:6px">稳定、方便走动</div>
+      </div>
+      <div class="big-choice" id="s5no" data-interactive onclick="s5pick('no')">
+        <div class="bc-icon">👎</div>
+        <div class="bc-text">坏主意！</div>
+        <div style="font-size:13px;color:rgba(45,27,0,.4);margin-top:6px">看起来有问题…</div>
+      </div>
+    </div>
+    <div class="s5-reveal" id="s5reveal">
+      <div class="s5-reveal-inner">
+        <div class="s5-card">
+          <h4 style="color:var(--g)">✅ 你说得对！平时确实好</h4>
+          <p>船连在一起，士兵走动方便，也不容易晕船，在平静湖面效果很好。</p>
+        </div>
+        <div class="s5-arrow">→</div>
+        <div class="s5-card" style="border-color:var(--r);box-shadow:5px 5px 0 var(--r)">
+          <h4 style="color:var(--r)">🔥 但遇上火攻…</h4>
+          <p>一艘船着火，铁链拉着所有船，谁也逃不掉！大火瞬间蔓延，整支舰队全毁！</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       S6: 火攻三要素翻牌
+       认知目标：关系性知识——天时地利人和的因果关系
+       交互：3张正面朝下，逐一翻开
+       ==================================================== -->
+  <div class="slide" id="s6" data-needs-interaction="true">
+    <div class="big-q">火烧赤壁，为什么能成功？</div>
+    <div class="sub-q">翻开三张牌，找出三个关键原因 👇</div>
+    <div class="flip-grid">
+
+      <div class="flip-wrap" id="flip1" data-interactive onclick="flipCard(1)">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="ff-icon">🌬️</div>
+            <div class="ff-q">天时<br>点击翻开</div>
+          </div>
+          <div class="flip-back" style="background:rgba(14,165,233,.08);border-color:var(--c);box-shadow:5px 5px 0 var(--c)">
+            <div class="fb-icon">🌬️</div>
+            <div class="fb-title" style="color:var(--c)">天时：神秘东南风</div>
+            <div class="fb-desc">冬天本该刮西北风，那天却偏偏刮起东南风！火船顺风而行，速度极快，火势蔓延也更猛。大自然站在联军这边！</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-wrap" id="flip2" data-interactive onclick="flipCard(2)">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="ff-icon">⛓️</div>
+            <div class="ff-q">地利<br>点击翻开</div>
+          </div>
+          <div class="flip-back" style="background:rgba(225,29,72,.06);border-color:var(--r);box-shadow:5px 5px 0 var(--r)">
+            <div class="fb-icon">⛓️</div>
+            <div class="fb-title" style="color:var(--r)">地利：铁链成了陷阱</div>
+            <div class="fb-desc">曹操连船的铁链，本是为了稳定，没想到一着火，全部船只连在一起逃不掉，大火迅速席卷整支舰队！</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-wrap" id="flip3" data-interactive onclick="flipCard(3)">
+        <div class="flip-inner">
+          <div class="flip-front">
+            <div class="ff-icon">🎭</div>
+            <div class="ff-q">人和<br>点击翻开</div>
+          </div>
+          <div class="flip-back" style="background:rgba(34,197,94,.08);border-color:var(--g);box-shadow:5px 5px 0 var(--g)">
+            <div class="fb-icon">🎭</div>
+            <div class="fb-title" style="color:var(--g)">人和：苦肉计骗过曹操</div>
+            <div class="fb-desc">黄盖假装投降，周瑜当众打他，打得很惨，让曹操相信是真的！等火船靠近时，曹操完全没防备。</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="flip-progress" id="flipProgress">已翻开 0 / 3 张</div>
+  </div>
+
+  <!-- ====================================================
+       S7: 多米诺连锁反应
+       认知目标：叙事型——因果链条可视化
+       交互：每次点击触发下一个多米诺
+       ==================================================== -->
+  <div class="slide" id="s7">
+    <div class="big-q" style="margin-bottom:8px">那一夜，发生了什么？🔥</div>
+    <div class="sub-q" style="margin-bottom:20px">点击，触发连锁反应……</div>
+    <div class="domino-track">
+      <div class="domino-node" id="dn1">
+        <div class="dn-icon">🎭</div>
+        <div class="dn-label">黄盖率火船<br>假装投降</div>
+      </div>
+      <div class="domino-arrow" id="da1">→</div>
+      <div class="domino-node" id="dn2">
+        <div class="dn-icon">🚢</div>
+        <div class="dn-label">火船靠近<br>曹军水寨</div>
+      </div>
+      <div class="domino-arrow" id="da2">→</div>
+      <div class="domino-node" id="dn3">
+        <div class="dn-icon">🔥</div>
+        <div class="dn-label">大火点燃<br>一艘战船</div>
+      </div>
+      <div class="domino-arrow" id="da3">→</div>
+      <div class="domino-node" id="dn4">
+        <div class="dn-icon">⛓️</div>
+        <div class="dn-label">铁链连船<br>无处可逃！</div>
+      </div>
+      <div class="domino-arrow" id="da4">→</div>
+      <div class="domino-node" id="dn5">
+        <div class="dn-icon">🏃</div>
+        <div class="dn-label">曹操仓皇<br>落荒而逃</div>
+      </div>
+    </div>
+    <button class="domino-trigger-btn" id="dominoBtn" data-interactive onclick="fireDomino()">
+      🔥 点燃导火索！
+    </button>
+    <div class="domino-result" id="dominoResult">
+      🎯 以5万兵力，击败号称80万大军！<br>
+      <span style="font-size:16px;color:rgba(45,27,0,.5)">这就是赤壁之战——中国历史上最著名的以少胜多！</span>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       S8: 小测验（3题检索练习）
+       认知目标：间隔检索——主动回忆强化记忆
+       交互：3道题逐一作答，实时反馈
+       ==================================================== -->
+  <div class="slide" id="s8">
+    <div class="big-q" style="margin-bottom:4px">你来做历史小侦探！🔍</div>
+    <div class="sub-q" style="margin-bottom:14px">3道题，看看你学会了多少</div>
+    <div class="quiz-wrap">
+      <div class="quiz-tabs">
+        <button class="qtab active" id="qt0" data-interactive onclick="switchQ(0)">第1题</button>
+        <button class="qtab" id="qt1" data-interactive onclick="switchQ(1)">第2题</button>
+        <button class="qtab" id="qt2" data-interactive onclick="switchQ(2)">第3题</button>
+        <span id="qscore" style="margin-left:auto;font-size:13px;color:rgba(45,27,0,.4);font-family:'Nunito',sans-serif;font-weight:700"></span>
+      </div>
+
+      <div class="qpanel active" id="qp0">
+        <div class="qtext">联军的总指挥是谁？</div>
+        <div class="qopts">
+          <button class="qopt" data-interactive onclick="qans(0,0,'w')"><span class="olet">A</span>诸葛亮</button>
+          <button class="qopt" data-interactive onclick="qans(0,1,'c')"><span class="olet">B</span>周瑜</button>
+          <button class="qopt" data-interactive onclick="qans(0,2,'w')"><span class="olet">C</span>刘备</button>
+          <button class="qopt" data-interactive onclick="qans(0,3,'w')"><span class="olet">D</span>黄盖</button>
+        </div>
+        <div class="qans" id="qa0">✅ 答案是<strong>周瑜</strong>！他是赤壁之战联军的总指挥，34岁的大将，亲率5万联军以少胜多。诸葛亮主要负责促成孙刘联盟，不是直接指挥打仗的哦。</div>
+      </div>
+
+      <div class="qpanel" id="qp1">
+        <div class="qtext">曹操把战船用铁链连在一起，最终造成了什么后果？</div>
+        <div class="qopts">
+          <button class="qopt" data-interactive onclick="qans(1,0,'w')"><span class="olet">A</span>士兵晕船的问题解决了</button>
+          <button class="qopt" data-interactive onclick="qans(1,1,'c')"><span class="olet">B</span>一艘着火，整支舰队全毁</button>
+          <button class="qopt" data-interactive onclick="qans(1,2,'w')"><span class="olet">C</span>让联军不敢靠近</button>
+          <button class="qopt" data-interactive onclick="qans(1,3,'w')"><span class="olet">D</span>让船速度更快</button>
+        </div>
+        <div class="qans" id="qa1">✅ <strong>一艘着火，所有船都逃不掉！</strong>铁链本来是为了稳定，没想到遇上火攻正好成了陷阱。这就是聪明的策略利用了敌人的失误。</div>
+      </div>
+
+      <div class="qpanel" id="qp2">
+        <div class="qtext">赤壁之战最重要的历史结果是？</div>
+        <div class="qopts">
+          <button class="qopt" data-interactive onclick="qans(2,0,'w')"><span class="olet">A</span>曹操统一了全国</button>
+          <button class="qopt" data-interactive onclick="qans(2,1,'w')"><span class="olet">B</span>刘备消灭了孙权</button>
+          <button class="qopt" data-interactive onclick="qans(2,2,'c')"><span class="olet">C</span>三国鼎立局面形成</button>
+          <button class="qopt" data-interactive onclick="qans(2,3,'w')"><span class="olet">D</span>东汉王朝复兴了</button>
+        </div>
+        <div class="qans" id="qa2">✅ <strong>三国鼎立！</strong>赤壁之战后，曹操回了北方，孙权守住江东，刘备占了荆州。三个人谁也打不倒谁，中国正式进入三国时代。</div>
+      </div>
+
+      <div class="score-badge" id="scoreBadge">
+        <div class="sb-icon">🏆</div>
+        <div class="sb-title">历史小侦探徽章到手！</div>
+        <div class="sb-sub">3题全对，赤壁之战你已经完全掌握了！</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       S9: 总结口诀
+       认知目标：速记——打字机口诀 + 知识地图
+       ==================================================== -->
+  <div class="slide" id="s9">
+    <div class="big-q" style="margin-bottom:18px">记住这四句话，全学会了！✨</div>
+    <div class="rhyme-box">
+      <div class="rhyme-title">📝 赤壁之战 · 记忆口诀</div>
+      <div class="rhyme-lines">
+        <div class="rhyme-line" id="rl0"></div>
+        <div class="rhyme-line" id="rl1"></div>
+        <div class="rhyme-line" id="rl2"></div>
+        <div class="rhyme-line" id="rl3"></div>
+      </div>
+    </div>
+    <div class="mindmap-row" data-step="1">
+      <div class="mm-card" style="border-color:var(--r)">
+        <div class="mm-icon">🏯</div>
+        <div class="mm-title">背景</div>
+        <div class="mm-items">东汉末年<br>曹操统一北方<br>孙刘被迫联合</div>
+      </div>
+      <div class="mm-card" style="border-color:var(--c)">
+        <div class="mm-icon">⚔️</div>
+        <div class="mm-title">经过</div>
+        <div class="mm-items">草船借箭<br>苦肉计<br>火烧赤壁</div>
+      </div>
+      <div class="mm-card" style="border-color:var(--g)">
+        <div class="mm-icon">📋</div>
+        <div class="mm-title">结果</div>
+        <div class="mm-items">曹操大败逃<br>联军以少胜多<br>无力再南征</div>
+      </div>
+      <div class="mm-card" style="border-color:var(--o)">
+        <div class="mm-icon">🌏</div>
+        <div class="mm-title">影响</div>
+        <div class="mm-items">三国鼎立形成<br>历史重要转折<br>以少胜多典范</div>
+      </div>
+    </div>
+    <button class="end-btn" data-step="2" data-interactive onclick="ctrl.goto(0)">🔄 再探索一遍</button>
+  </div>
+
+</div><!-- end #deck -->
+
+<script>
+/* ============================================================
+   Canvas scaler
+   ============================================================ */
+function scaleCanvas(){
+  const deck=document.getElementById('deck');
+  const W=parseInt(deck.dataset.w)||1280;
+  const H=parseInt(deck.dataset.h)||720;
+  const sx=window.innerWidth/W, sy=window.innerHeight/H;
+  const s=Math.min(sx,sy);
+  const ml=(window.innerWidth-W*s)/2;
+  const mt=(window.innerHeight-H*s)/2;
+  deck.style.cssText=`width:${W}px;height:${H}px;transform:scale(${s});transform-origin:top left;margin-left:${ml}px;margin-top:${mt}px;`;
+}
+window.addEventListener('resize',scaleCanvas);
+scaleCanvas();
+
+/* ============================================================
+   SlideController (from FORMATS.md, with interaction lock)
+   ============================================================ */
+class SlideController {
+  constructor(){
+    this.slides=[...document.querySelectorAll('.slide')];
+    this.cur=0; this.stepIdx=0;
+    this.prog=document.getElementById('prog');
+    this.init();
+  }
+  stepsOf(s){ return [...s.querySelectorAll('[data-step]')].sort((a,b)=>+a.dataset.step-+b.dataset.step); }
+  goto(n){
+    this.slides[this.cur].classList.remove('active');
+    this.cur=Math.max(0,Math.min(n,this.slides.length-1));
+    this.stepIdx=0;
+    const s=this.slides[this.cur];
+    s.classList.add('active');
+    this.stepsOf(s).forEach(el=>el.classList.remove('on'));
+    this.updateProgress();
+    this.onEnter(this.cur);
+    updateHint();
+  }
+  advance(){
+    const s=this.slides[this.cur];
+    // block advance if slide needs interaction first
+    if(s.dataset.needsInteraction==='true' && !s.dataset.done) return;
+    const steps=this.stepsOf(s);
+    if(this.stepIdx<steps.length){
+      steps[this.stepIdx].classList.add('on');
+      this.onReveal(this.cur,this.stepIdx,steps[this.stepIdx]);
+      this.stepIdx++;
+    } else if(this.cur<this.slides.length-1){
+      this.goto(this.cur+1);
+    }
+  }
+  retreat(){ if(this.cur>0) this.goto(this.cur-1); }
+  updateProgress(){
+    const pct=((this.cur+1)/this.slides.length*100);
+    this.prog.style.width=pct+'%';
+    document.getElementById('pageCtr').textContent=(this.cur+1)+' / '+this.slides.length;
+  }
+  onEnter(idx){ /* hooked below */ }
+  onReveal(si,sti,el){ /* hooked below */ }
+  init(){
+    document.addEventListener('keydown',e=>{
+      if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();this.advance();}
+      if(e.key==='ArrowLeft'){e.preventDefault();this.retreat();}
+      if(e.key==='f') document.documentElement.requestFullscreen?.();
+    });
+    document.addEventListener('click',e=>{
+      if(e.target.closest('[data-interactive],button,a,input,select')) return;
+      this.advance();
+    });
+    let tx=0;
+    document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+    document.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-tx;
+      if(Math.abs(dx)>50){dx<0?this.advance():this.retreat();}
+    });
+    this.updateProgress();
+  }
+}
+const ctrl=new SlideController();
+
+/* ============================================================
+   Hint bar
+   ============================================================ */
+function updateHint(txt){
+  const h=document.getElementById('hintBar');
+  const s=ctrl.slides[ctrl.cur];
+  const needsInt=s.dataset.needsInteraction==='true' && !s.dataset.done;
+  if(needsInt){h.classList.add('hidden');return;}
+  h.classList.remove('hidden');
+  document.getElementById('hintTxt').textContent=txt||'点击任意处继续';
+}
+
+/* ============================================================
+   Slide enter hooks
+   ============================================================ */
+ctrl.onEnter=(idx)=>{
+  updateHint();
+  if(idx===7) startDomino();   // S7 init
+  if(idx===9) startRhyme();    // S9 typewriter
+};
+
+/* ============================================================
+   S2: 兵力揭示
+   ============================================================ */
+const armyData={
+  cao:{el:'ac-cao', ss:'ss-cao', count:16, icon:'🪖', color:'var(--r)'},
+  sun:{el:'ac-sun', ss:'ss-sun', count:3, icon:'⚓', color:'var(--c)'},
+  liu:{el:'ac-liu', ss:'ss-liu', count:2, icon:'🌿', color:'var(--g)'},
+};
+let revealedCount=0;
+function revealArmy(who){
+  const d=armyData[who];
+  const card=document.getElementById(d.el);
+  if(card.classList.contains('revealed')||card.classList.contains('animating')) return;
+  card.classList.add('animating');
+  const strip=document.getElementById(d.ss);
+  // build soldier icons
+  for(let i=0;i<d.count;i++){
+    const s=document.createElement('span');
+    s.className='sol'; s.textContent=d.icon;
+    strip.appendChild(s);
+  }
+  card.classList.add('revealed');
+  // animate icons appearing
+  const icons=strip.querySelectorAll('.sol');
+  icons.forEach((ic,i)=>setTimeout(()=>ic.style.opacity='1',i*60));
+  setTimeout(()=>{
+    card.classList.remove('animating');
+    revealedCount++;
+    if(revealedCount===3){
+      // show summary
+      setTimeout(()=>{
+        const sum=document.getElementById('s2summary');
+        sum.classList.add('show');
+        ctrl.slides[1].dataset.done='true';
+        updateHint();
+      },400);
+    }
+  },d.count*60+300);
+}
+
+/* ============================================================
+   S3: 草船借箭谜题
+   ============================================================ */
+function s3pick(btn,ans){
+  const btns=document.querySelectorAll('#s3choices .choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('s3fb');
+  const extra=document.getElementById('s3extra');
+  if(ans==='c'){
+    btn.classList.add('correct');
+    fb.textContent='🎉 答对了！诸葛亮正是靠一船稻草人，借到了十万支箭！';
+    fb.className='feedback ok show';
+  } else {
+    btn.classList.add('wrong');
+    // highlight correct
+    btns.forEach(b=>{ if(b.dataset.ans==='c') b.classList.add('correct'); });
+    fb.textContent='❌ 猜错了！不过你猜错的地方，正是曹操也猜错的地方——答案是稻草人！';
+    fb.className='feedback no show';
+  }
+  setTimeout(()=>{
+    extra.style.opacity='1';
+    ctrl.slides[3].dataset.done='true';
+    updateHint();
+  },700);
+}
+
+/* ============================================================
+   S5: 铁链谜题
+   ============================================================ */
+function s5pick(choice){
+  const yes=document.getElementById('s5yes');
+  const no=document.getElementById('s5no');
+  yes.disabled=true; no.disabled=true;
+  if(choice==='yes') yes.classList.add('chosen-y');
+  else no.classList.add('chosen-n');
+  setTimeout(()=>{
+    const reveal=document.getElementById('s5reveal');
+    reveal.classList.add('show');
+    ctrl.slides[5].dataset.done='true';
+    updateHint();
+  },400);
+}
+
+/* ============================================================
+   S6: 火攻三要素翻牌
+   ============================================================ */
+let flippedCount=0;
+function flipCard(n){
+  const el=document.getElementById('flip'+n);
+  if(el.classList.contains('flipped')) return;
+  el.classList.add('flipped');
+  flippedCount++;
+  document.getElementById('flipProgress').textContent='已翻开 '+flippedCount+' / 3 张';
+  if(flippedCount===3){
+    ctrl.slides[6].dataset.done='true';
+    updateHint();
+  }
+}
+
+/* ============================================================
+   S7: 多米诺连锁反应
+   ============================================================ */
+let dominoStep=0;
+function startDomino(){ dominoStep=0; }
+function fireDomino(){
+  const nodes=['dn1','dn2','dn3','dn4','dn5'];
+  const arrows=['da1','da2','da3','da4'];
+  const btn=document.getElementById('dominoBtn');
+  if(dominoStep<nodes.length){
+    document.getElementById(nodes[dominoStep]).classList.add('fired');
+    if(dominoStep>0) document.getElementById(arrows[dominoStep-1]).classList.add('fired');
+    dominoStep++;
+    if(dominoStep===nodes.length){
+      btn.disabled=true;
+      btn.textContent='🔥 赤壁已燃起！';
+      setTimeout(()=>{
+        document.getElementById('dominoResult').classList.add('show');
+        updateHint();
+      },600);
+    }
+  }
+}
+
+/* ============================================================
+   S8: 小测验
+   ============================================================ */
+const qState=[false,false,false], qRight=[false,false,false];
+function switchQ(i){
+  document.querySelectorAll('.qpanel').forEach((p,j)=>p.classList.toggle('active',j===i));
+  document.querySelectorAll('.qtab').forEach((t,j)=>t.classList.toggle('active',j===i));
+}
+function qans(qi,bi,r){
+  if(qState[qi]) return;
+  qState[qi]=true; qRight[qi]=(r==='c');
+  const panel=document.getElementById('qp'+qi);
+  const opts=panel.querySelectorAll('.qopt');
+  opts.forEach((o,i)=>{
+    o.disabled=true;
+    if(i===bi) o.classList.add(r==='c'?'correct':'wrong');
+    if(r==='w') opts.forEach(oo=>{ if(oo.getAttribute('onclick').includes("'c'")) oo.classList.add('correct'); });
+  });
+  document.getElementById('qa'+qi).classList.add('show');
+  const tab=document.getElementById('qt'+qi);
+  tab.classList.remove('active');
+  tab.classList.add(r==='c'?'done-c':'done-w');
+  // show score
+  if(qState.every(Boolean)){
+    const score=qRight.filter(Boolean).length;
+    document.getElementById('qscore').textContent='答对 '+score+'/3';
+    if(score===3){
+      setTimeout(()=>{
+        document.querySelectorAll('.qpanel').forEach(p=>p.classList.remove('active'));
+        document.getElementById('scoreBadge').classList.add('show');
+        updateHint();
+      },600);
+    }
+  }
+}
+
+/* ============================================================
+   S9: 打字机口诀
+   ============================================================ */
+const rhymes=['曹操南下欲统一，','孙刘联手借东风；','草船借箭智周旋，','火烧赤壁定三分。'];
+function startRhyme(){
+  const els=[0,1,2,3].map(i=>document.getElementById('rl'+i));
+  els.forEach(e=>e.textContent='');
+  // type each line sequentially
+  let lineIdx=0;
+  function typeLine(){
+    if(lineIdx>=rhymes.length) return;
+    const el=els[lineIdx];
+    const text=rhymes[lineIdx];
+    let ci=0;
+    // add cursor
+    el.innerHTML='<span class="cursor"></span>';
+    const t=setInterval(()=>{
+      el.innerHTML=text.slice(0,ci+1)+(ci+1<text.length?'<span class="cursor"></span>':'');
+      ci++;
+      if(ci>=text.length){
+        clearInterval(t);
+        lineIdx++;
+        setTimeout(typeLine,300);
+        // after last line, trigger step reveals
+        if(lineIdx===rhymes.length){
+          setTimeout(()=>{ ctrl.advance(); },500);
+        }
+      }
+    },80);
+  }
+  typeLine();
+}
+
+/* ============================================================
+   S-MAP: 地理探索地图
+   ============================================================ */
+const MAP_DATA={
+  wulin:{
+    icon:'⚔️',title:'乌林 · 曹操水寨',
+    factionColor:'var(--r)',factionBg:'rgba(225,29,72,0.08)',faction:'曹操（魏）· 北岸',
+    body:'曹操80万大军屯扎北岸乌林。北方士兵大多是旱鸭子，在船上头晕眼花，还容易水土不服，战斗力大打折扣。',
+    geo:'🗝️ 地理关键：北方军在南方水域严重"水土不服"——铁索连船正是为了稳住摇晃的战船！'
+  },
+  chibi:{
+    icon:'🔥',title:'赤壁 · 主战场',
+    factionColor:'var(--o)',factionBg:'rgba(249,115,22,0.08)',faction:'两军决战之地',
+    body:'赤壁位于长江南岸，此处江面相对狭窄，两岸山崖高耸，地势险要。联军占据南岸高地，居高临下。',
+    geo:'🗝️ 地理关键：江面狭窄让曹操无法展开80万人的兵力——人多也使不上劲！'
+  },
+  xiakou:{
+    icon:'🌿',title:'夏口 · 刘备营地',
+    factionColor:'var(--g)',factionBg:'rgba(34,197,94,0.07)',faction:'刘备（蜀）· 东侧',
+    body:'刘备和诸葛亮屯兵夏口，通过水路与周瑜保持联系。诸葛亮也在此"借"来了关键的东南风。',
+    geo:'🗝️ 地理关键：水路相连的盟友位置，让孙刘两家能快速互援、统一行动！'
+  },
+  chaisang:{
+    icon:'⚓',title:'柴桑 · 周瑜水军',
+    factionColor:'var(--c)',factionBg:'rgba(14,165,233,0.07)',faction:'孙权（吴）· 南岸',
+    body:'周瑜率精锐水军从柴桑出发。江东人世代生活在长江两岸，水战是他们最擅长的，如鱼得水。',
+    geo:'🗝️ 地理关键：主场作战！3万精锐水军在此可以抵挡曹操20万北方旱鸭子！'
+  }
+};
+let mapVisited=new Set(), mapActivePin=null;
+function mapClick(id){
+  if(mapActivePin){const p=document.getElementById('pin-'+mapActivePin);if(p)p.classList.remove('active');}
+  mapActivePin=id;
+  document.getElementById('pin-'+id).classList.add('active','visited');
+  const d=MAP_DATA[id];
+  document.getElementById('mapPlaceholder').style.display='none';
+  const mc=document.getElementById('mapContent');
+  mc.style.display='block';
+  // re-trigger animation
+  mc.style.animation='none'; void mc.offsetWidth; mc.style.animation='';
+  document.getElementById('mipIcon').textContent=d.icon;
+  document.getElementById('mipTitle').textContent=d.title;
+  const fac=document.getElementById('mipFaction');
+  fac.textContent=d.faction; fac.style.borderColor=d.factionColor;
+  fac.style.color=d.factionColor; fac.style.background=d.factionBg;
+  document.getElementById('mipBody').textContent=d.body;
+  document.getElementById('mipGeo').textContent=d.geo;
+  mapVisited.add(id);
+  document.getElementById('mapCount').textContent=mapVisited.size;
+  const ck=document.getElementById('check-'+id);
+  if(ck) ck.style.opacity='1';
+  if(mapVisited.size===4){
+    setTimeout(()=>{
+      document.getElementById('mapSummaryBar').classList.add('show');
+      document.getElementById('s-map').dataset.done='true';
+      updateHint();
+    },500);
+  }
+}
+
+/* init hint */
+updateHint();
+</script>
+</body>
+</html>
