@@ -2,1136 +2,840 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>岳阳楼记 · 探索课堂</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>岳阳楼记 · 情绪解码</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;font-family:'Noto Serif SC','Source Han Serif SC','STSong',Georgia,serif;background:#1a0a05}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;
+  --gold:#f0a500;--teal:#4ecdc4;--red:#ff6b6b;--purple:#a78bfa;
+  --text:#e8e8e8;--muted:#8b949e;--border:#30363d;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden}
+#app{width:100vw;height:100vh;position:relative;overflow:hidden}
 
-/* ===== SLIDE ENGINE ===== */
-#deck{position:relative;width:100%;height:100%;overflow:hidden}
-.slide{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:1.8rem 2rem;
-  opacity:0;pointer-events:none;
-  transition:opacity .45s ease,transform .45s ease;
-  transform:translateX(60px);
-  background:linear-gradient(150deg,#fdf6e3 0%,#f5e6c8 100%);
-  overflow-y:auto;
-}
-.slide.active{opacity:1;pointer-events:auto;transform:translateX(0)}
-.slide.exit-left{opacity:0;transform:translateX(-60px)}
+/* ── slide system ── */
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:48px 64px;
+  opacity:0;pointer-events:none;transition:opacity .45s}
+.slide.active{opacity:1;pointer-events:all}
 
-/* ===== PROGRESS ===== */
-#prog-bar{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(0,0,0,.1);z-index:200}
-#prog-fill{height:100%;background:linear-gradient(90deg,#8b1a1a,#c0392b,#e67e22);transition:width .5s ease;width:10%}
-#hint{position:fixed;bottom:1.4rem;right:1.8rem;font-size:.73rem;color:rgba(80,50,20,.45);pointer-events:none;z-index:200;font-family:'Noto Sans SC',sans-serif;letter-spacing:.05em}
+/* ── progress ── */
+#progress{position:fixed;top:0;left:0;height:3px;z-index:200;
+  background:linear-gradient(90deg,var(--gold),var(--teal));transition:width .5s}
 
-/* ===== COVER ===== */
-#s1{
-  background:radial-gradient(ellipse 120% 80% at 50% 30%,#2d1500 0%,#0f0600 60%,#050200 100%);
-  justify-content:center;
-}
-.cover-wrap{position:relative;z-index:1;text-align:center;max-width:680px;width:100%}
-.cover-ink{
-  position:absolute;inset:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 60% 40% at 30% 60%,rgba(120,50,10,.18) 0%,transparent 70%),
-    radial-gradient(ellipse 40% 50% at 70% 40%,rgba(80,20,5,.12) 0%,transparent 70%);
-}
-.cover-klass{font-size:.78rem;letter-spacing:.3em;color:rgba(220,180,100,.45);font-family:'Noto Sans SC',sans-serif;margin-bottom:.6rem}
-.cover-cn{
-  font-size:clamp(2.8rem,9vw,5.5rem);font-weight:700;letter-spacing:.35em;
-  background:linear-gradient(180deg,#ffe8a0 0%,#d4900a 60%,#8b5a00 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  text-shadow:none;
-  filter:drop-shadow(0 2px 12px rgba(200,130,30,.4));
-}
-.cover-author{font-size:clamp(.85rem,2.5vw,1.1rem);letter-spacing:.18em;color:rgba(220,180,100,.6);margin-top:.5rem;font-family:'Noto Sans SC',sans-serif}
-.cover-divider{width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(220,180,100,.4),transparent);margin:1.4rem auto}
-.cover-mission{
-  background:rgba(255,255,255,.04);border:1px solid rgba(220,180,100,.18);
-  border-radius:14px;padding:1rem 1.5rem;
-  font-size:clamp(.82rem,2.2vw,.95rem);color:rgba(220,200,160,.82);
-  line-height:1.8;font-family:'Noto Sans SC',sans-serif;
-}
-.cover-mission strong{color:#e8c060}
-.cover-seals{display:flex;justify-content:center;gap:.8rem;margin-top:1.6rem}
-.seal{
-  width:46px;height:46px;border-radius:50%;
-  border:1.5px solid rgba(220,180,100,.25);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.2rem;color:rgba(220,180,100,.3);
-  transition:all .4s ease;
-}
-.seal.lit{border-color:#e67e22;color:#e67e22;box-shadow:0 0 14px rgba(230,126,34,.45);background:rgba(230,126,34,.1)}
-.cover-btn{
-  margin-top:1.8rem;padding:.75rem 2.8rem;border:none;border-radius:30px;cursor:pointer;
-  background:linear-gradient(135deg,#8b1a1a,#c0392b);
-  color:#fff;font-size:1rem;letter-spacing:.12em;font-family:inherit;
-  box-shadow:0 4px 20px rgba(139,26,26,.5);
-  transition:transform .2s,box-shadow .2s;
-}
-.cover-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(139,26,26,.7)}
+/* ── badges top-right ── */
+#badges{position:fixed;top:14px;right:18px;display:flex;gap:6px;z-index:200}
+.bslot{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);
+  background:var(--bg2);display:flex;align-items:center;justify-content:center;
+  font-size:14px;opacity:.25;transition:all .4s}
+.bslot.on{opacity:1;border-color:var(--gold);box-shadow:0 0 10px rgba(240,165,0,.35)}
 
-/* ===== COMMON ===== */
-.slide-header{text-align:center;margin-bottom:1.3rem;flex-shrink:0}
-.slide-badge{
-  display:inline-block;font-size:.72rem;letter-spacing:.15em;
-  color:rgba(139,26,26,.7);font-family:'Noto Sans SC',sans-serif;
-  background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);
-  border-radius:20px;padding:.2rem .7rem;margin-bottom:.4rem;
-}
-.slide-title{font-size:clamp(1.25rem,3.8vw,1.9rem);font-weight:700;color:#3d1a00;letter-spacing:.04em}
-.slide-title em{color:#c0392b;font-style:normal}
-.slide-sub{font-size:.85rem;color:rgba(100,55,15,.65);font-family:'Noto Sans SC',sans-serif;margin-top:.25rem;line-height:1.5}
-.ink-line{width:70px;height:2px;background:linear-gradient(90deg,transparent,#c0392b,transparent);margin:.5rem auto 0}
+/* ── nav dots ── */
+#nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  display:flex;gap:7px;z-index:200}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);
+  cursor:pointer;transition:all .3s}
+.dot.on{background:var(--gold);transform:scale(1.5)}
 
-/* card grid */
-.card-grid{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;width:100%;max-width:860px}
-.card{
-  flex:1;min-width:200px;max-width:260px;
-  background:rgba(255,255,255,.72);border-radius:14px;
-  border:1.5px solid rgba(120,70,20,.18);padding:1.1rem;
-  cursor:pointer;transition:all .3s;
-  backdrop-filter:blur(4px);position:relative;overflow:hidden;
-}
-.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(120,70,20,.14);border-color:rgba(192,57,43,.35)}
-.card.revealed{cursor:default;background:rgba(255,248,235,.95);border-color:rgba(192,57,43,.45)}
-.card-icon{font-size:1.9rem;margin-bottom:.4rem}
-.card-hint{font-size:.78rem;color:rgba(120,70,20,.45);font-family:'Noto Sans SC',sans-serif}
-.card-content{display:none}
-.card.revealed .card-hint{display:none}
-.card.revealed .card-content{display:block;animation:popIn .3s ease}
-.card-content h4{font-size:.9rem;color:#3d1a00;margin-bottom:.35rem}
-.card-content p{font-size:.78rem;color:#6b3d10;line-height:1.65;font-family:'Noto Sans SC',sans-serif}
-.card-accent{margin-top:.4rem;font-size:.78rem;font-weight:600;font-family:'Noto Sans SC',sans-serif}
+/* ── hint ── */
+#hint{position:fixed;bottom:50px;left:50%;transform:translateX(-50%);
+  font-size:11px;color:var(--muted);opacity:.6;pointer-events:none;white-space:nowrap}
 
-/* unlock badge */
-.unlock-badge{
-  display:none;align-items:center;gap:.5rem;margin-top:.9rem;
-  background:linear-gradient(135deg,#8b1a1a,#c0392b);
-  color:#fff;border-radius:20px;padding:.38rem 1.1rem;
-  font-size:.8rem;font-family:'Noto Sans SC',sans-serif;
-  box-shadow:0 3px 14px rgba(139,26,26,.35);
-}
-.unlock-badge.show{display:flex;animation:popIn .4s ease}
+/* ── animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes scan{from{left:-100%}to{left:200%}}
+@keyframes glitch{
+  0%,100%{text-shadow:none}
+  20%{text-shadow:-2px 0 var(--teal),2px 0 var(--red)}
+  50%{text-shadow:2px 0 var(--teal),-2px 0 var(--red)}
+  80%{text-shadow:-2px 0 var(--red),2px 0 var(--teal)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.fu{animation:fadeUp .5s ease forwards}
 
-@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+/* ── buttons ── */
+.btn{padding:11px 28px;border-radius:8px;background:var(--gold);color:#000;
+  font-weight:700;font-size:14px;border:none;cursor:pointer;transition:all .2s;
+  font-family:inherit}
+.btn:hover{transform:scale(1.04);box-shadow:0 0 18px rgba(240,165,0,.4)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text);
+  padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;
+  transition:all .2s;font-family:inherit}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
 
-/* ===== SLIDE 3 MAP ===== */
-#s3{background:linear-gradient(150deg,#e6f0e8,#cfe3d4)}
-.map-layout{display:grid;grid-template-columns:1fr 300px;gap:1.1rem;width:100%;max-width:900px;align-items:start}
-.map-svg-box{border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,60,30,.14);border:1.5px solid rgba(0,80,40,.2)}
-.map-panel{background:rgba(255,255,255,.82);border-radius:14px;border:1.5px solid rgba(0,80,40,.2);padding:1.1rem;min-height:190px}
-.mip-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:190px;color:rgba(0,70,35,.4);text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:.82rem;gap:.4rem}
-.mip-content{display:none}
-.mip-icon{font-size:1.8rem;margin-bottom:.2rem}
-.mip-title{font-size:.95rem;font-weight:700;color:#1a5c3a;margin-bottom:.3rem}
-.mip-body{font-size:.78rem;color:#2d7a50;line-height:1.65;font-family:'Noto Sans SC',sans-serif}
-.mip-quote{margin-top:.7rem;padding:.5rem .7rem;background:rgba(0,80,40,.06);border-left:3px solid #2d7a50;border-radius:0 8px 8px 0;font-size:.76rem;color:#1a5c3a;font-style:italic;line-height:1.5}
-.map-prog{margin-top:.7rem;display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:rgba(0,70,35,.55);font-family:'Noto Sans SC',sans-serif}
-.map-dots{display:flex;gap:.25rem}
-.map-dot{width:7px;height:7px;border-radius:50%;background:rgba(0,70,35,.2);transition:background .3s}
-.map-dot.done{background:#2d7a50}
-.map-summary{display:none;margin-top:.7rem;padding:.65rem .8rem;background:rgba(0,80,40,.06);border-radius:10px;border:1px solid rgba(0,80,40,.2);font-size:.77rem;color:#1a5c3a;line-height:1.55;font-family:'Noto Sans SC',sans-serif}
-.map-summary.show{display:block;animation:popIn .4s ease}
+/* ── label ── */
+.label{font-size:11px;letter-spacing:2.5px;color:var(--gold);font-weight:600}
 
-/* map SVG pins */
-.mpin{cursor:pointer}
-.mpin circle.pc{transition:all .2s;r:9}
-.mpin:hover circle.pc{r:12}
-.mpin.active circle.pc{fill:#c0392b}
-.mpin.visited text.ck{opacity:1!important}
-@keyframes ripple{0%,100%{opacity:.5;r:14}50%{opacity:.2;r:18}}
-.mpin circle.pr{animation:ripple 2s infinite}
+/* ── card ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px}
 
-/* ===== SLIDES 4 & 5: WEATHER SCENES ===== */
-#s4{background:linear-gradient(150deg,#b8c5d4,#8fa0b5)}
-#s5{background:linear-gradient(150deg,#d8ecc8,#b8dcaa)}
-.scene-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;width:100%;max-width:900px;align-items:start}
-.scene-art{border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.18)}
-.scene-steps{display:flex;flex-direction:column;gap:.65rem}
-.sstep{
-  background:rgba(255,255,255,.6);border-radius:12px;
-  padding:.7rem .9rem;border:1.5px solid rgba(0,0,0,.07);
-  cursor:pointer;transition:all .28s;
-  display:flex;align-items:flex-start;gap:.6rem;
-  font-family:'Noto Sans SC',sans-serif;
-  opacity:.35;pointer-events:none;
-}
-.sstep.open{opacity:1;pointer-events:auto}
-.sstep.open:hover{transform:translateX(3px)}
-.sstep.done{background:rgba(255,255,255,.9);opacity:1;pointer-events:none}
-.sstep-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px}
-.sstep-body{flex:1}
-.sstep-label{font-size:.82rem;font-weight:600;color:#3d1a00;margin-bottom:.15rem}
-.sstep-quote{font-size:.77rem;line-height:1.5;color:#5a3010}
-.sstep-emo{display:inline-block;margin-top:.25rem;font-size:.72rem;padding:.15rem .5rem;border-radius:8px;opacity:0;transition:opacity .3s}
-.sstep.done .sstep-emo{opacity:1}
+/* ═══════════════════════════════
+   S1  HOOK
+═══════════════════════════════ */
+#s1{background:radial-gradient(ellipse at 50% 60%,#131d2e 0%,var(--bg) 65%)}
+.s1-line{text-align:center;opacity:0}
+.s1-year{font-size:12px;letter-spacing:4px;color:var(--gold);animation:fadeUp .7s .2s forwards}
+.s1-scene{font-size:clamp(14px,2vw,18px);color:var(--muted);margin:10px 0;animation:fadeUp .7s .7s forwards}
+.s1-bang{font-size:clamp(22px,4.5vw,48px);font-weight:900;line-height:1.4;
+  max-width:680px;animation:fadeUp .7s 1.2s forwards}
+.s1-bang em{color:var(--gold);font-style:normal}
+.s1-q{font-size:clamp(15px,2.5vw,22px);color:var(--teal);margin-top:16px;animation:fadeUp .7s 2s forwards}
+.s1-cta{margin-top:36px;animation:fadeUp .7s 2.7s forwards}
 
-/* ===== SLIDE 6: CONTRAST ===== */
-#s6{background:linear-gradient(150deg,#fdf6e3,#f5e6c8)}
-.contrast-wrap{width:100%;max-width:820px}
-.contrast-q{text-align:center;font-size:.92rem;color:#3d1a00;margin-bottom:1rem;line-height:1.6;font-family:'Noto Sans SC',sans-serif}
-.contrast-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:.9rem;align-items:start;margin-bottom:1rem}
-.con-col{background:rgba(255,255,255,.7);border-radius:14px;padding:1rem;border:2px solid transparent;transition:all .3s}
-.con-col.bad{border-color:#7a8fb8}
-.con-col.good{border-color:rgba(192,57,43,.3)}
-.con-col-h{text-align:center;font-size:.92rem;font-weight:700;margin-bottom:.6rem}
-.con-item{background:rgba(255,255,255,.75);border-radius:8px;padding:.42rem .65rem;margin-bottom:.4rem;font-size:.78rem;color:#5a3010;font-family:'Noto Sans SC',sans-serif;border-left:3px solid transparent;line-height:1.5}
-.con-col.bad .con-item{border-left-color:#7a8fb8}
-.con-col.good .con-item{border-left-color:rgba(192,57,43,.6)}
-.con-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:2.5rem;font-size:1.3rem;color:rgba(120,70,20,.35);gap:.2rem;font-family:'Noto Sans SC',sans-serif;font-size:.85rem}
-.choices{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
-.choice-btn{
-  padding:.55rem 1.4rem;border-radius:20px;cursor:pointer;
-  font-family:'Noto Sans SC',sans-serif;font-size:.82rem;
-  border:1.5px solid;background:transparent;font-family:inherit;
-  transition:all .2s;
-}
-.choice-btn:hover{transform:translateY(-2px)}
-.con-reveal{
-  display:none;margin-top:1rem;
-  background:linear-gradient(135deg,rgba(139,26,26,.07),rgba(192,57,43,.05));
-  border:1px solid rgba(192,57,43,.28);border-radius:12px;
-  padding:.9rem 1.1rem;text-align:center;font-family:'Noto Sans SC',sans-serif;
-}
-.con-reveal.show{display:block;animation:popIn .4s ease}
-.con-reveal-main{font-size:1.05rem;color:#8b1a1a;font-weight:700;letter-spacing:.06em;margin-bottom:.4rem}
-.con-reveal-sub{font-size:.8rem;color:#7a3d10;line-height:1.65}
+/* ═══════════════════════════════
+   S2  BACKGROUND
+═══════════════════════════════ */
+#s2{gap:20px}
+.ppl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:820px}
+.pcard{background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;
+  padding:22px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.pcard::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 50%,rgba(240,165,0,.04));pointer-events:none}
+.pcard:hover{border-color:rgba(240,165,0,.5);transform:translateY(-2px)}
+.pcard.open{border-color:var(--teal)}
+.ptag{font-size:11px;letter-spacing:1.5px;color:var(--gold);margin-bottom:6px}
+.pname{font-size:22px;font-weight:800;margin-bottom:4px}
+.psub{font-size:12px;color:var(--muted)}
+.pdetail{display:none;margin-top:14px;font-size:13.5px;color:var(--muted);line-height:1.9;
+  border-top:1px solid var(--border);padding-top:12px}
+.pcard.open .pdetail{display:block}
+.phint{font-size:11px;color:var(--border);margin-top:10px;transition:color .2s}
+.pcard:hover .phint{color:var(--muted)}
+.letter-box{width:100%;max-width:820px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:22px 28px;font-size:14.5px;line-height:2;color:var(--muted)}
+.letter-box strong{color:var(--text)}
 
-/* ===== SLIDE 7: QUOTE ===== */
-#s7{background:radial-gradient(ellipse 120% 80% at 50% 40%,#1a0800 0%,#080300 100%)}
-.quote-stage{text-align:center;max-width:680px;width:100%}
-.quote-pre{font-size:.88rem;color:rgba(220,185,130,.6);line-height:1.8;font-family:'Noto Sans SC',sans-serif;margin-bottom:2rem}
-.quote-line{font-size:clamp(1.3rem,4.2vw,2rem);font-weight:700;letter-spacing:.12em;color:#f0dba0;line-height:1.9;min-height:2.2rem}
-.cursor{display:inline-block;width:2px;height:1em;background:#e67e22;margin-left:2px;vertical-align:middle;animation:blink .7s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.quote-explain{
-  display:none;margin-top:1.8rem;
-  background:rgba(255,255,255,.05);border:1px solid rgba(220,185,130,.18);
-  border-radius:12px;padding:1.1rem 1.4rem;
-  font-family:'Noto Sans SC',sans-serif;font-size:.85rem;
-  color:rgba(220,195,150,.85);line-height:1.85;text-align:left;
-}
-.quote-explain.show{display:block;animation:popIn .5s ease}
-.quote-explain strong{color:#e8c060}
-.quote-btn{
-  margin-top:1.5rem;padding:.55rem 1.6rem;
-  background:rgba(139,26,26,.3);border:1px solid rgba(192,57,43,.45);
-  color:rgba(220,185,130,.85);border-radius:20px;cursor:pointer;
-  font-family:inherit;font-size:.82rem;transition:all .2s;
-}
-.quote-btn:hover{background:rgba(139,26,26,.5)}
+/* ═══════════════════════════════
+   S3  DECODER INTRO
+═══════════════════════════════ */
+#s3{gap:24px}
+.decoder-box{width:100%;max-width:680px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px;padding:32px;text-align:center;position:relative;overflow:hidden}
+.decoder-box::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--teal),transparent);
+  animation:scan 2.8s linear infinite}
+.formula{display:flex;align-items:center;justify-content:center;gap:14px;
+  flex-wrap:wrap;margin:20px 0}
+.fitem{background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:10px 18px;text-align:center}
+.fitem .zh{font-size:20px;font-weight:800}
+.fitem .en{font-size:10px;color:var(--muted);letter-spacing:1px}
+.farrow{color:var(--gold);font-size:22px}
+.fitem.hi{background:linear-gradient(135deg,rgba(240,165,0,.15),rgba(78,205,196,.1));
+  border-color:var(--gold)}
+.ftags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.ftag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  background:rgba(240,165,0,.1);border:1px solid rgba(240,165,0,.3);color:var(--gold)}
 
-/* ===== SLIDE 8: TIMELINE ===== */
-#s8{background:linear-gradient(150deg,#fdf6e3,#f5e6c8)}
-.tl-wrap{display:flex;flex-direction:column;gap:0;max-width:680px;width:100%;position:relative}
-.tl-wrap::before{content:'';position:absolute;left:26px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#8b1a1a,#c0392b,#e67e22)}
-.tl-row{
-  display:flex;gap:.9rem;align-items:flex-start;padding:.65rem 0;
-  opacity:0;transform:translateX(-18px);transition:all .38s ease;pointer-events:none;
-}
-.tl-row.show{opacity:1;transform:translateX(0);pointer-events:auto}
-.tl-left{width:54px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:.18rem;position:relative;z-index:1}
-.tl-circle{width:14px;height:14px;border-radius:50%;background:#c0392b;border:2px solid #fdf6e3;box-shadow:0 0 0 3px rgba(192,57,43,.22)}
-.tl-year{font-size:.67rem;color:#c0392b;font-weight:700;font-family:'Noto Sans SC',sans-serif;text-align:center}
-.tl-box{flex:1;background:rgba(255,255,255,.72);border-radius:12px;padding:.72rem .9rem;border:1px solid rgba(120,70,20,.14)}
-.tl-event{font-size:.86rem;font-weight:600;color:#3d1a00;margin-bottom:.18rem}
-.tl-note{font-size:.77rem;color:#6b3d10;line-height:1.6;font-family:'Noto Sans SC',sans-serif}
-.tl-tag{display:inline-block;margin-top:.28rem;padding:.12rem .45rem;border-radius:6px;font-size:.7rem;font-family:'Noto Sans SC',sans-serif}
-.tl-btn{
-  display:inline-block;margin-top:.38rem;padding:.3rem .85rem;
-  background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.28);
-  border-radius:10px;cursor:pointer;font-family:inherit;font-size:.75rem;color:#8b1a1a;
-  transition:all .2s;
-}
-.tl-btn:hover{background:rgba(192,57,43,.2)}
-.tl-climax{
-  display:none;margin-top:.9rem;
-  background:linear-gradient(135deg,rgba(139,26,26,.09),rgba(192,57,43,.06));
-  border:2px solid rgba(192,57,43,.28);border-radius:12px;
-  padding:.9rem 1.1rem;
-}
-.tl-climax.show{display:block;animation:popIn .5s ease}
-.tl-climax p{font-size:.84rem;color:#3d1a00;line-height:1.75;font-family:'Noto Sans SC',sans-serif}
-.tl-climax strong{color:#8b1a1a}
+/* ═══════════════════════════════
+   S4 / S5  SCENE DECODE
+═══════════════════════════════ */
+.decode-wrap{width:100%;max-width:760px}
+.dheader{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.dnum{width:32px;height:32px;border-radius:8px;background:var(--gold);color:#000;
+  font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dtitle{font-size:18px;font-weight:700}
+.text-panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:22px;margin-bottom:14px;font-size:14.5px;line-height:2.3;color:var(--muted)}
+.kw{color:var(--text);font-weight:600;cursor:pointer;
+  border-bottom:1px dashed rgba(240,165,0,.6);transition:color .2s}
+.kw:hover{color:var(--gold)}
+.anno{display:none;background:rgba(240,165,0,.08);border-left:3px solid var(--gold);
+  padding:7px 12px;border-radius:0 8px 8px 0;font-size:12.5px;color:var(--gold);
+  margin:3px 0;line-height:1.6;animation:fadeUp .3s forwards}
+.anno.on{display:block}
+.eq-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 22px}
+.eq-q{font-size:14.5px;margin-bottom:14px}
+.emo-row{display:flex;gap:10px;flex-wrap:wrap}
+.eo{padding:9px 16px;border-radius:9px;border:1.5px solid var(--border);
+  background:transparent;color:var(--text);font-size:13.5px;cursor:pointer;
+  transition:all .25s;font-family:inherit}
+.eo:hover{border-color:var(--gold)}
+.eo.right{border-color:var(--teal);background:rgba(78,205,196,.12);color:var(--teal)}
+.eo.wrong{border-color:var(--border);color:var(--muted);opacity:.5}
+.reveal{display:none;margin-top:14px;padding:14px 18px;
+  background:rgba(78,205,196,.07);border:1px solid rgba(78,205,196,.25);border-radius:12px}
+.reveal.on{display:block;animation:fadeUp .4s forwards}
+.rtag{font-size:10px;letter-spacing:2px;color:var(--teal);margin-bottom:7px}
+.rtext{font-size:14px;line-height:1.9}
 
-/* ===== SLIDE 9: QUIZ ===== */
-#s9{background:linear-gradient(150deg,#fdf6e3,#f0dfc0)}
-.quiz-wrap{max-width:660px;width:100%}
-.quiz-card{display:none;background:rgba(255,255,255,.82);border-radius:14px;padding:1.1rem;border:1px solid rgba(120,70,20,.14);margin-bottom:.8rem}
-.quiz-card.active{display:block;animation:popIn .3s ease}
-.quiz-n{font-size:.7rem;color:rgba(100,55,15,.5);font-family:'Noto Sans SC',sans-serif;letter-spacing:.1em;margin-bottom:.3rem}
-.quiz-q{font-size:.92rem;color:#3d1a00;margin-bottom:.75rem;line-height:1.55}
-.quiz-opts{display:flex;flex-direction:column;gap:.38rem}
-.quiz-opt{
-  padding:.55rem .85rem;border-radius:9px;cursor:pointer;
-  border:1px solid rgba(120,70,20,.2);background:rgba(255,255,255,.65);
-  font-size:.82rem;color:#5a3010;font-family:'Noto Sans SC',sans-serif;
-  transition:all .18s;text-align:left;
-}
-.quiz-opt:hover:not(:disabled){background:rgba(192,57,43,.06);border-color:rgba(192,57,43,.28)}
-.quiz-opt.right{background:rgba(39,174,96,.1);border-color:#27ae60;color:#1a6b3a}
-.quiz-opt.wrong{background:rgba(192,57,43,.09);border-color:#c0392b;color:#7a1a1a}
-.quiz-opt:disabled{cursor:default}
-.quiz-fb{display:none;margin-top:.6rem;padding:.5rem .8rem;border-radius:8px;font-size:.79rem;font-family:'Noto Sans SC',sans-serif;line-height:1.5}
-.quiz-fb.show{display:block}
-.quiz-fb.ok{background:rgba(39,174,96,.09);color:#1a6b3a}
-.quiz-fb.err{background:rgba(192,57,43,.08);color:#7a1a1a}
-.quiz-result{display:none;text-align:center;background:linear-gradient(135deg,rgba(139,26,26,.09),rgba(192,57,43,.06));border-radius:14px;padding:1.1rem;border:1px solid rgba(192,57,43,.28)}
-.quiz-result.show{display:block;animation:popIn .4s ease}
-.quiz-score{font-size:2.4rem;font-weight:700;color:#8b1a1a}
-.quiz-msg{font-size:.86rem;color:#6b3d10;font-family:'Noto Sans SC',sans-serif;margin-top:.3rem}
+/* ═══════════════════════════════
+   S6  THE REAL CHOICE
+═══════════════════════════════ */
+#s6{gap:22px}
+.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;
+  align-items:center;width:100%;max-width:780px}
+.vcard{background:var(--bg2);border:1.5px solid var(--border);border-radius:16px;
+  padding:22px;text-align:center;cursor:pointer;transition:all .3s}
+.vcard:hover{transform:translateY(-3px)}
+.vcard.sel-a{border-color:var(--red);background:rgba(255,107,107,.05)}
+.vcard.sel-b{border-color:var(--teal);background:rgba(78,205,196,.05)}
+.vicon{font-size:34px;margin-bottom:10px}
+.vtype{font-size:16px;font-weight:700;margin-bottom:8px}
+.vdesc{font-size:13px;color:var(--muted);line-height:1.8}
+.vvs{font-size:26px;font-weight:900;color:var(--border)}
+.vresult{width:100%;max-width:780px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:20px 26px;display:none}
+.vresult.on{display:block;animation:fadeUp .4s forwards}
+.vq{font-size:22px;font-weight:800;color:var(--gold);text-align:center;
+  letter-spacing:1px;margin:10px 0}
+.vexp{font-size:14px;color:var(--muted);line-height:1.9;text-align:center}
 
-/* ===== SLIDE 10: SUMMARY ===== */
-#s10{background:radial-gradient(ellipse 120% 80% at 50% 30%,#1a0800 0%,#080300 100%)}
-.summary-wrap{text-align:center;max-width:760px;width:100%}
-.summary-seals{display:flex;justify-content:center;gap:.7rem;margin-bottom:1.4rem}
-.sum-seal{width:50px;height:50px;border-radius:50%;border:2px solid #e67e22;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 16px rgba(230,126,34,.45);background:rgba(230,126,34,.12);animation:popIn .6s ease both}
-.sum-seal:nth-child(2){animation-delay:.1s}
-.sum-seal:nth-child(3){animation-delay:.2s}
-.sum-seal:nth-child(4){animation-delay:.3s}
-.sum-seal:nth-child(5){animation-delay:.4s}
-.summary-h{font-size:clamp(1.1rem,3vw,1.6rem);font-weight:700;color:rgba(220,185,130,.9);margin-bottom:1.2rem;letter-spacing:.05em}
-.rhyme{
-  background:rgba(255,255,255,.05);border:1px solid rgba(220,185,130,.18);
-  border-radius:14px;padding:1.3rem 1.8rem;
-  font-size:clamp(.95rem,2.4vw,1.12rem);line-height:2.3;
-  color:rgba(220,195,155,.88);letter-spacing:.06em;margin-bottom:1.2rem;
-}
-.rhyme .hi{color:#e8c060;font-weight:700}
-.km{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem}
-.km-box{background:rgba(255,255,255,.06);border-radius:10px;padding:.7rem .8rem;border:1px solid rgba(220,185,130,.12);font-family:'Noto Sans SC',sans-serif}
-.km-label{font-size:.62rem;color:rgba(220,185,130,.4);letter-spacing:.12em;margin-bottom:.25rem}
-.km-val{font-size:.76rem;color:rgba(220,195,155,.8);line-height:1.55}
+/* ═══════════════════════════════
+   S7  THE QUOTE
+═══════════════════════════════ */
+#s7{gap:28px;background:radial-gradient(ellipse at 50% 50%,#161228 0%,var(--bg) 65%)}
+.qs-wrap{width:100%;max-width:680px;text-align:center}
+.qs-pre{font-size:12px;letter-spacing:2.5px;color:var(--muted);margin-bottom:18px}
+.qs-text{font-size:clamp(20px,4vw,38px);font-weight:900;color:var(--gold);
+  line-height:1.8;min-height:1.8em}
+.qcursor{display:inline-block;width:3px;height:.9em;background:var(--gold);
+  vertical-align:middle;margin-left:2px;animation:pulse 1s infinite}
+.qdecode{display:none;width:100%;max-width:680px}
+.qdecode.on{display:block;animation:fadeUp .5s forwards}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.qcell{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.qcell .phrase{font-size:15px;font-weight:700;color:var(--gold);margin-bottom:8px}
+.qcell .mean{font-size:13px;color:var(--muted);line-height:1.7}
+.qpersonal{display:none;width:100%;max-width:680px;text-align:center}
+.qpersonal.on{display:block;animation:fadeUp .5s forwards}
+.qpers-text{font-size:15px;line-height:2.1;color:var(--muted)}
+.qpers-text strong{color:var(--text)}
 
-/* ===== RESPONSIVE ===== */
-@media(max-width:660px){
-  .map-layout,.scene-layout,.contrast-grid{grid-template-columns:1fr}
-  .scene-art{display:none}
-  .km{grid-template-columns:1fr 1fr}
+/* ═══════════════════════════════
+   S8  MODERN CONNECTION
+═══════════════════════════════ */
+#s8{gap:22px}
+.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+  width:100%;max-width:780px}
+.scard{background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;
+  padding:18px 14px;text-align:center;cursor:pointer;transition:all .3s}
+.scard:hover{border-color:var(--gold);transform:translateY(-3px)}
+.scard.on{border-color:var(--teal);background:rgba(78,205,196,.05)}
+.semoji{font-size:28px;margin-bottom:10px}
+.stitle{font-size:14px;font-weight:700;margin-bottom:6px}
+.sdesc{font-size:12px;color:var(--muted);line-height:1.6}
+.sresp{width:100%;max-width:780px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:20px 26px;display:none}
+.sresp.on{display:block;animation:fadeUp .4s forwards}
+.slabel{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
+.squote{font-size:17px;color:var(--gold);font-weight:700;margin-bottom:10px}
+.smod{font-size:14px;color:var(--muted);line-height:1.9}
+
+/* ═══════════════════════════════
+   S9  STRUCTURE
+═══════════════════════════════ */
+#s9{gap:24px}
+.flow{width:100%;max-width:680px;display:flex;flex-direction:column;gap:0}
+.frow{opacity:0;transform:translateY(18px);transition:all .5s}
+.frow.on{opacity:1;transform:none}
+.fblocks{display:flex;gap:0}
+.fb{flex:1;background:var(--bg2);border:1px solid var(--border);padding:14px 16px;text-align:center}
+.fb:first-child{border-radius:12px 0 0 12px}
+.fb:last-child{border-radius:0 12px 12px 0}
+.fb:only-child{border-radius:12px}
+.flayer{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px}
+.fcontent{font-size:15px;font-weight:700}
+.fquote{font-size:11px;color:var(--gold);margin-top:4px;line-height:1.5}
+.fb.c1{border-color:rgba(255,107,107,.4)}
+.fb.c2{border-color:rgba(255,165,0,.4)}
+.fb.c3{border-color:rgba(78,205,196,.4)}
+.farr{text-align:center;color:var(--gold);font-size:18px;padding:5px 0;
+  opacity:0;transition:opacity .5s .15s}
+.farr.on{opacity:1}
+
+/* ═══════════════════════════════
+   S10  FINAL
+═══════════════════════════════ */
+#s10{gap:26px;text-align:center;
+  background:radial-gradient(ellipse at 50% 50%,#0d1f0e 0%,var(--bg) 60%)}
+.fbadges{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.fb2{width:68px;height:68px;border-radius:14px;background:var(--bg2);
+  border:2px solid var(--border);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:24px;
+  opacity:0;transition:all .5s}
+.fb2 .bl{font-size:9px;color:var(--gold);letter-spacing:.5px;margin-top:3px}
+.fb2.lit{opacity:1;border-color:var(--gold);box-shadow:0 0 16px rgba(240,165,0,.3);
+  animation:pop .4s ease}
+.fkeys{max-width:600px;background:linear-gradient(135deg,rgba(240,165,0,.08),rgba(78,205,196,.04));
+  border:1px solid rgba(240,165,0,.25);border-radius:20px;padding:24px 28px}
+.fktitle{font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:16px}
+.krows{display:flex;flex-direction:column;gap:11px;text-align:left}
+.krow{display:flex;gap:12px;align-items:flex-start}
+.kicon{width:26px;height:26px;border-radius:7px;background:rgba(240,165,0,.15);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  font-weight:700;color:var(--gold);flex-shrink:0;margin-top:1px}
+.ktext{font-size:13.5px;line-height:1.75;color:var(--muted)}
+.ktext strong{color:var(--text)}
+.fquotefinal{font-size:clamp(16px,3vw,24px);font-weight:800;color:var(--gold)}
+
+/* ── responsive ── */
+@media(max-width:620px){
+  .slide{padding:24px 18px}
+  .ppl-grid{grid-template-columns:1fr}
+  .versus{grid-template-columns:1fr}
+  .vvs{display:none}
+  .scenes{grid-template-columns:1fr}
+  .qgrid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
-<div id="prog-bar"><div id="prog-fill"></div></div>
-<div id="hint">点击继续 →</div>
+<div id="app">
 
-<div id="deck">
+<div id="progress" style="width:10%"></div>
 
-<!-- ===== S1: COVER ===== -->
-<section class="slide active" id="s1">
-  <div class="cover-ink"></div>
-  <div class="cover-wrap">
-    <div class="cover-klass">初中语文 · 探索课堂</div>
-    <div class="cover-cn">岳阳楼记</div>
-    <div class="cover-author">范仲淹 · 北宋 · 庆历六年（1046）</div>
-    <div class="cover-divider"></div>
-    <div class="cover-mission">
-      <strong>🕵️ 侦探任务</strong>：公元1046年，一封藏着千年人生密码的信从邓州寄出。<br>
-      传说读懂这个密码，无论遭遇什么逆境都能保持内心强大。<br>
-      你的任务：探索 <strong>5个历史现场</strong>，解锁这个密码！
-    </div>
-    <div class="cover-seals">
-      <div class="seal" id="seal0">🔒</div>
-      <div class="seal" id="seal1">🔒</div>
-      <div class="seal" id="seal2">🔒</div>
-      <div class="seal" id="seal3">🔒</div>
-      <div class="seal" id="seal4">🔒</div>
-    </div>
-    <button class="cover-btn" onclick="ctrl.advance()">开始探索 →</button>
+<div id="badges">
+  <div class="bslot" id="b0">🔍</div>
+  <div class="bslot" id="b1">🌧️</div>
+  <div class="bslot" id="b2">☀️</div>
+  <div class="bslot" id="b3">💡</div>
+  <div class="bslot" id="b4">🏆</div>
+</div>
+
+<div id="nav"></div>
+<div id="hint">点击任意位置继续</div>
+
+<!-- ════════════════════════════
+     S1  HOOK
+════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="s1-line s1-year">公元 1046 年 · 邓州</div>
+  <div class="s1-line s1-scene">一个被贬官员，坐在书桌前，盯着一幅从未去过的地方的画……</div>
+  <div class="s1-line s1-bang">
+    他，<em>一生从未踏上岳阳楼</em>，<br>
+    却写出了流传千年的《岳阳楼记》
   </div>
-</section>
-
-<!-- ===== S2: BACKGROUND ===== -->
-<section class="slide" id="s2" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">🔍 现场一 · 背景解密</div>
-    <div class="slide-title">两个被贬的人，<em>一封信</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">1046年，两位北宋官员都遭到贬职……点击人物卡片，还原历史现场</div>
+  <div class="s1-line s1-q">— 那他，到底在写什么？</div>
+  <div class="s1-line s1-cta">
+    <button class="btn" onclick="ctrl.advance()">开始解码 →</button>
   </div>
-  <div class="card-grid">
-    <div class="card" id="c-fan" onclick="bgReveal('c-fan')">
-      <div class="card-icon">📜</div>
-      <div class="card-hint">🔒 点击解锁</div>
-      <div class="card-content">
-        <h4>范仲淹（989—1052）</h4>
-        <p>北宋名臣，苦读出身，主导"庆历新政"改革。1045年新政失败，被贬知邓州。</p>
-        <p class="card-accent" style="color:#c0392b">✍️ 他就是作者！在邓州，凭一幅画写出了这篇千古名文。</p>
+</div>
+
+<!-- ════════════════════════════
+     S2  BACKGROUND
+════════════════════════════ -->
+<div class="slide" id="s2" data-needs-interaction="true">
+  <div class="label" style="margin-bottom:14px">案件背景 · BACKGROUND</div>
+  <div class="ppl-grid">
+    <div class="pcard" id="pc-fan" onclick="openPerson('fan')">
+      <div class="ptag">主角 · 作者</div>
+      <div class="pname">范仲淹</div>
+      <div class="psub">北宋政治家 · 文学家</div>
+      <div class="pdetail">
+        推行"庆历新政"触动权贵，被贬邓州。<br>
+        离开权力中心，却从未放弃对国家的忧虑。<br><br>
+        <strong style="color:var(--text)">此刻他手中握着好友寄来的一幅画——洞庭湖。</strong>
       </div>
+      <div class="phint" id="ph-fan">▸ 点击查看</div>
     </div>
-    <div class="card" id="c-teng" onclick="bgReveal('c-teng')">
-      <div class="card-icon">🏛️</div>
-      <div class="card-hint">🔒 点击解锁</div>
-      <div class="card-content">
-        <h4>滕子京（991—1047）</h4>
-        <p>范仲淹的挚友。1043年被诬陷，贬任岳州知州。到任后励精图治，重修岳阳楼，写信请范仲淹作记。</p>
-        <p class="card-accent" style="color:#6b7db3">📮 他是这篇文章的"委托人"！</p>
+    <div class="pcard" id="pc-teng" onclick="openPerson('teng')">
+      <div class="ptag">委托人 · 好友</div>
+      <div class="pname">滕宗谅</div>
+      <div class="psub">北宋官员 · 同样被贬</div>
+      <div class="pdetail">
+        被贬至岳州（今岳阳），重修了岳阳楼。<br>
+        将一幅《洞庭晚秋图》寄给范仲淹，<br><br>
+        <strong style="color:var(--text)">托付：老朋友，帮我写一篇记吧。</strong>
       </div>
-    </div>
-    <div class="card" id="c-why" onclick="bgReveal('c-why')">
-      <div class="card-icon">🤔</div>
-      <div class="card-hint">🔒 点击解锁</div>
-      <div class="card-content">
-        <h4>谜题：他为何要写这封信？</h4>
-        <p>范仲淹自己也被贬了，却没有沉沦颓废。他想通过这篇文章，传递一个回应逆境的人生信念——</p>
-        <p class="card-accent" style="color:#c0392b">💡 被贬了，究竟该怎样面对人生？</p>
-      </div>
+      <div class="phint" id="ph-teng">▸ 点击查看</div>
     </div>
   </div>
-  <div class="unlock-badge" id="badge-s2">🔓 印章一解锁！背景现场已还原</div>
-</section>
-
-<!-- ===== S3: MAP ===== -->
-<section class="slide" id="s3" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">🗺️ 现场二 · 地理探索</div>
-    <div class="slide-title">岳阳楼在哪里，<em>为何如此壮阔</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">点击地图上4个标记，探索文中"衔远山，吞长江"的地理密码</div>
+  <div class="letter-box">
+    两个<strong>同样被贬</strong>的老朋友，一个在邓州，一个在岳州。<br>
+    范仲淹从未见过洞庭湖，却要凭一幅画，写出千古名篇。<br>
+    但他<strong>真正想说的</strong>，根本不是风景——
   </div>
-  <div class="map-layout">
-    <div class="map-svg-box">
-      <svg viewBox="0 0 500 310" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
-        <defs>
-          <linearGradient id="wg" x1="0%"y1="0%"x2="100%"y2="100%"><stop offset="0%" style="stop-color:#4fa8c8"/><stop offset="100%" style="stop-color:#2d88b0"/></linearGradient>
-          <linearGradient id="sg" x1="0%"y1="0%"x2="0%"y2="100%"><stop offset="0%" style="stop-color:#7ab84a"/><stop offset="100%" style="stop-color:#5a9a30"/></linearGradient>
-          <filter id="sh"><feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-opacity=".22"/></filter>
-        </defs>
-        <!-- land -->
-        <rect width="500" height="310" fill="#a8d090"/>
-        <!-- Yangtze River -->
-        <path d="M0 105 Q70 95 150 108 Q210 118 275 105 Q350 90 500 102" stroke="#2d88b0" stroke-width="22" fill="none" opacity=".65"/>
-        <path d="M0 105 Q70 95 150 108 Q210 118 275 105 Q350 90 500 102" stroke="#6abcd0" stroke-width="13" fill="none" opacity=".4"/>
-        <!-- Dongting Lake -->
-        <ellipse cx="195" cy="195" rx="130" ry="82" fill="url(#wg)" opacity=".88"/>
-        <!-- lake label -->
-        <text x="195" y="200" text-anchor="middle" font-size="13" fill="rgba(255,255,255,.9)" font-weight="bold" font-family="sans-serif">洞庭湖</text>
-        <!-- yangtze label -->
-        <text x="415" y="93" font-size="11" fill="#1a6888" font-weight="bold" font-family="sans-serif">长 江</text>
-        <!-- mountains east -->
-        <path d="M370 305 L415 215 L435 255 L460 195 L488 270 L500 305Z" fill="#6a8c42" opacity=".82"/>
-        <path d="M350 305 L392 218 L415 258 L438 200 L468 275 L500 305Z" fill="#84a85a" opacity=".65"/>
-        <text x="435" y="298" text-anchor="middle" font-size="10" fill="#3a5a18" font-family="sans-serif">君山 · 巴陵</text>
-        <!-- connector river channel -->
-        <path d="M195 113 Q195 150 195 165" stroke="#2d88b0" stroke-width="12" fill="none" opacity=".5"/>
+  <button class="btn" id="s2btn" onclick="s2done()" style="display:none">明白了，开始解码 →</button>
+</div>
 
-        <!-- PIN: Yueyang Tower -->
-        <g class="mpin" id="pin-yyl" data-interactive onclick="mapTap('yyl')" transform="translate(195,118)">
-          <circle class="pr" r="14" fill="none" stroke="#e67e22" stroke-width="1.5" opacity=".5"/>
-          <circle class="pc" r="9" fill="#e67e22" stroke="#fff" stroke-width="1.8" filter="url(#sh)"/>
-          <text y="4" text-anchor="middle" font-size="9" fill="#fff">楼</text>
-          <text class="ck" y="-17" text-anchor="middle" font-size="10" fill="#27ae60" opacity="0">✓</text>
-        </g>
-        <text x="195" y="104" text-anchor="middle" font-size="9" fill="#7a3a00" font-weight="bold" font-family="sans-serif">岳阳楼</text>
-
-        <!-- PIN: Dongting Lake overview -->
-        <g class="mpin" id="pin-dtl" data-interactive onclick="mapTap('dtl')" transform="translate(195,205)">
-          <circle class="pr" r="12" fill="none" stroke="#2d88b0" stroke-width="1.5" opacity=".5"/>
-          <circle class="pc" r="9" fill="#2d88b0" stroke="#fff" stroke-width="1.8" filter="url(#sh)"/>
-          <text y="4" text-anchor="middle" font-size="9" fill="#fff">湖</text>
-          <text class="ck" y="-15" text-anchor="middle" font-size="10" fill="#27ae60" opacity="0">✓</text>
-        </g>
-
-        <!-- PIN: River-Lake connection -->
-        <g class="mpin" id="pin-jh" data-interactive onclick="mapTap('jh')" transform="translate(168,112)">
-          <circle class="pr" r="11" fill="none" stroke="#16a085" stroke-width="1.5" opacity=".5"/>
-          <circle class="pc" r="8" fill="#16a085" stroke="#fff" stroke-width="1.8" filter="url(#sh)"/>
-          <text y="4" text-anchor="middle" font-size="8" fill="#fff">江</text>
-          <text class="ck" y="-14" text-anchor="middle" font-size="10" fill="#27ae60" opacity="0">✓</text>
-        </g>
-
-        <!-- PIN: Mountains / Junshan -->
-        <g class="mpin" id="pin-mt" data-interactive onclick="mapTap('mt')" transform="translate(430,240)">
-          <circle class="pr" r="11" fill="none" stroke="#7a5c2a" stroke-width="1.5" opacity=".5"/>
-          <circle class="pc" r="8" fill="#7a5c2a" stroke="#fff" stroke-width="1.8" filter="url(#sh)"/>
-          <text y="4" text-anchor="middle" font-size="8" fill="#fff">山</text>
-          <text class="ck" y="-14" text-anchor="middle" font-size="10" fill="#27ae60" opacity="0">✓</text>
-        </g>
-
-        <!-- compass rose -->
-        <g transform="translate(462,30)">
-          <circle r="12" fill="rgba(255,255,255,.6)"/>
-          <text y="-2" text-anchor="middle" font-size="8" fill="#333" font-family="sans-serif">N</text>
-          <line x1="0" y1="-8" x2="0" y2="8" stroke="#666" stroke-width="1"/>
-          <line x1="-8" y1="0" x2="8" y2="0" stroke="#666" stroke-width="1"/>
-        </g>
-      </svg>
-    </div>
-    <div class="map-panel">
-      <div class="mip-placeholder" id="mipPh">
-        <span style="font-size:1.8rem">🗺️</span>
-        <span>点击地图上的标记<br>探索文中描述的地理</span>
-      </div>
-      <div class="mip-content" id="mipC">
-        <div class="mip-icon" id="mipIcon"></div>
-        <div class="mip-title" id="mipTitle"></div>
-        <div class="mip-body" id="mipBody"></div>
-        <div class="mip-quote" id="mipQuote"></div>
-      </div>
-      <div class="map-prog">
-        <span>探索：</span><span id="mapN">0</span>/4
-        <div class="map-dots">
-          <div class="map-dot" id="md-yyl"></div>
-          <div class="map-dot" id="md-dtl"></div>
-          <div class="map-dot" id="md-jh"></div>
-          <div class="map-dot" id="md-mt"></div>
-        </div>
-      </div>
-      <div class="map-summary" id="mapSum">
-        <strong>🔓 地理密码已解锁！</strong><br>
-        岳阳楼踞洞庭湖畔，北吞长江，南衔巴陵，水天一色，气象万千——这正是"迁客骚人，多会于此"的根源。
-      </div>
+<!-- ════════════════════════════
+     S3  DECODER INTRO
+════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="label" style="margin-bottom:10px">解码工具 · DECODER</div>
+  <div style="text-align:center;max-width:600px;margin-bottom:18px">
+    <div style="font-size:clamp(20px,4vw,36px);font-weight:900">古人有一个秘密写法</div>
+    <div style="font-size:15px;color:var(--muted);margin-top:10px">
+      他们从不直接说出内心的感受——而是把情绪<strong style="color:var(--text)">藏进风景里</strong>
     </div>
   </div>
-</section>
-
-<!-- ===== S4: RAINY SCENE ===== -->
-<section class="slide" id="s4" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">🌧️ 现场三（上）· 悲景解码</div>
-    <div class="slide-title">阴雨连绵，<em>迁客悲从何来</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">范仲淹描绘了两种截然不同的洞庭湖——先看这一种。逐步点击揭示</div>
-  </div>
-  <div class="scene-layout">
-    <div class="scene-art">
-      <svg viewBox="0 0 300 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
-        <rect width="300" height="210" fill="#4a5a6a"/>
-        <!-- dark sky -->
-        <rect width="300" height="95" fill="#3a4a58"/>
-        <!-- clouds -->
-        <ellipse cx="70" cy="35" rx="58" ry="22" fill="#2e3e4e"/>
-        <ellipse cx="160" cy="25" rx="65" ry="26" fill="#283848"/>
-        <ellipse cx="245" cy="40" rx="50" ry="20" fill="#2e3e4e"/>
-        <!-- rain -->
-        <g stroke="#7aace0" stroke-width=".9" opacity=".55">
-          <line x1="25" y1="70" x2="20" y2="100"/><line x1="55" y1="65" x2="50" y2="95"/>
-          <line x1="85" y1="70" x2="80" y2="100"/><line x1="115" y1="65" x2="110" y2="95"/>
-          <line x1="145" y1="70" x2="140" y2="100"/><line x1="175" y1="65" x2="170" y2="95"/>
-          <line x1="205" y1="70" x2="200" y2="100"/><line x1="235" y1="65" x2="230" y2="95"/>
-          <line x1="265" y1="70" x2="260" y2="100"/>
-        </g>
-        <!-- dark water -->
-        <path d="M0 132 Q50 122 110 135 Q165 148 220 133 Q265 120 300 135 L300 210 L0 210Z" fill="#2a404e"/>
-        <path d="M0 148 Q45 138 95 150 Q150 162 200 148 Q250 135 300 150 L300 210 L0 210Z" fill="#1e3040" opacity=".8"/>
-        <!-- waves choppy -->
-        <path d="M30 155 Q50 148 70 155" stroke="#4a7a9a" stroke-width="1.4" fill="none"/>
-        <path d="M120 162 Q145 155 168 162" stroke="#4a7a9a" stroke-width="1.4" fill="none"/>
-        <path d="M205 153 Q228 146 252 153" stroke="#4a7a9a" stroke-width="1.4" fill="none"/>
-        <!-- tower silhouette -->
-        <rect x="128" y="90" width="44" height="42" fill="#1e2e3a"/>
-        <polygon points="126,90 150,70 174,90" fill="#1e2e3a"/>
-        <!-- boat -->
-        <path d="M55 168 Q78 160 100 168 L96 178 L60 178Z" fill="#1e2e3a" opacity=".7"/>
-        <!-- caption -->
-        <text x="150" y="206" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.45)" font-family="sans-serif">阴风怒号，浊浪排空</text>
-      </svg>
+  <div class="decoder-box">
+    <div class="formula">
+      <div class="fitem"><div class="zh">景</div><div class="en">SCENERY</div></div>
+      <div class="farrow">→</div>
+      <div class="fitem"><div class="zh">情</div><div class="en">EMOTION</div></div>
+      <div class="farrow">→</div>
+      <div class="fitem hi"><div class="zh">志</div><div class="en">ASPIRATION</div></div>
     </div>
-    <div class="scene-steps" id="sad-steps">
-      <div class="sstep open" id="ss1" onclick="sadStep(1)" style="--c:#4a5a7a">
-        <div class="sstep-num" style="background:#4a5a7a">1</div>
-        <div class="sstep-body">
-          <div class="sstep-label">天气 · 湖面</div>
-          <div class="sstep-quote" id="sq1">👆 点击揭示原文</div>
-          <span class="sstep-emo" style="background:rgba(74,90,122,.12);color:#2a3a5a">😰 去国怀乡，忧谗畏讥</span>
-        </div>
+    <div style="font-size:13px;color:var(--muted)">
+      风景是伪装，情绪是密码，志向才是真正要说的话
+    </div>
+    <div class="ftags" style="margin-top:16px">
+      <span class="ftag">🌧️ 悲景藏悲情</span>
+      <span class="ftag">☀️ 乐景藏喜情</span>
+      <span class="ftag">💡 超越两者 = 真正的智慧</span>
+    </div>
+  </div>
+  <button class="btn" style="margin-top:8px" onclick="ctrl.advance()">装备完毕，进入解码 →</button>
+</div>
+
+<!-- ════════════════════════════
+     S4  RAINY SCENE
+════════════════════════════ -->
+<div class="slide" id="s4" data-needs-interaction="true">
+  <div class="label" style="margin-bottom:8px">第一层解码 · LEVEL 1</div>
+  <div class="decode-wrap">
+    <div class="dheader">
+      <div class="dnum">1</div>
+      <div class="dtitle">🌧️ 当下雨的时候……</div>
+    </div>
+    <div class="text-panel">
+      <span class="kw" onclick="tog('a1')">淫雨霏霏，连月不开</span>，
+      <span class="kw" onclick="tog('a2')">阴风怒号，浊浪排空</span>；
+      日星隐曜，山岳潜形……
+      <div class="anno" id="a1">💧 连绵的雨停不下来——这不是在写天气，是他心里的压抑找不到出口</div>
+      <div class="anno" id="a2">💨 风在怒吼——那是被压住的委屈、愤怒，还有走投无路的无力感</div>
+      <br>登斯楼也，则有
+      <span class="kw" onclick="tog('a3')">去国怀乡，忧谗畏讥</span>，
+      <span class="kw" onclick="tog('a4')">满目萧然，感极而悲者矣</span>。
+      <div class="anno" id="a3">🏠 离开京城、思念故乡、害怕被人说坏话——被贬官员的真实心理</div>
+      <div class="anno" id="a4">😢 看什么都是凄凉，悲到了极点。这就是"迁客骚人"在逆境中的情绪崩溃</div>
+    </div>
+    <div class="eq-box" id="eq1">
+      <div class="eq-q">🔎 解码问题：这段景物背后，藏着什么情绪？</div>
+      <div class="emo-row">
+        <button class="eo" onclick="ansEmo(1,0)">😊 开心喜悦</button>
+        <button class="eo" onclick="ansEmo(1,1)">😔 悲伤压抑</button>
+        <button class="eo" onclick="ansEmo(1,2)">😡 愤怒激动</button>
+        <button class="eo" onclick="ansEmo(1,3)">😐 平静淡然</button>
       </div>
-      <div class="sstep" id="ss2" onclick="sadStep(2)" style="--c:#3a4a6a">
-        <div class="sstep-num" style="background:#3a4a6a">2</div>
-        <div class="sstep-body">
-          <div class="sstep-label">日月 · 行船</div>
-          <div class="sstep-quote" id="sq2">🔒 完成上一步解锁</div>
-          <span class="sstep-emo" style="background:rgba(58,74,106,.1);color:#1a2a4a">😔 日星隐曜，樯倾楫摧</span>
-        </div>
-      </div>
-      <div class="sstep" id="ss3" onclick="sadStep(3)" style="--c:#2a3a5a">
-        <div class="sstep-num" style="background:#2a3a5a">3</div>
-        <div class="sstep-body">
-          <div class="sstep-label">傍晚 · 声音</div>
-          <div class="sstep-quote" id="sq3">🔒 完成上一步解锁</div>
-          <span class="sstep-emo" style="background:rgba(42,58,90,.1);color:#0a1a3a">😢 薄暮冥冥，虎啸猿啼</span>
-        </div>
-      </div>
-      <div class="sstep" id="ss4" onclick="sadStep(4)" style="--c:#1a2a4a">
-        <div class="sstep-num" style="background:#1a2a4a">4</div>
-        <div class="sstep-body">
-          <div class="sstep-label">情感总结</div>
-          <div class="sstep-quote" id="sq4">🔒 完成上一步解锁</div>
-          <span class="sstep-emo" style="background:rgba(26,42,74,.12);color:#0a0a2a">😭 满目萧然，感极而悲者矣</span>
+      <div class="reveal" id="r1">
+        <div class="rtag">✅ 解码成功</div>
+        <div class="rtext">
+          正确！阴暗风雨 = <strong style="color:var(--teal)">被贬后的悲伤与压抑</strong>。<br>
+          这是"迁客骚人"面对逆境的第一反应：<strong>环境变差 → 心情变差</strong>。<br>
+          但范仲淹觉得这还不够，继续看第二层……
         </div>
       </div>
     </div>
   </div>
-  <div class="unlock-badge" id="badge-s4">✅ 悲景解码完成！→ 继续探索晴天</div>
-</section>
+</div>
 
-<!-- ===== S5: SUNNY SCENE ===== -->
-<section class="slide" id="s5" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">☀️ 现场三（下）· 喜景解码</div>
-    <div class="slide-title">春和景明，<em>迁客喜从何来</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">同一片洞庭湖，换了天气，心情也全然不同——继续点击揭示</div>
-  </div>
-  <div class="scene-layout">
-    <div class="scene-art">
-      <svg viewBox="0 0 300 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
-        <defs>
-          <linearGradient id="sky2" x1="0%"y1="0%"x2="0%"y2="100%"><stop offset="0%" style="stop-color:#6ab8e8"/><stop offset="100%" style="stop-color:#a8d8f0"/></linearGradient>
-          <linearGradient id="lake2" x1="0%"y1="0%"x2="0%"y2="100%"><stop offset="0%" style="stop-color:#4abce0"/><stop offset="100%" style="stop-color:#2898c0"/></linearGradient>
-        </defs>
-        <rect width="300" height="210" fill="url(#sky2)"/>
-        <!-- sun -->
-        <circle cx="242" cy="42" r="20" fill="#ffe060" opacity=".92"/>
-        <g stroke="#ffd020" stroke-width="1.4" opacity=".55">
-          <line x1="242" y1="14" x2="242" y2="5"/><line x1="262" y1="22" x2="269" y2="15"/>
-          <line x1="270" y1="42" x2="279" y2="42"/><line x1="262" y1="62" x2="269" y2="69"/>
-          <line x1="242" y1="70" x2="242" y2="79"/><line x1="222" y1="62" x2="215" y2="69"/>
-          <line x1="214" y1="42" x2="205" y2="42"/><line x1="222" y1="22" x2="215" y2="15"/>
-        </g>
-        <!-- clouds white -->
-        <ellipse cx="65" cy="32" rx="32" ry="13" fill="rgba(255,255,255,.85)"/>
-        <ellipse cx="82" cy="25" rx="22" ry="10" fill="rgba(255,255,255,.9)"/>
-        <ellipse cx="148" cy="22" rx="26" ry="11" fill="rgba(255,255,255,.75)"/>
-        <!-- shore -->
-        <path d="M0 122 Q35 115 65 120 L65 210 L0 210Z" fill="#7ab840" opacity=".55"/>
-        <!-- calm lake -->
-        <path d="M0 122 Q55 115 110 122 Q165 130 220 120 Q262 112 300 122 L300 210 L0 210Z" fill="url(#lake2)"/>
-        <!-- shimmer -->
-        <path d="M40 140 Q60 135 80 140" stroke="rgba(255,255,255,.55)" stroke-width="1.4" fill="none"/>
-        <path d="M130 147 Q155 142 180 147" stroke="rgba(255,255,255,.55)" stroke-width="1.4" fill="none"/>
-        <path d="M210 139 Q234 134 258 139" stroke="rgba(255,255,255,.55)" stroke-width="1.4" fill="none"/>
-        <!-- tower bright -->
-        <rect x="128" y="78" width="44" height="44" fill="#9a7020"/>
-        <polygon points="126,78 150,58 174,78" fill="#b88830"/>
-        <rect x="134" y="90" width="10" height="15" fill="#5a3808" opacity=".65"/>
-        <rect x="156" y="90" width="10" height="15" fill="#5a3808" opacity=".65"/>
-        <!-- sailing boat -->
-        <path d="M48 145 Q68 138 88 145 L84 156 L52 156Z" fill="#9a7020"/>
-        <line x1="68" y1="145" x2="68" y2="124" stroke="#5a3808" stroke-width="1.5"/>
-        <path d="M68 124 L85 134 L68 143Z" fill="rgba(255,200,80,.75)"/>
-        <!-- birds -->
-        <path d="M88 54 Q93 50 98 54" stroke="#4a6a8a" stroke-width="1.5" fill="none"/>
-        <path d="M108 44 Q113 40 118 44" stroke="#4a6a8a" stroke-width="1.5" fill="none"/>
-        <path d="M175 35 Q180 31 185 35" stroke="#4a6a8a" stroke-width="1.5" fill="none"/>
-        <!-- caption -->
-        <text x="150" y="206" text-anchor="middle" font-size="10" fill="rgba(0,0,0,.38)" font-family="sans-serif">春和景明，波澜不惊</text>
-      </svg>
+<!-- ════════════════════════════
+     S5  SUNNY SCENE
+════════════════════════════ -->
+<div class="slide" id="s5" data-needs-interaction="true">
+  <div class="label" style="margin-bottom:8px">第二层解码 · LEVEL 2</div>
+  <div class="decode-wrap">
+    <div class="dheader">
+      <div class="dnum">2</div>
+      <div class="dtitle">☀️ 当天晴的时候……</div>
     </div>
-    <div class="scene-steps" id="joy-steps">
-      <div class="sstep open" id="js1" onclick="joyStep(1)" style="--c:#2d7a50">
-        <div class="sstep-num" style="background:#2d7a50">1</div>
-        <div class="sstep-body">
-          <div class="sstep-label">天气 · 湖面</div>
-          <div class="sstep-quote" id="jq1">👆 点击揭示原文</div>
-          <span class="sstep-emo" style="background:rgba(45,122,80,.1);color:#1a5c3a">😊 宠辱偕忘，把酒临风</span>
-        </div>
+    <div class="text-panel">
+      至若<span class="kw" onclick="tog('b1')">春和景明，波澜不惊</span>，
+      上下天光，一碧万顷；
+      <span class="kw" onclick="tog('b2')">沙鸥翔集，锦鳞游泳</span>；
+      <div class="anno" id="b1">🌅 风平浪静的湖面——一切都变好了，心情也跟着好起来</div>
+      <div class="anno" id="b2">🐦 鸟儿飞翔，鱼儿游动，充满生机——看什么都顺眼</div>
+      岸芷汀兰，郁郁青青……<br>
+      登斯楼也，则有
+      <span class="kw" onclick="tog('b3')">心旷神怡，宠辱偕忘</span>，
+      <span class="kw" onclick="tog('b4')">把酒临风，其喜洋洋者矣</span>。
+      <div class="anno" id="b3">🎉 荣耀和屈辱都忘了？——真的忘了吗？还是暂时被美景麻醉了？</div>
+      <div class="anno" id="b4">🍷 举杯迎风，喜不自胜——但这种快乐，依赖天气，天一变就没了</div>
+    </div>
+    <div class="eq-box" id="eq2">
+      <div class="eq-q">🔎 解码问题：这种"天晴就快乐"有什么问题？</div>
+      <div class="emo-row">
+        <button class="eo" onclick="ansEmo(2,0)">没问题，快乐就是快乐</button>
+        <button class="eo" onclick="ansEmo(2,1)">这种快乐依赖外部条件，天一变就消失</button>
+        <button class="eo" onclick="ansEmo(2,2)">这是假快乐，根本不真实</button>
       </div>
-      <div class="sstep" id="js2" onclick="joyStep(2)" style="--c:#1a8a60">
-        <div class="sstep-num" style="background:#1a8a60">2</div>
-        <div class="sstep-body">
-          <div class="sstep-label">沙鸥 · 岸草</div>
-          <div class="sstep-quote" id="jq2">🔒 完成上一步解锁</div>
-          <span class="sstep-emo" style="background:rgba(26,138,96,.1);color:#0a4a2a">😄 沙鸥翔集，岸芷汀兰</span>
-        </div>
-      </div>
-      <div class="sstep" id="js3" onclick="joyStep(3)" style="--c:#0a7a50">
-        <div class="sstep-num" style="background:#0a7a50">3</div>
-        <div class="sstep-body">
-          <div class="sstep-label">月夜 · 渔歌</div>
-          <div class="sstep-quote" id="jq3">🔒 完成上一步解锁</div>
-          <span class="sstep-emo" style="background:rgba(10,122,80,.1);color:#004a20">🥳 渔歌互答，此乐何极</span>
-        </div>
-      </div>
-      <div class="sstep" id="js4" onclick="joyStep(4)" style="--c:#006a40">
-        <div class="sstep-num" style="background:#006a40">4</div>
-        <div class="sstep-body">
-          <div class="sstep-label">情感总结</div>
-          <div class="sstep-quote" id="jq4">🔒 完成上一步解锁</div>
-          <span class="sstep-emo" style="background:rgba(0,106,64,.12);color:#003a18">🎊 心旷神怡，其喜洋洋者矣</span>
+      <div class="reveal" id="r2">
+        <div class="rtag">✅ 解码成功</div>
+        <div class="rtext">
+          对！这是<strong style="color:var(--teal)">被动的快乐</strong>——好天气给的，不是自己的。<br>
+          依然是迁客骚人的思维：<strong>环境好 → 我好，环境坏 → 我坏</strong>。<br>
+          范仲淹想说：这还远远不够。真正的智者，有更高的境界……
         </div>
       </div>
     </div>
   </div>
-  <div class="unlock-badge" id="badge-s5">✅ 喜景解码完成！两种情感对比已呈现</div>
-</section>
+</div>
 
-<!-- ===== S6: CONTRAST ===== -->
-<section class="slide" id="s6" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">🔮 现场四 · 古仁人的秘密</div>
-    <div class="slide-title">迁客骚人 VS <em>古仁人</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">两种人，同一楼，面对同样的风雨晴天，反应为什么截然不同？</div>
+<!-- ════════════════════════════
+     S6  THE REAL CHOICE
+════════════════════════════ -->
+<div class="slide" id="s6" data-needs-interaction="true">
+  <div class="label" style="margin-bottom:14px">第三层解码 · LEVEL 3</div>
+  <div style="text-align:center;margin-bottom:18px;max-width:700px">
+    <div style="font-size:clamp(18px,3.5vw,30px);font-weight:900">范仲淹提出了一个问题</div>
+    <div style="font-size:15px;color:var(--muted);margin-top:8px">
+      同样面对逆境，两种人有截然不同的选择
+    </div>
   </div>
-  <div class="contrast-wrap">
-    <div class="contrast-q">同样站在岳阳楼上——天气晴朗时喜悦，阴雨时悲伤。那么"古仁人"也会这样吗？</div>
-    <div class="contrast-grid">
-      <div class="con-col bad">
-        <div class="con-col-h" style="color:#6b7db3">😔 迁客骚人</div>
-        <div class="con-item">☁️ 阴雨 → 忧愁悲伤</div>
-        <div class="con-item">☀️ 晴天 → 喜悦高兴</div>
-        <div class="con-item">情绪随外部环境波动</div>
-        <div class="con-item" style="font-size:.73rem;color:rgba(90,48,16,.55)">→ 以物喜，以己悲</div>
-      </div>
-      <div class="con-vs">
-        <span>VS</span>
-        <span>❓</span>
-      </div>
-      <div class="con-col good">
-        <div class="con-col-h" style="color:#8b1a1a">🧐 古仁人</div>
-        <div class="con-item">☁️ 阴雨 → ？</div>
-        <div class="con-item">☀️ 晴天 → ？</div>
-        <div class="con-item">情绪会随天气变化吗？</div>
+  <div class="versus">
+    <div class="vcard" id="vca" onclick="pick('a')">
+      <div class="vicon">😔</div>
+      <div class="vtype">迁客骚人</div>
+      <div class="vdesc">
+        天好 → 开心<br>
+        天坏 → 悲伤<br><br>
+        情绪被<strong style="color:var(--red)">外部环境控制</strong>
       </div>
     </div>
-    <div class="choices">
-      <button class="choice-btn" style="border-color:#7a8fb8;color:#7a8fb8" onclick="conChoose('wrong')">A. 会——都是人，肯定会受影响</button>
-      <button class="choice-btn" style="border-color:#8b1a1a;color:#8b1a1a" onclick="conChoose('right')">B. 不会——内心有更高的追求</button>
-    </div>
-    <div class="con-reveal" id="conReveal">
-      <div class="con-reveal-main">不以物喜，不以己悲</div>
-      <div class="con-reveal-sub">
-        古仁人的内心不随外物（天气、境遇）起伏，也不因个人得失而动摇。<br>
-        他们心中装着"天下"，这种超然胸怀，正是范仲淹想传递的千年密码！
+    <div class="vvs">VS</div>
+    <div class="vcard" id="vcb" onclick="pick('b')">
+      <div class="vicon">🧘</div>
+      <div class="vtype">古仁人</div>
+      <div class="vdesc">
+        天好 → 不骄<br>
+        天坏 → 不弃<br><br>
+        情绪<strong style="color:var(--teal)">来自内心，不随外物</strong>
       </div>
     </div>
   </div>
-</section>
+  <div class="vresult" id="vres">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-align:center">
+      范仲淹给出的答案——
+    </div>
+    <div class="vq">不以物喜，不以己悲</div>
+    <div class="vexp">
+      不因外物的好坏而喜悦或悲伤。<br>
+      这不是"没有情绪"，而是情绪不被外部条件<strong style="color:var(--text)">绑架</strong>。<br>
+      这是写给朋友的话，也是他在人生低谷里写给自己的话。
+    </div>
+  </div>
+</div>
 
-<!-- ===== S7: QUOTE ===== -->
-<section class="slide" id="s7" data-needs-interaction="true">
-  <div class="quote-stage">
-    <div class="quote-pre">
-      范仲淹自己被贬，改革失败，好友也遭贬谪。<br>
-      他没有沉沦——他写下了这句震撼千年、影响无数人的话：
+<!-- ════════════════════════════
+     S7  THE QUOTE
+════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="qs-wrap">
+    <div class="qs-pre">解码最终密码 · FINAL DECODE</div>
+    <div class="qs-text" id="qtext">
+      <span id="qline"></span><span class="qcursor" id="qcsr"></span>
     </div>
-    <div class="quote-line" id="quoteLine"></div>
-    <div class="quote-explain" id="quoteExp">
-      <strong>先天下之忧而忧，后天下之乐而乐</strong><br><br>
-      <strong>直译：</strong>在天下人忧愁之前就忧愁，在天下人快乐之后才快乐。<br><br>
-      <strong>深意：</strong>个人的荣辱得失算什么？真正有志之士把天下人的福祉，放在自己的享乐之前。这是范仲淹的人生信条，也是他在逆境中不倒的精神支柱。<br><br>
-      <strong>联系作者处境：</strong>他自己被贬了——他先忧的是国家，而不是自己的遭遇。
-    </div>
-    <button class="quote-btn" id="quoteBtn" onclick="quoteNext()">继续 →</button>
   </div>
-</section>
+  <div class="qdecode" id="qdec">
+    <div class="qgrid">
+      <div class="qcell">
+        <div class="phrase">先天下之忧而忧</div>
+        <div class="mean">比天下所有人都先感到忧虑——不是为自己，是为苍生，为国家</div>
+      </div>
+      <div class="qcell">
+        <div class="phrase">后天下之乐而乐</div>
+        <div class="mean">等天下所有人都快乐了，才让自己享受快乐</div>
+      </div>
+    </div>
+  </div>
+  <div class="qpersonal" id="qpers">
+    <div class="qpers-text">
+      写下这句话时，范仲淹<strong>正处于人生最低谷</strong>。<br>
+      他没有在倒霉时怨天尤人，而是选择了一个更大的坐标——<br>
+      <strong>把个人得失放进天下兴亡里，渺小的烦恼就变小了。</strong>
+    </div>
+    <button class="btn" style="margin-top:20px" onclick="ctrl.advance()">继续 →</button>
+  </div>
+</div>
 
-<!-- ===== S8: TIMELINE ===== -->
-<section class="slide" id="s8" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">📜 现场五 · 人生轨迹</div>
-    <div class="slide-title">他说"先忧后乐"，<em>他自己做到了吗</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">点击逐步解锁范仲淹的人生轨迹，验证他的人生信条</div>
+<!-- ════════════════════════════
+     S8  MODERN CONNECTION
+════════════════════════════ -->
+<div class="slide" id="s8" data-needs-interaction="true">
+  <div class="label" style="margin-bottom:8px">现代解码 · YOUR LIFE</div>
+  <div style="text-align:center;max-width:600px;margin-bottom:16px">
+    <div style="font-size:clamp(18px,3vw,28px);font-weight:900">这和你有什么关系？</div>
+    <div style="font-size:14px;color:var(--muted);margin-top:8px">选一个你遇到过的情况</div>
   </div>
-  <div class="tl-wrap" id="tlWrap">
-    <div class="tl-row show" id="tl0">
-      <div class="tl-left"><div class="tl-circle"></div><div class="tl-year">989年</div></div>
-      <div class="tl-box">
-        <div class="tl-event">出生贫寒，苦读不辍</div>
-        <div class="tl-note">父亲早逝，随母改嫁，常以稀粥为食，仍在寺庙中刻苦攻读。</div>
-        <span class="tl-tag" style="background:rgba(192,57,43,.08);color:#8b1a1a">💪 逆境自强</span>
-        <br><button class="tl-btn" onclick="tlNext(1)">下一段 →</button>
-      </div>
+  <div class="scenes">
+    <div class="scard" onclick="pickScene(0)">
+      <div class="semoji">📝</div>
+      <div class="stitle">考试考砸了</div>
+      <div class="sdesc">努力了但没考好，觉得自己太差劲</div>
     </div>
-    <div class="tl-row" id="tl1">
-      <div class="tl-left"><div class="tl-circle"></div><div class="tl-year">1015年</div></div>
-      <div class="tl-box">
-        <div class="tl-event">高中进士，入朝为官</div>
-        <div class="tl-note">26岁考中进士，踏入仕途。多次直言上书，多次遭到贬谪，却从未停止为国发声。</div>
-        <span class="tl-tag" style="background:rgba(39,174,96,.08);color:#1a6b3a">🎓 出人头地</span>
-        <br><button class="tl-btn" onclick="tlNext(2)">下一段 →</button>
-      </div>
+    <div class="scard" onclick="pickScene(1)">
+      <div class="semoji">😤</div>
+      <div class="stitle">被冤枉了</div>
+      <div class="sdesc">明明没做错，却被误解，委屈又愤怒</div>
     </div>
-    <div class="tl-row" id="tl2">
-      <div class="tl-left"><div class="tl-circle"></div><div class="tl-year">1043年</div></div>
-      <div class="tl-box">
-        <div class="tl-event">推行"庆历新政"</div>
-        <div class="tl-note">宋仁宗重用，推行吏治改革，整顿官僚体制。触动权贵利益，遭到猛烈反对。</div>
-        <span class="tl-tag" style="background:rgba(230,126,34,.08);color:#a05010">⚡ 改革受阻</span>
-        <br><button class="tl-btn" onclick="tlNext(3)">下一段 →</button>
-      </div>
-    </div>
-    <div class="tl-row" id="tl3">
-      <div class="tl-left"><div class="tl-circle"></div><div class="tl-year">1045年</div></div>
-      <div class="tl-box">
-        <div class="tl-event">新政失败，再遭贬谪，写下《岳阳楼记》</div>
-        <div class="tl-note">被贬知邓州。收到好友滕子京书信，仅凭一幅《洞庭晚秋图》，写就千古名文——他从未去过岳阳楼！</div>
-        <span class="tl-tag" style="background:rgba(192,57,43,.1);color:#8b1a1a">✍️ 贬中作文</span>
-        <br><button class="tl-btn" onclick="tlClimax()">解锁密码 🔓</button>
-      </div>
-    </div>
-    <div class="tl-climax" id="tlC">
-      <p>范仲淹被贬了，<strong>没有以己悲</strong>；<br>
-      改革失败了，<strong>没有因物喜（曾经高位）而留恋</strong>；<br>
-      他把对天下的忧虑，<strong>写进了这篇文章</strong>。<br><br>
-      <strong>他用自己的人生，诠释了"先天下之忧而忧"！</strong></p>
+    <div class="scard" onclick="pickScene(2)">
+      <div class="semoji">🏆</div>
+      <div class="stitle">取得好成绩</div>
+      <div class="sdesc">考得很好或赢了比赛，有点飘飘然</div>
     </div>
   </div>
-  <div class="unlock-badge" id="badge-s8">🔓 全部5枚印章解锁！千年密码即将揭晓</div>
-</section>
+  <div class="sresp" id="sresp">
+    <div class="slabel">范仲淹的智慧</div>
+    <div class="squote" id="sq"></div>
+    <div class="smod" id="sm"></div>
+  </div>
+  <button class="btn" id="s8btn" onclick="ctrl.advance()" style="display:none">理解了，继续 →</button>
+</div>
 
-<!-- ===== S9: QUIZ ===== -->
-<section class="slide" id="s9" data-needs-interaction="true">
-  <div class="slide-header">
-    <div class="slide-badge">🏆 密码验收</div>
-    <div class="slide-title">三道题，<em>检验你的破译成果</em></div>
-    <div class="ink-line"></div>
-    <div class="slide-sub">答对一道解锁一道，全部答完即可前进</div>
+<!-- ════════════════════════════
+     S9  STRUCTURE
+════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="label" style="margin-bottom:8px">文章结构 · STRUCTURE</div>
+  <div style="text-align:center;font-size:clamp(18px,3vw,28px);font-weight:900;margin-bottom:20px">
+    现在你能解读整篇文章了
   </div>
-  <div class="quiz-wrap">
-    <div class="quiz-card active" id="qq0">
-      <div class="quiz-n">第 1 题 / 共 3 题</div>
-      <div class="quiz-q">范仲淹写《岳阳楼记》时，他的处境是？</div>
-      <div class="quiz-opts">
-        <button class="quiz-opt" onclick="qa(0,0)">A. 正游览岳阳楼，有感而发</button>
-        <button class="quiz-opt" onclick="qa(0,1)">B. 被贬邓州，凭滕子京寄来的画作写成</button>
-        <button class="quiz-opt" onclick="qa(0,2)">C. 隐居山林，应皇帝之命而作</button>
-        <button class="quiz-opt" onclick="qa(0,3)">D. 出使外地，思乡感怀</button>
+  <div class="flow" id="flow">
+    <div class="frow" id="fr0">
+      <div class="fblocks">
+        <div class="fb c1">
+          <div class="flayer">景 · SCENERY</div>
+          <div class="fcontent">🌧️ 悲景 &nbsp;+&nbsp; ☀️ 乐景</div>
+          <div class="fquote">"淫雨霏霏" / "春和景明"</div>
+        </div>
       </div>
-      <div class="quiz-fb" id="qfb0"></div>
     </div>
-    <div class="quiz-card" id="qq1">
-      <div class="quiz-n">第 2 题 / 共 3 题</div>
-      <div class="quiz-q">"不以物喜，不以己悲"——"以物喜"的意思是？</div>
-      <div class="quiz-opts">
-        <button class="quiz-opt" onclick="qa(1,0)">A. 因为外部顺境（好的际遇）而喜悦</button>
-        <button class="quiz-opt" onclick="qa(1,1)">B. 因为财物增多而高兴</button>
-        <button class="quiz-opt" onclick="qa(1,2)">C. 因为景色优美而开心</button>
-        <button class="quiz-opt" onclick="qa(1,3)">D. 因为物产丰富而满足</button>
+    <div class="farr" id="fa0">↓</div>
+    <div class="frow" id="fr1">
+      <div class="fblocks">
+        <div class="fb c2">
+          <div class="flayer">情 · EMOTION</div>
+          <div class="fcontent">😔 迁客悲情 &nbsp;+&nbsp; 😊 迁客喜情</div>
+          <div class="fquote">"感极而悲" / "喜洋洋者矣"</div>
+        </div>
       </div>
-      <div class="quiz-fb" id="qfb1"></div>
     </div>
-    <div class="quiz-card" id="qq2">
-      <div class="quiz-n">第 3 题 / 共 3 题</div>
-      <div class="quiz-q">"先天下之忧而忧，后天下之乐而乐"体现了怎样的情怀？</div>
-      <div class="quiz-opts">
-        <button class="quiz-opt" onclick="qa(2,0)">A. 忧国忧民、以天下为己任的博大胸怀</button>
-        <button class="quiz-opt" onclick="qa(2,1)">B. 及时行乐、珍惜当下的人生态度</button>
-        <button class="quiz-opt" onclick="qa(2,2)">C. 隐居避世、不问政事的出世思想</button>
-        <button class="quiz-opt" onclick="qa(2,3)">D. 为自己争取荣华富贵的进取精神</button>
+    <div class="farr" id="fa1">↓ 超越</div>
+    <div class="frow" id="fr2">
+      <div class="fblocks">
+        <div class="fb c3">
+          <div class="flayer">志 · ASPIRATION</div>
+          <div class="fcontent">💡 古仁人之心</div>
+          <div class="fquote">"不以物喜，不以己悲" &nbsp;·&nbsp; "先天下之忧而忧，后天下之乐而乐"</div>
+        </div>
       </div>
-      <div class="quiz-fb" id="qfb2"></div>
-    </div>
-    <div class="quiz-result" id="qResult">
-      <div class="quiz-score" id="qScore">3/3</div>
-      <div class="quiz-msg" id="qMsg">满分！千年密码已完全破译！</div>
     </div>
   </div>
-</section>
+  <button class="btn" style="margin-top:4px" onclick="ctrl.advance()">完成解码，查看成就 →</button>
+</div>
 
-<!-- ===== S10: SUMMARY ===== -->
-<section class="slide" id="s10">
-  <div class="summary-wrap">
-    <div class="summary-seals">
-      <div class="sum-seal">🔍</div>
-      <div class="sum-seal">🗺️</div>
-      <div class="sum-seal">🌧️</div>
-      <div class="sum-seal">🔮</div>
-      <div class="sum-seal">📜</div>
-    </div>
-    <div class="summary-h">《岳阳楼记》· 千年密码已破译</div>
-    <div class="rhyme" id="rhymeBox"></div>
-    <div class="km">
-      <div class="km-box"><div class="km-label">作者 · 时代</div><div class="km-val">范仲淹 · 北宋 · 1046年于邓州</div></div>
-      <div class="km-box"><div class="km-label">写作特色</div><div class="km-val">借景抒情 · 景→情→志 · 未登楼而作</div></div>
-      <div class="km-box"><div class="km-label">两种景色</div><div class="km-val">阴雨→悲 · 晴天→喜 · 对比手法</div></div>
-      <div class="km-box"><div class="km-label">核心句</div><div class="km-val">不以物喜，不以己悲</div></div>
-      <div class="km-box"><div class="km-label">主旨句</div><div class="km-val">先天下之忧而忧，后天下之乐而乐</div></div>
-      <div class="km-box"><div class="km-label">精神内涵</div><div class="km-val">忧国忧民 · 以天下为己任</div></div>
+<!-- ════════════════════════════
+     S10  FINAL
+════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="label" style="margin-bottom:8px">解码完成 · MISSION COMPLETE</div>
+  <div style="font-size:clamp(20px,4vw,38px);font-weight:900;text-align:center">
+    你解开了这道千年密码
+  </div>
+  <div class="fbadges">
+    <div class="fb2" id="fb0">🔍<span class="bl">起源</span></div>
+    <div class="fb2" id="fb1">🌧️<span class="bl">悲景</span></div>
+    <div class="fb2" id="fb2">☀️<span class="bl">乐景</span></div>
+    <div class="fb2" id="fb3">💡<span class="bl">超越</span></div>
+    <div class="fb2" id="fb4">🏆<span class="bl">解码</span></div>
+  </div>
+  <div class="fkeys">
+    <div class="fktitle">核心知识</div>
+    <div class="krows">
+      <div class="krow">
+        <div class="kicon">景</div>
+        <div class="ktext"><strong>借景抒情</strong> — 用风景表达情感，是古文的核心手法</div>
+      </div>
+      <div class="krow">
+        <div class="kicon">构</div>
+        <div class="ktext"><strong>景 → 情 → 志</strong> — 三层递进结构，由外到内，由景到志</div>
+      </div>
+      <div class="krow">
+        <div class="kicon">心</div>
+        <div class="ktext"><strong>不以物喜，不以己悲</strong> — 情绪不被外物左右，这是"古仁人"的境界</div>
+      </div>
+      <div class="krow">
+        <div class="kicon">志</div>
+        <div class="ktext"><strong>先天下之忧而忧，后天下之乐而乐</strong> — 以天下为己任的担当精神</div>
+      </div>
     </div>
   </div>
-</section>
+  <div class="fquotefinal">先天下之忧而忧，后天下之乐而乐</div>
+</div>
 
-</div><!-- #deck -->
+</div><!-- #app -->
 
 <script>
-// ===========================
-// SLIDE CONTROLLER
-// ===========================
+// ═══════════ SLIDE CONTROLLER ═══════════
 const ctrl = (function(){
   const slides = Array.from(document.querySelectorAll('.slide'));
-  const total = slides.length; // 10
+  const total = slides.length;
   let cur = 0;
+  const nav = document.getElementById('nav');
 
-  function prog(){ document.getElementById('prog-fill').style.width = ((cur+1)/total*100)+'%'; }
-  function hint(){
-    const s = slides[cur];
-    const locked = s.dataset.needsInteraction==='true' && s.dataset.done!=='true';
-    document.getElementById('hint').textContent = locked ? '完成互动解锁下一关 🔒' : (cur<total-1 ? '点击继续 →' : '课程完成 🎉');
-  }
+  slides.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' on':'');
+    d.onclick = ()=>goTo(i);
+    nav.appendChild(d);
+  });
+
   function goTo(n){
-    if(n<0||n>=total) return;
-    slides[cur].classList.remove('active'); slides[cur].classList.add('exit-left');
-    setTimeout(()=>slides[cur].classList.remove('exit-left'),480);
-    cur=n; slides[cur].classList.add('active');
-    prog(); hint(); onEnter(cur);
+    slides[cur].classList.remove('active');
+    nav.children[cur].classList.remove('on');
+    cur = n;
+    slides[cur].classList.add('active');
+    nav.children[cur].classList.add('on');
+    document.getElementById('progress').style.width = ((cur+1)/total*100)+'%';
+    onEnter(cur);
   }
+
   function advance(){
-    const s=slides[cur];
-    if(s.dataset.needsInteraction==='true'&&s.dataset.done!=='true') return;
-    if(cur<total-1) goTo(cur+1);
+    const s = slides[cur];
+    if(s.dataset.needsInteraction==='true' && s.dataset.done!=='true') return;
+    if(cur < total-1) goTo(cur+1);
   }
-  function back(){ if(cur>0) goTo(cur-1); }
 
   function onEnter(i){
-    if(i===6) startQuote();   // s7
-    if(i===9) startSummary(); // s10
+    if(i===6) startQuote();
+    if(i===8) animFlow();
+    if(i===9) doFinal();
   }
 
-  // click advance
-  document.addEventListener('click',e=>{
-    if(e.target.closest('[data-interactive]')) return;
-    if(e.target.closest('button,a')) return;
-    if(e.target.closest('.card,.sstep,.choice-btn,.quiz-opt,.tl-btn')) return;
+  // click-to-advance (skip interactive elements)
+  document.getElementById('app').addEventListener('click', e=>{
+    const skip = ['button','input','.pcard','.eo','.scard','.vcard','.kw'];
+    if(skip.some(sel=>e.target.closest(sel))) return;
     advance();
   });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();advance();}
-    if(e.key==='ArrowLeft'){e.preventDefault();back();}
-    if(e.key.toLowerCase()==='f') document.documentElement.requestFullscreen?.();
-  });
-  let tx=0;
-  document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
-  document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(d<-50)advance();if(d>50)back();},{passive:true});
 
-  prog(); hint();
-  return {advance, back, goTo, updateHint:hint, slides};
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' ') advance();
+    if(e.key==='ArrowLeft' && cur>0) goTo(cur-1);
+  });
+
+  return { advance, goTo };
 })();
 
-// ===========================
-// SEAL SYSTEM
-// ===========================
-const sealIcons=['🔍','🗺️','🌧️','🔮','📜'];
-const sealSet=new Set();
-function unlockSeal(i){
-  if(sealSet.has(i)) return;
-  sealSet.add(i);
-  const el=document.getElementById('seal'+i);
-  if(el){el.textContent=sealIcons[i];el.classList.add('lit');}
+// ═══════════ BADGES ═══════════
+const bUnlocked = [false,false,false,false,false];
+function unlock(i){
+  if(bUnlocked[i]) return;
+  bUnlocked[i] = true;
+  const el = document.getElementById('b'+i);
+  el.classList.add('on');
+  el.animate([{transform:'scale(1)'},{transform:'scale(1.5)'},{transform:'scale(1)'}],{duration:400});
 }
 
-// ===========================
-// S2: BACKGROUND CARDS
-// ===========================
-let bgCount=0;
-function bgReveal(id){
-  const el=document.getElementById(id);
-  if(!el||el.classList.contains('revealed')) return;
-  el.classList.add('revealed');
-  bgCount++;
-  if(bgCount>=3){
-    show('badge-s2');
-    setTimeout(()=>{
-      document.getElementById('s2').dataset.done='true';
-      ctrl.updateHint(); unlockSeal(0);
-    },500);
+// ═══════════ S2 ═══════════
+const pOpen = {fan:false,teng:false};
+function openPerson(id){
+  if(!pOpen[id]){
+    pOpen[id] = true;
+    document.getElementById('pc-'+id).classList.add('open');
+    document.getElementById('ph-'+id).textContent = '✓ 已查看';
+  }
+  if(pOpen.fan && pOpen.teng){
+    document.getElementById('s2btn').style.display = 'block';
   }
 }
-
-// ===========================
-// S3: MAP
-// ===========================
-const MAP={
-  yyl:{icon:'🏯',title:'岳阳楼',body:'岳阳楼坐落于洞庭湖畔，始建于唐代，是俯瞰洞庭湖的最佳视角，历代文人墨客在此抒怀。滕子京重修后，写信请范仲淹作记。',quote:'"予观夫巴陵胜状，在洞庭一湖。"——全文以此一笔总领'},
-  dtl:{icon:'🌊',title:'洞庭湖',body:'中国第二大淡水湖，湖面广阔，阴晴变化极大。正是这千变万化的景色，给了迁客骚人无限情绪触发点。',quote:'"衔远山，吞长江，浩浩汤汤，横无际涯"——壮阔之感跃然纸上'},
-  jh:{icon:'🔗',title:'江湖交汇',body:'洞庭湖通过水道与长江相连，"北通巫峡，南极潇湘"，是南来北往的水上交通要道，迁客骚人往往经此被贬。',quote:'"北通巫峡，南极潇湘，迁客骚人，多会于此"——地理与人情的交汇'},
-  mt:{icon:'⛰️',title:'君山·巴陵群山',body:'洞庭湖中有君山，周边巴陵群山环绕，形成"衔远山"的壮阔格局。山水相映，造就了岳阳楼独特的天下胜景。',quote:'"此则岳阳楼之大观也，前人之述备矣。"——作者另辟蹊径，写人不写景'}
-};
-let mapVisited=new Set(), mapActive=null;
-function mapTap(id){
-  if(mapActive){const p=document.getElementById('pin-'+mapActive);if(p)p.classList.remove('active');}
-  mapActive=id;
-  document.getElementById('pin-'+id).classList.add('active','visited');
-  const d=MAP[id];
-  document.getElementById('mipPh').style.display='none';
-  const mc=document.getElementById('mipC'); mc.style.display='block';
-  document.getElementById('mipIcon').textContent=d.icon;
-  document.getElementById('mipTitle').textContent=d.title;
-  document.getElementById('mipBody').textContent=d.body;
-  document.getElementById('mipQuote').textContent=d.quote;
-  mapVisited.add(id);
-  document.getElementById('mapN').textContent=mapVisited.size;
-  const dot=document.getElementById('md-'+id); if(dot) dot.classList.add('done');
-  const ck=document.querySelector('#pin-'+id+' text.ck'); if(ck) ck.style.opacity='1';
-  if(mapVisited.size===4){
-    setTimeout(()=>{
-      document.getElementById('mapSum').classList.add('show');
-      document.getElementById('s3').dataset.done='true';
-      ctrl.updateHint(); unlockSeal(1);
-    },450);
-  }
+function s2done(){
+  document.getElementById('s2').dataset.done = 'true';
+  unlock(0);
+  ctrl.advance();
 }
 
-// ===========================
-// S4: SAD SCENE
-// ===========================
-const SAD=[
-  '"若夫淫雨霏霏，连月不开，阴风怒号，浊浪排空"——连日阴雨，狂风怒吼，浊浪冲天',
-  '"日星隐曜，山岳潜形，商旅不行，樯倾楫摧"——日月无光，山岳不见，行船受阻',
-  '"薄暮冥冥，虎啸猿啼"——黄昏昏暗，虎啸猿啼，阴冷萧瑟',
-  '"登斯楼也，则有去国怀乡，忧谗畏讥，满目萧然，感极而悲者矣"——触景生情，悲从中来'
-];
-let sadN=0;
-function sadStep(n){
-  const el=document.getElementById('ss'+n);
-  if(!el||!el.classList.contains('open')||el.classList.contains('done')) return;
-  el.classList.remove('open');el.classList.add('done');
-  document.getElementById('sq'+n).textContent=SAD[n-1];
-  if(n<4){
-    const nx=document.getElementById('ss'+(n+1));
-    if(nx){nx.classList.add('open');document.getElementById('sq'+(n+1)).textContent='👆 点击揭示原文';}
-  } else {
-    show('badge-s4');
-    setTimeout(()=>{ document.getElementById('s4').dataset.done='true'; ctrl.updateHint(); unlockSeal(2); },500);
-  }
+// ═══════════ ANNOTATIONS ═══════════
+function tog(id){
+  document.getElementById(id).classList.toggle('on');
 }
 
-// ===========================
-// S5: JOY SCENE
-// ===========================
-const JOY=[
-  '"至若春和景明，波澜不惊，上下天光，一碧万顷"——春光明媚，湖面如镜，天水一色',
-  '"沙鸥翔集，锦鳞游泳；岸芷汀兰，郁郁青青"——鸥鸟翱翔，游鱼跃动，香草青翠',
-  '"渔歌互答，此乐何极！"——渔民对歌，乐声回荡',
-  '"登斯楼也，则有心旷神怡，宠辱偕忘，把酒临风，其喜洋洋者矣"——心胸大开，喜悦难以言表'
-];
-let joyN=0;
-function joyStep(n){
-  const el=document.getElementById('js'+n);
-  if(!el||!el.classList.contains('open')||el.classList.contains('done')) return;
-  el.classList.remove('open');el.classList.add('done');
-  document.getElementById('jq'+n).textContent=JOY[n-1];
-  if(n<4){
-    const nx=document.getElementById('js'+(n+1));
-    if(nx){nx.classList.add('open');document.getElementById('jq'+(n+1)).textContent='👆 点击揭示原文';}
-  } else {
-    show('badge-s5');
-    setTimeout(()=>{ document.getElementById('s5').dataset.done='true'; ctrl.updateHint(); },500);
-  }
-}
-
-// ===========================
-// S6: CONTRAST
-// ===========================
-function conChoose(v){
-  const r=document.getElementById('conReveal');
-  if(r.classList.contains('show')) return;
-  r.classList.add('show');
-  setTimeout(()=>{ document.getElementById('s6').dataset.done='true'; ctrl.updateHint(); unlockSeal(3); },700);
-}
-
-// ===========================
-// S7: QUOTE
-// ===========================
-let qPhase=0;
-function startQuote(){
-  qPhase=0;
-  document.getElementById('quoteLine').innerHTML='';
-  document.getElementById('quoteExp').classList.remove('show');
-  document.getElementById('quoteBtn').textContent='继续 →';
-  document.getElementById('s7').removeAttribute('data-done');
-  typeWriter('quoteLine','先天下之忧而忧，后天下之乐而乐',65,()=>{});
-}
-function typeWriter(id,text,speed,cb){
-  const el=document.getElementById(id);
-  el.innerHTML='<span class="cursor"></span>';
-  let i=0;
-  const t=setInterval(()=>{
-    if(i<text.length){ el.innerHTML=text.slice(0,++i)+'<span class="cursor"></span>'; }
-    else { el.innerHTML=text; clearInterval(t); if(cb)cb(); }
-  },speed);
-}
-function quoteNext(){
-  if(qPhase===0){
-    document.getElementById('quoteExp').classList.add('show');
-    document.getElementById('quoteBtn').textContent='下一关 →';
-    qPhase=1;
-  } else {
-    document.getElementById('s7').dataset.done='true';
-    ctrl.advance();
-  }
-}
-
-// ===========================
-// S8: TIMELINE
-// ===========================
-function tlNext(n){
-  const el=document.getElementById('tl'+n); if(!el) return;
-  el.classList.add('show');
-  const prev=document.getElementById('tl'+(n-1));
-  if(prev){const b=prev.querySelector('.tl-btn');if(b)b.style.display='none';}
-}
-function tlClimax(){
-  document.getElementById('tlC').classList.add('show');
-  const prev=document.getElementById('tl3');
-  if(prev){const b=prev.querySelector('.tl-btn');if(b)b.style.display='none';}
-  show('badge-s8');
-  setTimeout(()=>{ document.getElementById('s8').dataset.done='true'; ctrl.updateHint(); },600);
-}
-
-// ===========================
-// S9: QUIZ
-// ===========================
-const CORRECT=[1,0,0];
-const FB=[
-  ['❌ 范仲淹从未去过岳阳楼——他在邓州被贬期间，凭滕子京寄来的一幅画作写成的！','✅ 正确！被贬邓州，凭画作写成，这正是此文的奇特之处。','❌ 不是，他是被贬的官员，不是隐居者。','❌ 不对，他是被贬邓州，不是出使外地。'],
-  ['✅ 正确！"以物喜"指因外部顺境（好的际遇、环境）而喜悦。','❌ "物"不是指财物，而是泛指外部境遇。','❌ 接近，但"景色"太具体了，"物"指的是一切外部境遇。','❌ "物"不特指物产，而是外部境遇的总称。'],
-  ['✅ 正确！这句话体现了范仲淹以天下为己任的博大胸怀！','❌ 这是享乐主义，与范仲淹的精神方向正好相反。','❌ 范仲淹一生积极入世，从不消极避世。','❌ 这是个人主义，与"天下"的大情怀背道而驰。']
-];
-let score=0, answered=[false,false,false];
-function qa(qi,ci){
-  if(answered[qi]) return;
-  answered[qi]=true;
-  const opts=document.querySelectorAll('#qq'+qi+' .quiz-opt');
-  opts.forEach((o,i)=>{
-    o.disabled=true;
-    if(i===CORRECT[qi]) o.classList.add('right');
-    else if(i===ci) o.classList.add('wrong');
+// ═══════════ EMOTION ANSWERS ═══════════
+const correct = {1:1, 2:1};
+function ansEmo(slide, choice){
+  const btns = document.querySelectorAll('#eq'+slide+' .eo');
+  btns.forEach((b,i)=>{
+    b.classList.add(i===correct[slide]?'right':'wrong');
+    b.disabled = true;
   });
-  const fb=document.getElementById('qfb'+qi);
-  fb.textContent=FB[qi][ci];
-  fb.className='quiz-fb show '+(ci===CORRECT[qi]?'ok':'err');
-  if(ci===CORRECT[qi]) score++;
+  document.getElementById('r'+slide).classList.add('on');
+  const sid = slide===1?'s4':'s5';
+  document.getElementById(sid).dataset.done = 'true';
+  unlock(slide===1?1:2);
+  setTimeout(()=>ctrl.advance(), 1800);
+}
+
+// ═══════════ S6 CHOICE ═══════════
+let s6done = false;
+function pick(type){
+  if(s6done) return;
+  s6done = true;
+  document.getElementById('vca').classList.add('sel-a');
+  document.getElementById('vcb').classList.add('sel-b');
+  document.getElementById('vres').classList.add('on');
+  document.getElementById('s6').dataset.done = 'true';
+  unlock(3);
+}
+
+// ═══════════ S7 QUOTE ═══════════
+function typeW(el, txt, spd, cb){
+  let i = 0;
+  function t(){
+    if(i<txt.length){ el.textContent += txt[i++]; setTimeout(t,spd); }
+    else { document.getElementById('qcsr').style.display='none'; if(cb)cb(); }
+  }
+  t();
+}
+function startQuote(){
+  const ql = document.getElementById('qline');
+  const qc = document.getElementById('qcsr');
+  ql.textContent = '';
+  qc.style.display = 'inline-block';
   setTimeout(()=>{
-    if(qi<2){ document.getElementById('qq'+(qi+1)).classList.add('active'); }
-    else {
-      const r=document.getElementById('qResult'); r.classList.add('show');
-      document.getElementById('qScore').textContent=score+'/3';
-      const msgs=['再复习一遍，一定能掌握！','不错！再巩固一下关键句子。','满分！千年密码完全破译！🎉'];
-      document.getElementById('qMsg').textContent=msgs[Math.min(score,2)];
-      setTimeout(()=>{ document.getElementById('s9').dataset.done='true'; ctrl.updateHint(); },800);
-    }
-  },1300);
+    typeW(ql,'先天下之忧而忧，后天下之乐而乐',85,()=>{
+      setTimeout(()=>{
+        document.getElementById('qdec').classList.add('on');
+        setTimeout(()=>{
+          document.getElementById('qpers').classList.add('on');
+        },1000);
+      },500);
+    });
+  },400);
 }
 
-// ===========================
-// S10: SUMMARY
-// ===========================
-function startSummary(){
-  unlockSeal(4);
-  const el=document.getElementById('rhymeBox');
-  el.innerHTML=`范仲淹，写岳阳，被贬邓州<span class="hi">笔不停</span>。<br>
-洞庭湖，景两重，阴雨生<span class="hi">悲</span>晴生<span class="hi">喜</span>。<br>
-迁客心，随物动，以物喜来以己悲。<br>
-古仁人，<span class="hi">境界高</span>，不以物喜不以悲。<br>
-最高志，千古颂：<span class="hi">先忧后乐</span>天下情。`;
+// ═══════════ S8 SCENARIOS ═══════════
+const scData = [
+  {
+    q:'不以物喜，不以己悲',
+    m:'一次考试的结果不代表你这个人的价值。不因分数低就否定自己，认真分析错在哪里，然后继续前进——这才是"古仁人"的思维。'
+  },
+  {
+    q:'不以物喜，不以己悲',
+    m:'被冤枉的委屈是真实的，但如果你知道自己没做错，别人的评价并不能定义你。把情绪放在心里，把行动放在脚下。'
+  },
+  {
+    q:'先天下之忧而忧，后天下之乐而乐',
+    m:'好成绩值得高兴，但"古仁人"不会因此忘乎所以。范仲淹说：你的快乐，等大家都好了再说。这是格局，也是自我提醒。'
+  }
+];
+function pickScene(i){
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('.scard')[i].classList.add('on');
+  document.getElementById('sq').textContent = scData[i].q;
+  document.getElementById('sm').textContent = scData[i].m;
+  document.getElementById('sresp').classList.add('on');
+  document.getElementById('s8btn').style.display = 'block';
+  document.getElementById('s8').dataset.done = 'true';
 }
 
-// ===========================
-// UTILS
-// ===========================
-function show(id){
-  const el=document.getElementById(id);
-  if(!el) return;
-  el.style.display='flex';
-  setTimeout(()=>el.classList.add('show'),30);
+// ═══════════ S9 FLOW ═══════════
+function animFlow(){
+  ['fr0','fa0','fr1','fa1','fr2'].forEach((id,idx)=>{
+    setTimeout(()=>document.getElementById(id).classList.add('on'), idx*420);
+  });
+}
+
+// ═══════════ S10 FINAL ═══════════
+function doFinal(){
+  unlock(4);
+  [0,1,2,3,4].forEach((i,idx)=>{
+    setTimeout(()=>document.getElementById('fb'+i).classList.add('lit'), 300+idx*180);
+  });
 }
 </script>
 </body>
