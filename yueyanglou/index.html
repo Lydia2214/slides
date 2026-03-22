@@ -759,8 +759,9 @@ function s4Click(){
     rStep++;
     if(rStep===5){
       setTimeout(()=>{
+        if(cur!==4) return;
         document.getElementById('rainEmo').classList.add('on');
-        setTimeout(()=>document.getElementById('s4cta').classList.add('show'),900);
+        setTimeout(()=>{ if(cur===4) document.getElementById('s4cta').classList.add('show'); },900);
         rDone=true;
       },600);
     }
@@ -835,8 +836,9 @@ function s5Click(){
     sStep++;
     if(sStep===5){
       setTimeout(()=>{
+        if(cur!==5) return;
         document.getElementById('sunEmo').classList.add('on');
-        setTimeout(()=>document.getElementById('s5cta').classList.add('show'),900);
+        setTimeout(()=>{ if(cur===5) document.getElementById('s5cta').classList.add('show'); },900);
         sDone=true;
       },600);
     }
