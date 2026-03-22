@@ -53,7 +53,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0A0806;
   background:rgba(244,238,214,.9);
   color:var(--gold);font-size:11px;letter-spacing:5px;cursor:pointer;
   border-radius:2px;font-family:inherit;transition:all .25s;
-  white-space:nowrap;display:none;backdrop-filter:blur(6px);
+  white-space:nowrap;display:none;backdrop-filter:blur(6px);z-index:20;
 }
 .cta.show{display:inline-block;}
 .cta:hover{background:var(--gold2);color:var(--paper);}
@@ -148,7 +148,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0A0806;
    S4 · RAIN  (click-through)
 ═══════════════════════════════ */
 #s4{background:#080C14;cursor:pointer;user-select:none;-webkit-user-select:none;position:relative;}
-#rainCv{position:absolute;inset:0;width:100%;height:100%;z-index:1;}
+#rainCv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
 .rain-tower{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:2;opacity:.14;pointer-events:none;}
 .rain-ui{position:relative;z-index:10;max-width:540px;width:90%;text-align:center;display:flex;flex-direction:column;align-items:center;}
 .rain-lines{min-height:clamp(150px,25vh,210px);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;margin-bottom:10px;}
@@ -163,7 +163,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0A0806;
    S5 · SUN  (click-through)
 ═══════════════════════════════ */
 #s5{background:linear-gradient(180deg,#4C90C8 0%,#3272AC 38%,#1E5890 58%,#103A72 100%);cursor:pointer;user-select:none;-webkit-user-select:none;}
-#sunCv{position:absolute;inset:0;width:100%;height:100%;z-index:1;}
+#sunCv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
 .sun-ball{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:clamp(80px,13vw,130px);height:clamp(80px,13vw,130px);background:radial-gradient(circle,rgba(255,238,80,.72) 0%,rgba(255,165,20,.28) 40%,transparent 70%);border-radius:50%;z-index:2;animation:sunp 3.5s ease-in-out infinite alternate;}
 @keyframes sunp{from{transform:translateX(-50%) scale(1);opacity:.8}to{transform:translateX(-50%) scale(1.1);opacity:1}}
 .sun-tower{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:2;opacity:.5;pointer-events:none;}
