@@ -402,10 +402,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0A0806;
     <div class="hs" id="hs2" style="top:60%;left:68%"  onclick="hitHS(2)">+</div>
     <div class="hs" id="hs3" style="top:26%;left:44%"  onclick="hitHS(3)">+</div>
     <!-- Popups -->
-    <div class="hs-pop" id="hp0" style="top:4%;left:16%;max-width:176px">衔远山，吞长江<br>浩浩汤汤，横无际涯</div>
-    <div class="hs-pop" id="hp1" style="top:0%;left:44%;max-width:160px">朝晖夕阴，气象万千<br>迁客骚人，多会于此</div>
-    <div class="hs-pop" id="hp2" style="top:48%;left:28%;max-width:176px">北通巫峡，南极潇湘<br>此则岳阳楼之大观也</div>
-    <div class="hs-pop" id="hp3" style="top:14%;left:18%;max-width:176px">前人之述备矣<br>览物之情，得无异乎？</div>
+    <div class="hs-pop" id="hp0" style="top:18%;left:14%;max-width:176px">衔远山，吞长江<br>浩浩汤汤，横无际涯</div>
+    <div class="hs-pop" id="hp1" style="top:6%;left:33%;max-width:160px">朝晖夕阴，气象万千<br>迁客骚人，多会于此</div>
+    <div class="hs-pop" id="hp2" style="top:42%;left:36%;max-width:176px">北通巫峡，南极潇湘<br>此则岳阳楼之大观也</div>
+    <div class="hs-pop" id="hp3" style="top:8%;left:28%;max-width:176px">前人之述备矣<br>览物之情，得无异乎？</div>
     <!-- Revelation overlay -->
     <div class="s3-rev" id="s3rev">
       <div class="s3-rb">范仲淹，从未踏足岳阳楼</div>
@@ -579,20 +579,23 @@ for(let i=0;i<N;i++){
 
 function go(to){
   if(to<0||to>=N) return;
+  onLeave();
   scenes[cur].classList.remove('active');
   document.getElementById('D'+cur).className='dot done';
   cur=to;
   scenes[cur].classList.add('active');
   document.getElementById('D'+cur).className='dot cur';
   document.getElementById('back').className=cur>0?'show':'';
-  onLeave(); onEnter(cur);
+  onEnter(cur);
 }
 function goBack(){ if(cur>0) go(cur-1); }
 function onLeave(){ stopRain(); stopSun(); }
 function onEnter(i){
   if(i===0) initCover();
+  if(i===1) resetScroll();
   if(i===4) startRain();
   if(i===5) startSun();
+  if(i===6) resetCmp();
   if(i===7) startQuote();
   if(i===8) initEnd();
 }
@@ -638,6 +641,12 @@ function initCover(){
 }
 
 /* ═══════════════ S1 LETTER ═══════════════ */
+function resetScroll(){
+  const shut=document.getElementById('sShut');
+  shut.style.display='';
+  document.getElementById('sOpen').classList.remove('open');
+  document.getElementById('sGo').classList.remove('show');
+}
 function openScroll(){
   document.getElementById('sShut').style.display='none';
   document.getElementById('sOpen').classList.add('open');
@@ -836,6 +845,15 @@ function s5Click(){
 
 /* ═══════════════ S6 COMPARE ═══════════════ */
 let cmpDone=false;
+function resetCmp(){
+  cmpDone=false;
+  const btn=document.getElementById('s6btn');
+  btn.style.opacity=''; btn.style.pointerEvents='';
+  document.getElementById('s6L').classList.remove('show');
+  document.getElementById('s6R').classList.remove('show');
+  document.getElementById('s6rev').classList.remove('show');
+  document.getElementById('s6cta').classList.remove('show');
+}
 function revealCmp(){
   if(cmpDone) return; cmpDone=true;
   const btn=document.getElementById('s6btn');
@@ -852,8 +870,12 @@ function revealCmp(){
 let quoteDone=false;
 function startQuote(){
   if(quoteDone) return; quoteDone=true;
+  // reset DOM state for replay
   const line=document.getElementById('qLine');
   line.innerHTML='';
+  document.getElementById('s7ctx').classList.remove('show');
+  document.getElementById('s7end').classList.remove('show');
+  document.getElementById('s7cta').classList.remove('show');
   const text='先天下之忧而忧，后天下之乐而乐';
   let last=0;
   [...text].forEach((ch,i)=>{
