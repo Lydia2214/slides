@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>岳阳楼记</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#F3EDD3; --paper2:#EDE4C4;
+  --ink:#1A1209;   --ink2:#3A2E1A; --ink3:#6B5A3A;
+  --gold:#9A6E14;  --gold2:#C8973A; --gold3:#E0B85C;
+  --red:#B5382A;   --border:rgba(154,110,20,.2);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#0A0806;
+  font-family:'STKaiti','KaiTi','Noto Serif SC','SimKai',Georgia,serif;}
+
+/* ── STAGE ── */
+#stage{width:100%;height:100%;position:relative;overflow:hidden;}
+.scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .75s ease, filter .75s ease;
+  filter:blur(5px);
+  padding:14px 18px 68px;overflow:hidden;
+}
+.scene.active{opacity:1;pointer-events:all;filter:none;}
+
+/* ── DOTS ── */
+#dots{position:fixed;top:15px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:9999;}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(200,151,58,.2);transition:all .4s;}
+.dot.done{background:rgba(200,151,58,.4);}
+.dot.cur{background:var(--gold2);transform:scale(1.45);}
+
+/* ── BACK ── */
+#back{
+  position:fixed;top:12px;left:16px;z-index:9999;
+  width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(200,151,58,.25);background:rgba(10,8,6,.55);
+  color:rgba(200,151,58,.55);font-size:15px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;transition:all .2s;
+  backdrop-filter:blur(4px);
+}
+#back.show{display:flex;}
+#back:hover{background:rgba(200,151,58,.15);color:rgba(200,151,58,.9);}
+
+/* ── CTA ── */
+.cta{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  padding:10px 30px;
+  border:1.5px solid rgba(200,151,58,.45);
+  background:rgba(244,238,214,.9);
+  color:var(--gold);font-size:11px;letter-spacing:5px;cursor:pointer;
+  border-radius:2px;font-family:inherit;transition:all .25s;
+  white-space:nowrap;display:none;backdrop-filter:blur(6px);z-index:20;
+}
+.cta.show{display:inline-block;}
+.cta:hover{background:var(--gold2);color:var(--paper);}
+.cta.inv{background:rgba(10,8,6,.82);border-color:rgba(200,151,58,.38);color:rgba(200,151,58,.9);}
+.cta.inv:hover{background:rgba(200,151,58,.18);}
+
+/* ── SHARED ── */
+.tag{font-size:10px;letter-spacing:5px;color:var(--red);margin-bottom:8px;}
+.htag{font-size:10px;letter-spacing:5px;color:rgba(200,151,58,.55);margin-bottom:8px;}
+.big{font-size:clamp(22px,4vw,38px);font-weight:normal;letter-spacing:6px;color:var(--ink);}
+.bigw{font-size:clamp(22px,4vw,38px);font-weight:normal;letter-spacing:6px;color:#EDE4C4;}
+.ink-line{width:56px;height:1.5px;margin:12px auto;background:linear-gradient(90deg,transparent,var(--gold2),transparent);}
+.gold-line{width:56px;height:1.5px;margin:12px auto;background:linear-gradient(90deg,transparent,rgba(200,151,58,.4),transparent);}
+.hint{font-size:11px;letter-spacing:4px;color:rgba(200,151,58,.5);animation:pulse 2.2s ease-in-out infinite;}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ═══════════════════════════════
+   S0 · COVER
+═══════════════════════════════ */
+#s0{background:linear-gradient(165deg,#1E180E 0%,#0A0806 58%,#161008 100%);}
+#cvCover{position:absolute;inset:0;width:100%;height:100%;}
+.cv{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.cv-sub{font-size:10px;letter-spacing:6px;color:rgba(200,151,58,.4);margin-bottom:14px;}
+.cv-t{font-size:clamp(66px,14vw,130px);font-weight:normal;letter-spacing:20px;color:#F0E8D0;line-height:1;text-shadow:0 2px 40px rgba(200,151,58,.18);}
+.cv-a{font-size:13px;letter-spacing:8px;color:rgba(200,151,58,.72);margin-top:16px;}
+.cv-vl{width:1px;height:40px;background:linear-gradient(to bottom,transparent,rgba(200,151,58,.4),transparent);margin:20px auto;}
+.cv-hook{font-size:clamp(11px,1.5vw,13px);color:rgba(240,232,210,.48);letter-spacing:3px;line-height:2.3;}
+.cv-btn{margin-top:26px;padding:10px 28px;border:1px solid rgba(200,151,58,.32);background:transparent;color:rgba(200,151,58,.78);font-size:11px;letter-spacing:6px;cursor:pointer;font-family:inherit;border-radius:2px;transition:all .3s;}
+.cv-btn:hover{background:rgba(200,151,58,.1);}
+
+/* ═══════════════════════════════
+   S1 · LETTER
+═══════════════════════════════ */
+#s1{background:radial-gradient(ellipse at 50% 32%,#2A1C0A 0%,#160E04 52%,#0A0600 100%);}
+.desk{position:relative;width:min(420px,86vw);}
+.cglow{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:220px;height:220px;background:radial-gradient(circle,rgba(220,160,50,.18) 0%,rgba(200,100,20,.06) 45%,transparent 70%);border-radius:50%;pointer-events:none;animation:cflick 3.2s ease-in-out infinite alternate;}
+@keyframes cflick{0%{transform:translateX(-50%) scale(1);opacity:.7}50%{transform:translateX(-50%) scale(1.12);opacity:1}100%{transform:translateX(-50%) scale(.9);opacity:.65}}
+.scroll-shut{width:190px;margin:0 auto;cursor:pointer;transition:transform .3s;}
+.scroll-shut:hover{transform:scale(1.05);}
+.scroll-hint{text-align:center;margin-top:10px;font-size:11px;letter-spacing:4px;color:rgba(200,151,58,.58);animation:pulse 2.2s infinite;}
+.scroll-open{background:linear-gradient(170deg,#EDE0BC,#F0E5C8,#EAD9B0);border:1px solid rgba(154,110,20,.28);border-radius:4px;padding:20px 22px;box-shadow:0 4px 22px rgba(0,0,0,.5);max-height:0;overflow:hidden;opacity:0;transition:max-height 1.35s ease,opacity .6s ease;}
+.scroll-open.open{max-height:560px;opacity:1;}
+.scroll-txt{font-size:clamp(12px,1.9vw,14px);color:#3A2814;line-height:2.1;letter-spacing:2px;}
+.scroll-txt b{color:#8B4420;}
+.scroll-note{margin-top:10px;font-size:11px;color:rgba(100,70,30,.55);letter-spacing:2px;line-height:1.9;border-top:1px solid rgba(154,110,20,.18);padding-top:9px;}
+.scroll-go{margin-top:12px;text-align:right;font-size:11px;letter-spacing:3px;color:rgba(139,68,32,.68);cursor:pointer;opacity:0;transition:opacity .5s .9s;}
+.scroll-go.show{opacity:1;}
+
+/* ═══════════════════════════════
+   S2 · TIMELINE
+═══════════════════════════════ */
+#s2{background:var(--paper);}
+.s2{max-width:700px;width:95%;}
+.tl{display:flex;flex-direction:column;gap:0;position:relative;padding-left:26px;margin-top:18px;}
+.tl::before{content:'';position:absolute;left:7px;top:16px;bottom:16px;width:1px;background:linear-gradient(to bottom,var(--gold2),rgba(154,110,20,.12));}
+.tl-node{position:relative;padding:0 0 14px 16px;}
+.tl-dot{position:absolute;left:-20px;top:12px;width:16px;height:16px;border-radius:50%;border:2px solid rgba(154,110,20,.28);background:var(--paper);cursor:pointer;transition:all .3s;z-index:1;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(154,110,20,.35);}
+.tl-dot:hover{border-color:var(--gold2);}
+.tl-dot.done{background:var(--gold2);border-color:var(--gold2);color:white;}
+.tl-yr{font-size:11px;letter-spacing:3px;color:var(--ink3);padding-top:8px;margin-bottom:4px;}
+.tl-card{background:rgba(255,255,255,.52);border:1px solid var(--border);border-radius:3px;padding:0 12px;max-height:0;overflow:hidden;opacity:0;transition:max-height .55s ease,padding .35s,opacity .45s;}
+.tl-card.open{max-height:100px;padding:10px 12px;opacity:1;}
+.tl-ct{font-size:12px;letter-spacing:3px;color:var(--gold);margin-bottom:4px;}
+.tl-cb{font-size:clamp(11px,1.7vw,13px);color:var(--ink2);line-height:1.9;}
+.tl-cb b{color:var(--red);}
+.s2-note{margin-top:14px;padding:12px 16px;background:rgba(154,110,20,.07);border:1px solid var(--border);border-radius:3px;font-size:clamp(12px,1.7vw,14px);color:var(--ink2);line-height:1.9;opacity:0;transition:opacity .5s;}
+.s2-note.show{opacity:1;}
+
+/* ═══════════════════════════════
+   S3 · PAINTING + REVELATION
+═══════════════════════════════ */
+#s3{background:linear-gradient(180deg,#253444 0%,#192535 45%,#0F1B2C 100%);color:var(--paper);}
+.ptg-wrap{position:relative;width:min(600px,90vw);}
+.lake-svg{width:100%;display:block;transition:filter .85s ease,opacity .85s ease;}
+.lake-svg.dimmed{filter:blur(4px) brightness(.4);opacity:.3;}
+.hs{position:absolute;width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(200,151,58,.42);background:rgba(200,151,58,.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(200,151,58,.75);transition:all .3s;animation:hsp 2.5s ease-in-out infinite;}
+.hs:hover{background:rgba(200,151,58,.25);transform:scale(1.22);}
+.hs.found{background:var(--gold2);border-color:var(--gold2);color:white;animation:none;}
+@keyframes hsp{0%,100%{box-shadow:0 0 0 0 rgba(200,151,58,.3)}55%{box-shadow:0 0 0 5px transparent}}
+.hs-pop{position:absolute;z-index:20;background:rgba(14,26,42,.92);border:1px solid rgba(200,151,58,.18);border-radius:3px;padding:8px 12px;pointer-events:none;font-size:clamp(10px,1.4vw,12px);color:rgba(240,228,200,.9);line-height:1.9;letter-spacing:1px;opacity:0;transform:translateY(6px);transition:all .3s;white-space:nowrap;}
+.hs-pop.show{opacity:1;transform:translateY(0);}
+.s3-cnt{text-align:center;margin-top:6px;font-size:11px;letter-spacing:3px;color:rgba(200,151,58,.48);}
+/* revelation */
+.s3-rev{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .7s;z-index:12;background:rgba(10,18,28,.0);}
+.s3-rev.show{opacity:1;pointer-events:all;background:rgba(10,18,28,.88);}
+.s3-rb{font-size:clamp(17px,3.2vw,28px);color:rgba(240,228,200,.92);letter-spacing:6px;text-align:center;line-height:1.7;opacity:0;transform:translateY(12px);transition:all .65s .28s;}
+.s3-rev.show .s3-rb{opacity:1;transform:none;}
+.s3-rs{font-size:clamp(12px,1.7vw,14px);color:rgba(200,151,58,.65);letter-spacing:3px;text-align:center;line-height:2;margin-top:12px;opacity:0;transition:opacity .65s .65s;}
+.s3-rev.show .s3-rs{opacity:1;}
+
+/* ═══════════════════════════════
+   S4 · RAIN  (click-through)
+═══════════════════════════════ */
+#s4{background:#080C14;cursor:pointer;user-select:none;-webkit-user-select:none;position:relative;}
+#rainCv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+.rain-tower{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:2;opacity:.14;pointer-events:none;}
+.rain-ui{position:relative;z-index:10;max-width:540px;width:90%;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.rain-lines{min-height:clamp(150px,25vh,210px);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;margin-bottom:10px;}
+.rl{font-size:clamp(15px,2.8vw,23px);color:rgba(170,205,235,.0);letter-spacing:6px;line-height:1.65;transition:color .65s,text-shadow .65s;}
+.rl.on{color:rgba(170,205,235,.88);text-shadow:0 0 14px rgba(90,140,195,.35);}
+.rain-emo{font-size:clamp(22px,4.8vw,42px);color:rgba(170,205,235,.0);letter-spacing:8px;margin-top:14px;transition:color .9s,text-shadow .9s;}
+.rain-emo.on{color:rgba(170,205,235,.92);text-shadow:0 0 28px rgba(90,140,200,.55);}
+.rain-prompt{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:4px;color:rgba(170,205,235,.32);z-index:10;animation:pulse 2.2s infinite;white-space:nowrap;transition:opacity .4s;}
+.rain-prompt.off{opacity:0;pointer-events:none;}
+
+/* ═══════════════════════════════
+   S5 · SUN  (click-through)
+═══════════════════════════════ */
+#s5{background:linear-gradient(180deg,#4C90C8 0%,#3272AC 38%,#1E5890 58%,#103A72 100%);cursor:pointer;user-select:none;-webkit-user-select:none;}
+#sunCv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+.sun-ball{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:clamp(80px,13vw,130px);height:clamp(80px,13vw,130px);background:radial-gradient(circle,rgba(255,238,80,.72) 0%,rgba(255,165,20,.28) 40%,transparent 70%);border-radius:50%;z-index:2;animation:sunp 3.5s ease-in-out infinite alternate;}
+@keyframes sunp{from{transform:translateX(-50%) scale(1);opacity:.8}to{transform:translateX(-50%) scale(1.1);opacity:1}}
+.sun-tower{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:2;opacity:.5;pointer-events:none;}
+.sun-water-sheen{position:absolute;bottom:0;left:0;right:0;height:65px;background:linear-gradient(to top,rgba(14,42,74,.7),transparent);z-index:2;pointer-events:none;}
+.birds-layer{position:absolute;z-index:3;top:16%;left:0;right:0;pointer-events:none;}
+.bpair{position:absolute;}
+.bp-l,.bp-r{position:absolute;width:13px;height:5px;border-top:2px solid rgba(255,255,255,.72);border-radius:50% 50% 0 0;}
+.bp-l{right:7px;transform-origin:right center;animation:bfl .42s ease-in-out infinite alternate;}
+.bp-r{left:7px;transform-origin:left center;animation:bfl .42s ease-in-out infinite alternate reverse;}
+@keyframes bfl{from{transform:rotate(-20deg)}to{transform:rotate(18deg)}}
+.sun-ui{position:relative;z-index:10;max-width:540px;width:90%;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.sun-lines{min-height:clamp(150px,25vh,210px);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;margin-bottom:10px;}
+.sl{font-size:clamp(15px,2.8vw,23px);color:rgba(255,248,200,.0);letter-spacing:6px;line-height:1.65;transition:color .65s,text-shadow .65s;}
+.sl.on{color:rgba(255,248,200,.92);text-shadow:0 0 12px rgba(255,220,60,.3);}
+.sun-emo{font-size:clamp(22px,4.8vw,42px);color:rgba(255,248,200,.0);letter-spacing:8px;margin-top:14px;transition:color .9s,text-shadow .9s;}
+.sun-emo.on{color:rgba(255,248,200,.95);text-shadow:0 0 32px rgba(255,200,60,.55);}
+.sun-prompt{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:4px;color:rgba(255,248,200,.32);z-index:10;animation:pulse 2.2s infinite;white-space:nowrap;transition:opacity .4s;}
+.sun-prompt.off{opacity:0;pointer-events:none;}
+
+/* ═══════════════════════════════
+   S6 · ANCIENT VIRTUOUS
+═══════════════════════════════ */
+#s6{background:var(--paper);}
+.s6{max-width:740px;width:95%;}
+.s6-q{font-size:clamp(14px,2.2vw,20px);color:var(--ink);letter-spacing:4px;line-height:1.9;text-align:center;margin-bottom:16px;}
+.s6-btn{display:block;margin:0 auto 16px;padding:10px 22px;border:1.5px solid rgba(181,56,42,.35);background:rgba(181,56,42,.05);color:var(--red);font-size:11px;letter-spacing:4px;cursor:pointer;border-radius:2px;font-family:inherit;transition:all .3s;}
+.s6-btn:hover{background:rgba(181,56,42,.1);}
+.s6-compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.s6c{padding:16px 18px;border-radius:3px;opacity:0;transform:translateY(14px);transition:all .5s;}
+.s6c.show{opacity:1;transform:none;}
+.s6c.l{background:rgba(80,120,180,.07);border:1px solid rgba(80,120,180,.2);transition-delay:.08s;}
+.s6c.r{background:rgba(154,110,20,.07);border:1px solid var(--border);transition-delay:.28s;}
+.s6c-who{font-size:10px;letter-spacing:4px;color:var(--ink3);margin-bottom:6px;}
+.s6c-name{font-size:clamp(16px,2.4vw,22px);color:var(--ink);letter-spacing:5px;margin-bottom:10px;}
+.s6c-line{font-size:clamp(12px,1.7vw,14px);color:var(--ink2);line-height:1.9;padding:5px 0;border-bottom:1px solid rgba(154,110,20,.1);}
+.s6c-line:last-child{border:none;}
+.s6c-key{font-size:clamp(13px,1.9vw,16px);color:var(--gold);letter-spacing:3px;margin-top:8px;line-height:1.7;}
+.s6-reveal{margin-top:14px;padding:12px 16px;border:1px solid var(--border);border-radius:3px;background:rgba(154,110,20,.06);text-align:center;font-size:clamp(13px,2vw,17px);color:var(--ink);letter-spacing:4px;line-height:1.9;opacity:0;transition:opacity .55s .2s;}
+.s6-reveal.show{opacity:1;}
+
+/* ═══════════════════════════════
+   S7 · QUOTE REVEAL
+═══════════════════════════════ */
+#s7{background:linear-gradient(158deg,#1A1208 0%,#0A0806 58%,#161008 100%);}
+.s7{text-align:center;max-width:680px;width:95%;display:flex;flex-direction:column;align-items:center;}
+.s7-lead{font-size:clamp(11px,1.6vw,13px);color:rgba(200,151,58,.48);letter-spacing:5px;margin-bottom:22px;line-height:1.8;}
+.q-line{font-size:clamp(28px,6vw,58px);letter-spacing:12px;line-height:1.7;min-height:1.8em;margin-bottom:18px;}
+.qc{display:inline-block;opacity:0;transform:scale(.68) translateY(8px);animation:qcIn .48s ease forwards;color:#E0B85C;text-shadow:0 0 22px rgba(200,151,58,.5);}
+.qc.p{color:rgba(200,151,58,.38);font-size:.72em;vertical-align:middle;}
+@keyframes qcIn{to{opacity:1;transform:scale(1) translateY(0)}}
+.s7-ctx{font-size:clamp(12px,1.7vw,14px);color:rgba(200,151,58,.58);letter-spacing:3px;line-height:2;border-top:1px solid rgba(200,151,58,.14);padding-top:15px;width:100%;opacity:0;transition:opacity .75s;}
+.s7-ctx.show{opacity:1;}
+.s7-end{font-size:clamp(12px,1.8vw,15px);color:rgba(200,151,58,.46);letter-spacing:4px;margin-top:14px;line-height:2;opacity:0;transition:opacity .75s .35s;}
+.s7-end.show{opacity:1;}
+
+/* ═══════════════════════════════
+   S8 · SUMMARY
+═══════════════════════════════ */
+#s8{background:linear-gradient(158deg,#1A1208 0%,#0A0806 58%,#161008 100%);}
+#cvEnd{position:absolute;inset:0;width:100%;height:100%;}
+.s8{position:relative;z-index:2;text-align:center;max-width:660px;width:95%;}
+.s8-lbl{font-size:10px;letter-spacing:6px;color:rgba(200,151,58,.42);margin-bottom:14px;}
+.s8-hd{font-size:clamp(15px,2.4vw,21px);color:rgba(240,230,200,.68);letter-spacing:5px;margin-bottom:16px;}
+.s8-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.s8-card{background:rgba(154,110,20,.1);border:1px solid rgba(200,151,58,.17);border-radius:3px;padding:14px 16px;text-align:left;}
+.s8-who{font-size:11px;letter-spacing:4px;color:var(--gold2);margin-bottom:6px;}
+.s8-body{font-size:clamp(11px,1.6vw,13px);color:rgba(240,228,200,.68);line-height:1.9;}
+.s8-q{font-size:clamp(14px,2.5vw,21px);color:var(--gold2);letter-spacing:6px;line-height:1.9;border-top:1px solid rgba(200,151,58,.14);padding-top:15px;}
+.s8-dt{font-size:10px;color:rgba(200,151,58,.32);letter-spacing:3px;margin-top:8px;}
+.s8-note{font-size:clamp(11px,1.5vw,13px);color:rgba(200,151,58,.38);letter-spacing:3px;margin-top:14px;line-height:2;}
+
+/* responsive */
+@media(max-width:540px){
+  .s6-compare,.s8-cards{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+<div id="dots"></div>
+<div id="back" onclick="goBack()">‹</div>
+
+<!-- ═══════════════════════════════
+     S0 · 封面
+═══════════════════════════════ -->
+<div class="scene active" id="s0">
+  <canvas id="cvCover"></canvas>
+  <div class="cv">
+    <div class="cv-sub">九年级语文 · 部编版</div>
+    <div class="cv-t">岳阳楼记</div>
+    <div class="cv-a">范仲淹</div>
+    <div class="cv-vl"></div>
+    <div class="cv-hook">庆历四年，两个被贬之人<br>各自做了一件不寻常的事</div>
+    <button class="cv-btn" onclick="go(1)">开始探索 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     S1 · 一封信
+═══════════════════════════════ -->
+<div class="scene" id="s1">
+  <div class="desk">
+    <div class="cglow"></div>
+    <div class="scroll-shut" id="sShut" onclick="openScroll()">
+      <svg viewBox="0 0 180 96" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect x="18" y="12" width="144" height="72" rx="4" fill="#DDD0A0" stroke="rgba(139,100,28,.4)" stroke-width="1.2"/>
+        <rect x="6"   y="12" width="14"  height="72" rx="7" fill="#C4A060" stroke="rgba(120,80,20,.38)" stroke-width="1"/>
+        <rect x="160" y="12" width="14"  height="72" rx="7" fill="#C4A060" stroke="rgba(120,80,20,.38)" stroke-width="1"/>
+        <circle cx="90" cy="48" r="13" fill="rgba(181,56,42,.22)" stroke="rgba(181,56,42,.48)" stroke-width="1.2"/>
+        <text x="90" y="52.5" text-anchor="middle" font-size="10" fill="rgba(181,56,42,.82)" font-family="STKaiti,serif">印</text>
+        <line x1="38" y1="35" x2="76"  y2="35" stroke="rgba(100,80,40,.18)" stroke-width="1"/>
+        <line x1="38" y1="47" x2="70"  y2="47" stroke="rgba(100,80,40,.14)" stroke-width="1"/>
+        <line x1="104" y1="35" x2="142" y2="35" stroke="rgba(100,80,40,.18)" stroke-width="1"/>
+        <line x1="104" y1="47" x2="138" y2="47" stroke="rgba(100,80,40,.14)" stroke-width="1"/>
+      </svg>
+      <div class="scroll-hint">✦ 点击展开信函 ✦</div>
+    </div>
+    <div class="scroll-open" id="sOpen">
+      <div class="scroll-txt">
+        希文兄台鉴：<br><br>
+        弟宗谅于庆历四年春，<b>谪守巴陵郡</b>。<br>
+        到任之初，百废待兴，幸赖勤力，<br>
+        越明年，<b>政通人和，百废具兴</b>。<br><br>
+        弟虽被贬，不敢懈怠，<br>
+        遂<b>重修岳阳楼</b>，增旧制，<br>
+        刻唐贤今人诗赋于其上。<br><br>
+        特附《洞庭晚秋图》一幅，<br>
+        恳请兄<b>作文以记之</b>。
+      </div>
+      <div class="scroll-note">
+        此时范仲淹亦身在邓州——同为贬谪之地。<br>庆历新政失败，他已被撤去军政要职。
+      </div>
+      <div class="scroll-go" id="sGo" onclick="go(2)">收下这份托付，继续 →</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     S2 · 滕子京的经历
+═══════════════════════════════ -->
+<div class="scene" id="s2">
+  <div class="s2">
+    <div style="text-align:center">
+      <div class="tag">人物</div>
+      <div class="big">滕子京，做了什么？</div>
+      <div class="ink-line"></div>
+      <div class="hint" id="s2h">✦ 点击节点，解锁他的经历 ✦</div>
+    </div>
+    <div class="tl">
+      <div class="tl-node">
+        <div class="tl-dot" id="td0" onclick="tlClick(0)">?</div>
+        <div class="tl-yr">庆历四年</div>
+        <div class="tl-card" id="tc0">
+          <div class="tl-ct">遭遇贬谪</div>
+          <div class="tl-cb">御史弹劾，<b>被贬岳州知州</b>，远离权力中心，仕途受挫。</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="tl-dot" id="td1" onclick="tlClick(1)">?</div>
+        <div class="tl-yr">庆历四年→五年</div>
+        <div class="tl-card" id="tc1">
+          <div class="tl-ct">勤勉为政</div>
+          <div class="tl-cb">到任仅一年，<b>政通人和，百废具兴</b>——他没有消沉，岳州焕然一新。</div>
+        </div>
+      </div>
+      <div class="tl-node">
+        <div class="tl-dot" id="td2" onclick="tlClick(2)">?</div>
+        <div class="tl-yr">庆历五年</div>
+        <div class="tl-card" id="tc2">
+          <div class="tl-ct">重修岳阳楼</div>
+          <div class="tl-cb">不止治政，还<b>重修了岳阳楼</b>，邀好友范仲淹为之作文——这是他的姿态。</div>
+        </div>
+      </div>
+    </div>
+    <div class="s2-note" id="s2note">
+      一个被贬的人，治好了地方，重修了名楼，还托付了一篇千古文章。<br>
+      他的回答，是<b style="color:var(--red)">行动</b>。
+    </div>
+  </div>
+  <button class="cta" id="s2cta" onclick="go(3)">继续 →</button>
+</div>
+
+<!-- ═══════════════════════════════
+     S3 · 洞庭画 + 大揭晓
+═══════════════════════════════ -->
+<div class="scene" id="s3">
+  <div style="text-align:center;margin-bottom:7px;position:relative;z-index:6;">
+    <div class="htag">信中附图</div>
+    <div class="bigw" style="font-size:clamp(17px,2.8vw,26px);letter-spacing:6px;">览《洞庭晚秋图》</div>
+  </div>
+  <div class="hint" id="s3h" style="margin-bottom:5px;">✦ 点击画中各处，感受洞庭形胜 ✦</div>
+  <div class="s3-cnt">已探索 <span id="s3n">0</span> / 4 处</div>
+  <div class="ptg-wrap">
+    <svg class="lake-svg" id="lSvg" viewBox="0 0 620 204" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#253444"/><stop offset="100%" stop-color="#172534"/></linearGradient>
+        <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#172534"/><stop offset="100%" stop-color="#0D1C2C"/></linearGradient>
+      </defs>
+      <rect width="620" height="204" fill="url(#sg)"/>
+      <!-- mountains -->
+      <path d="M0,98 Q75,55 160,70 Q250,85 330,55 Q420,28 510,62 Q575,80 620,65 L620,116 L0,116 Z" fill="rgba(26,44,70,.72)"/>
+      <path d="M0,108 Q105,76 210,90 Q320,104 415,76 Q510,52 620,80 L620,116 L0,116 Z" fill="rgba(16,32,54,.86)"/>
+      <!-- water -->
+      <rect x="0" y="116" width="620" height="88" fill="url(#wg)"/>
+      <path d="M25,136 Q155,128 310,136 Q465,144 595,136" fill="none" stroke="rgba(100,140,180,.12)" stroke-width="1.2"/>
+      <path d="M8,152 Q155,144 310,152 Q465,160 612,152" fill="none" stroke="rgba(100,140,180,.09)" stroke-width="1"/>
+      <path d="M0,168 Q155,160 310,168 Q465,176 620,168" fill="none" stroke="rgba(100,140,180,.07)" stroke-width="1"/>
+      <!-- tower -->
+      <g transform="translate(264,34)">
+        <g fill="rgba(175,140,52,.28)" stroke="rgba(175,140,52,.14)" stroke-width=".5">
+          <rect x="28" y="140" width="88" height="20" rx="1"/>
+          <rect x="36" y="114" width="72" height="24"/>
+          <path d="M6,114 Q44,100 72,96 Q100,100 138,114 Z"/>
+          <rect x="44" y="84" width="56" height="28"/>
+          <path d="M16,84 Q44,72 72,68 Q100,72 128,84 Z"/>
+          <rect x="52" y="60" width="40" height="22"/>
+          <path d="M28,60 Q52,50 72,46 Q92,50 116,60 Z"/>
+          <rect x="69" y="34" width="6" height="26"/>
+        </g>
+        <g fill="rgba(175,140,52,.09)" transform="translate(0,172) scale(1,-1) translate(0,-160)">
+          <rect x="28" y="140" width="88" height="20" rx="1"/>
+          <rect x="36" y="114" width="72" height="24"/>
+        </g>
+      </g>
+      <!-- moon + stars -->
+      <circle cx="170" cy="30" r="13" fill="rgba(240,228,178,.1)" stroke="rgba(240,228,178,.17)" stroke-width="1"/>
+      <ellipse cx="170" cy="154" rx="26" ry="5" fill="rgba(210,195,135,.05)"/>
+      <circle cx="76"  cy="22" r="1.2" fill="rgba(255,252,220,.38)"/>
+      <circle cx="295" cy="17" r="1"   fill="rgba(255,252,220,.3)"/>
+      <circle cx="448" cy="24" r="1.3" fill="rgba(255,252,220,.38)"/>
+      <circle cx="548" cy="13" r=".9"  fill="rgba(255,252,220,.24)"/>
+    </svg>
+    <!-- Hotspots -->
+    <div class="hs" id="hs0" style="top:13%;left:10%"  onclick="hitHS(0)">+</div>
+    <div class="hs" id="hs1" style="top:5%;left:50%"   onclick="hitHS(1)">+</div>
+    <div class="hs" id="hs2" style="top:60%;left:68%"  onclick="hitHS(2)">+</div>
+    <div class="hs" id="hs3" style="top:26%;left:44%"  onclick="hitHS(3)">+</div>
+    <!-- Popups -->
+    <div class="hs-pop" id="hp0" style="top:18%;left:14%;max-width:176px">衔远山，吞长江<br>浩浩汤汤，横无际涯</div>
+    <div class="hs-pop" id="hp1" style="top:6%;left:33%;max-width:160px">朝晖夕阴，气象万千<br>迁客骚人，多会于此</div>
+    <div class="hs-pop" id="hp2" style="top:42%;left:36%;max-width:176px">北通巫峡，南极潇湘<br>此则岳阳楼之大观也</div>
+    <div class="hs-pop" id="hp3" style="top:8%;left:28%;max-width:176px">前人之述备矣<br>览物之情，得无异乎？</div>
+    <!-- Revelation overlay -->
+    <div class="s3-rev" id="s3rev">
+      <div class="s3-rb">范仲淹，从未踏足岳阳楼</div>
+      <div class="s3-rs">
+        你刚才感受到的这一切<br>
+        他手里只有好友寄来的一幅画<br><br>
+        却写出了洞庭湖的魂
+      </div>
+    </div>
+  </div>
+  <button class="cta" id="s3cta" onclick="go(4)">继续 →</button>
+</div>
+
+<!-- ═══════════════════════════════
+     S4 · 阴雨之境
+═══════════════════════════════ -->
+<div class="scene" id="s4" onclick="s4Click()">
+  <canvas id="rainCv"></canvas>
+  <svg class="rain-tower" viewBox="0 0 270 185" width="clamp(200px,34vw,310px)" fill="rgba(26,48,78,.9)">
+    <rect x="18" y="150" width="234" height="26" rx="2"/>
+    <rect x="30" y="118" width="210" height="30"/>
+    <path d="M4,118 Q34,104 135,98 Q236,104 266,118 Z"/>
+    <rect x="44" y="88" width="182" height="28"/>
+    <path d="M16,88 Q46,75 135,70 Q224,75 254,88 Z"/>
+    <rect x="58" y="60" width="154" height="26"/>
+    <path d="M30,60 Q60,49 135,45 Q210,49 240,60 Z"/>
+    <rect x="131" y="26" width="8" height="34"/>
+  </svg>
+  <div class="rain-ui">
+    <div class="rain-lines">
+      <div class="rl" id="rl0">淫雨霏霏，连月不开</div>
+      <div class="rl" id="rl1">阴风怒号，浊浪排空</div>
+      <div class="rl" id="rl2">日星隐曜，山岳潜形</div>
+      <div class="rl" id="rl3">商旅不行，樯倾楫摧</div>
+      <div class="rl" id="rl4">虎啸猿啼，薄暮冥冥</div>
+    </div>
+    <div class="rain-emo" id="rainEmo">感极而悲者矣</div>
+  </div>
+  <div class="rain-prompt" id="rainPmt">点击屏幕，感受这场风雨</div>
+  <button class="cta inv" id="s4cta" onclick="event.stopPropagation();go(5)" style="bottom:14px;">感受到了，继续 →</button>
+</div>
+
+<!-- ═══════════════════════════════
+     S5 · 晴朗之境
+═══════════════════════════════ -->
+<div class="scene" id="s5" onclick="s5Click()">
+  <canvas id="sunCv"></canvas>
+  <div class="sun-ball"></div>
+  <div class="birds-layer" id="bLayer"></div>
+  <svg class="sun-tower" viewBox="0 0 270 185" width="clamp(200px,34vw,310px)" fill="rgba(14,46,78,.82)">
+    <rect x="18" y="150" width="234" height="26" rx="2"/>
+    <rect x="30" y="118" width="210" height="30"/>
+    <path d="M4,118 Q34,104 135,98 Q236,104 266,118 Z"/>
+    <rect x="44" y="88" width="182" height="28"/>
+    <path d="M16,88 Q46,75 135,70 Q224,75 254,88 Z"/>
+    <rect x="58" y="60" width="154" height="26"/>
+    <path d="M30,60 Q60,49 135,45 Q210,49 240,60 Z"/>
+    <rect x="131" y="26" width="8" height="34"/>
+  </svg>
+  <div class="sun-water-sheen"></div>
+  <div class="sun-ui">
+    <div class="sun-lines">
+      <div class="sl" id="sl0">春和景明，波澜不惊</div>
+      <div class="sl" id="sl1">上下天光，一碧万顷</div>
+      <div class="sl" id="sl2">沙鸥翔集，锦鳞游泳</div>
+      <div class="sl" id="sl3">浮光跃金，静影沉璧</div>
+      <div class="sl" id="sl4">渔歌互答，此乐何极</div>
+    </div>
+    <div class="sun-emo" id="sunEmo">其喜洋洋者矣</div>
+  </div>
+  <div class="sun-prompt" id="sunPmt">点击屏幕，感受这片晴朗</div>
+  <button class="cta" id="s5cta" onclick="event.stopPropagation();go(6)" style="bottom:14px;">感受到了，继续 →</button>
+</div>
+
+<!-- ═══════════════════════════════
+     S6 · 古仁人
+═══════════════════════════════ -->
+<div class="scene" id="s6">
+  <div class="s6">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div class="tag">第五段 · 转折</div>
+      <div class="s6-q">然则，古仁人之心，<br>或异二者之为——何哉？</div>
+      <div class="ink-line"></div>
+    </div>
+    <button class="s6-btn" id="s6btn" onclick="revealCmp()">✦ 揭晓答案 ✦</button>
+    <div class="s6-compare">
+      <div class="s6c l" id="s6L">
+        <div class="s6c-who">一般人的反应</div>
+        <div class="s6c-name">迁客骚人</div>
+        <div class="s6c-line">见阴雨 → 悲</div>
+        <div class="s6c-line">见晴朗 → 喜</div>
+        <div class="s6c-key">以物喜，以己悲</div>
+      </div>
+      <div class="s6c r" id="s6R">
+        <div class="s6c-who">范仲淹心中的理想人格</div>
+        <div class="s6c-name">古仁人</div>
+        <div class="s6c-line"><b>不以物喜</b></div>
+        <div class="s6c-line"><b>不以己悲</b></div>
+        <div class="s6c-key">居庙堂之高则忧其民<br>处江湖之远则忧其君</div>
+      </div>
+    </div>
+    <div class="s6-reveal" id="s6rev">
+      进亦忧，退亦忧——然则，何时而乐耶？
+    </div>
+  </div>
+  <button class="cta" id="s6cta" onclick="go(7)">继续 →</button>
+</div>
+
+<!-- ═══════════════════════════════
+     S7 · 先忧后乐（碑刻式揭示）
+═══════════════════════════════ -->
+<div class="scene" id="s7">
+  <div class="s7">
+    <div class="s7-lead">
+      范仲淹给出了答案——<br>
+      <span style="font-size:.85em;opacity:.7;">（庆历六年，他写下了这十六个字）</span>
+    </div>
+    <div class="q-line" id="qLine"></div>
+    <div class="s7-ctx" id="s7ctx">
+      写下这句话时，他自己身在邓州——同为贬谪之地<br>
+      这不是居高临下的说教，是一个失意之人立定的心志
+    </div>
+    <div class="s7-end" id="s7end">
+      噫！微斯人，吾谁与归？<br>
+      <span style="font-size:.8em;opacity:.65;">——没有这样的人，我将与谁同道？</span>
+    </div>
+  </div>
+  <button class="cta inv" id="s7cta" onclick="go(8)">继续 →</button>
+</div>
+
+<!-- ═══════════════════════════════
+     S8 · 总结
+═══════════════════════════════ -->
+<div class="scene" id="s8">
+  <canvas id="cvEnd"></canvas>
+  <div class="s8">
+    <div class="s8-lbl">课堂总结</div>
+    <div class="s8-hd">两个被贬之人，各自的答案</div>
+    <div class="s8-cards">
+      <div class="s8-card">
+        <div class="s8-who">滕子京</div>
+        <div class="s8-body">被贬，不消沉。<br>政通人和，百废具兴，重修岳阳楼。<br>他的回答是<b style="color:var(--gold2)"> 行动</b>。</div>
+      </div>
+      <div class="s8-card">
+        <div class="s8-who">范仲淹</div>
+        <div class="s8-body">被贬，不自弃。<br>在贬谪之地，写下先忧后乐。<br>他的回答是<b style="color:var(--gold2)"> 心志</b>。</div>
+      </div>
+    </div>
+    <div class="s8-q">先天下之忧而忧，后天下之乐而乐</div>
+    <div class="s8-dt">庆历六年九月十五日 · 范仲淹记于邓州</div>
+    <div class="s8-note">
+      全文：叙事 → 写景 → 抒情 → 议论<br>
+      以景衬情，对比升华，层层推进，志在先忧后乐
+    </div>
+  </div>
+</div>
+
+</div><!-- /stage -->
+<script>
+/* ═══════════════ ENGINE ═══════════════ */
+const scenes = [...document.querySelectorAll('.scene')];
+const N = scenes.length;
+let cur = 0;
+
+const dotBox = document.getElementById('dots');
+for(let i=0;i<N;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' cur':'');
+  d.id='D'+i; dotBox.appendChild(d);
+}
+
+function go(to){
+  if(to<0||to>=N) return;
+  onLeave();
+  scenes[cur].classList.remove('active');
+  document.getElementById('D'+cur).className='dot done';
+  cur=to;
+  scenes[cur].classList.add('active');
+  document.getElementById('D'+cur).className='dot cur';
+  document.getElementById('back').className=cur>0?'show':'';
+  onEnter(cur);
+}
+function goBack(){ if(cur>0) go(cur-1); }
+function onLeave(){ stopRain(); stopSun(); }
+function onEnter(i){
+  if(i===0) initCover();
+  if(i===1) resetScroll();
+  if(i===4) startRain();
+  if(i===5) startSun();
+  if(i===6) resetCmp();
+  if(i===7) startQuote();
+  if(i===8) initEnd();
+}
+
+/* keyboard */
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowLeft'  && cur>0) goBack();
+  if(e.key==='ArrowRight' || e.key===' '){
+    const cta = scenes[cur].querySelector('.cta.show');
+    if(cta) cta.click();
+  }
+});
+
+/* ═══════════════ S0 COVER CANVAS ═══════════════ */
+function initCover(){
+  const cv=document.getElementById('cvCover');
+  if(!cv||cv._done) return; cv._done=true;
+  const ctx=cv.getContext('2d');
+  function resize(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;draw();}
+  function draw(){
+    const W=cv.width,H=cv.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.globalAlpha=.1;
+    for(let m=0;m<7;m++){
+      ctx.beginPath();
+      const bx=(m/7)*W*1.1-W*.06;
+      const mh=H*(.22+m*.04+(m%2)*.06);
+      ctx.moveTo(bx,H);
+      ctx.quadraticCurveTo(bx+W*.12,H-mh,bx+W*.24,H);
+      ctx.fillStyle=`rgba(200,160,60,${.04+m*.018})`;
+      ctx.fill();
+    }
+    ctx.globalAlpha=.065;
+    for(let r=0;r<7;r++){
+      const y=H*.74+r*13;
+      ctx.beginPath();ctx.moveTo(W*.05,y);
+      ctx.bezierCurveTo(W*.3,y-5,W*.7,y+5,W*.95,y);
+      ctx.strokeStyle='rgba(200,160,60,.8)';ctx.lineWidth=.7;ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  resize(); window.addEventListener('resize',resize);
+}
+
+/* ═══════════════ S1 LETTER ═══════════════ */
+function resetScroll(){
+  const shut=document.getElementById('sShut');
+  shut.style.display='';
+  document.getElementById('sOpen').classList.remove('open');
+  document.getElementById('sGo').classList.remove('show');
+}
+function openScroll(){
+  document.getElementById('sShut').style.display='none';
+  document.getElementById('sOpen').classList.add('open');
+  setTimeout(()=>document.getElementById('sGo').classList.add('show'), 1200);
+}
+
+/* ═══════════════ S2 TIMELINE ═══════════════ */
+let tlN=0;
+function tlClick(n){
+  const dot=document.getElementById('td'+n);
+  if(dot.classList.contains('done')) return;
+  dot.classList.add('done');
+  dot.textContent='✓';
+  setTimeout(()=>document.getElementById('tc'+n).classList.add('open'),140);
+  tlN++;
+  if(tlN===3){
+    setTimeout(()=>{
+      document.getElementById('s2note').classList.add('show');
+      document.getElementById('s2h').style.opacity='0';
+      document.getElementById('s2cta').classList.add('show');
+    },480);
+  }
+}
+
+/* ═══════════════ S3 PAINTING ═══════════════ */
+let hsN=0;
+function hitHS(n){
+  const hs=document.getElementById('hs'+n);
+  if(hs.classList.contains('found')) return;
+  hs.classList.add('found'); hs.textContent='✓';
+  const pop=document.getElementById('hp'+n);
+  pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'), 2600);
+  hsN++;
+  document.getElementById('s3n').textContent=hsN;
+  if(hsN>=4){
+    document.getElementById('s3h').style.opacity='0';
+    setTimeout(()=>{
+      document.getElementById('lSvg').classList.add('dimmed');
+      document.getElementById('s3rev').classList.add('show');
+      setTimeout(()=>document.getElementById('s3cta').classList.add('show'), 1100);
+    },350);
+  }
+}
+
+/* ═══════════════ S4 RAIN ═══════════════ */
+let rainAF=null, rainDrops=[], rStep=0, rDone=false, ltTO=null;
+
+function startRain(){
+  rStep=0; rDone=false;
+  document.getElementById('rainPmt').classList.remove('off');
+  document.getElementById('s4cta').classList.remove('show');
+  document.getElementById('rainEmo').classList.remove('on');
+  ['rl0','rl1','rl2','rl3','rl4'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.classList.remove('on');
+  });
+  const cv=document.getElementById('rainCv');
+  if(!cv) return;
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d');
+  rainDrops=Array.from({length:220},()=>({
+    x:Math.random()*cv.width*1.2,
+    y:Math.random()*cv.height-cv.height,
+    len:12+Math.random()*18,
+    speed:11+Math.random()*10,
+    a:.1+Math.random()*.3
+  }));
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    rainDrops.forEach(d=>{
+      ctx.beginPath();
+      ctx.moveTo(d.x,d.y);
+      ctx.lineTo(d.x-d.len*.28,d.y+d.len);
+      ctx.strokeStyle=`rgba(140,180,220,${d.a})`;
+      ctx.lineWidth=.8; ctx.stroke();
+      d.y+=d.speed; d.x-=d.speed*.28;
+      if(d.y>cv.height||d.x<-30){d.x=Math.random()*cv.width+60;d.y=-25;}
+    });
+    rainAF=requestAnimationFrame(frame);
+  }
+  if(rainAF) cancelAnimationFrame(rainAF);
+  frame();
+  schedLt();
+}
+function stopRain(){
+  if(rainAF){cancelAnimationFrame(rainAF);rainAF=null;}
+  if(ltTO){clearTimeout(ltTO);ltTO=null;}
+  const cv=document.getElementById('rainCv');
+  if(cv){cv.getContext('2d').clearRect(0,0,cv.width,cv.height);}
+}
+function schedLt(){
+  if(!rainAF) return;
+  ltTO=setTimeout(()=>{ flashLt(); schedLt(); }, 7000+Math.random()*13000);
+}
+function flashLt(){
+  const cv=document.getElementById('rainCv');
+  if(!cv||!rainAF) return;
+  const ctx=cv.getContext('2d');
+  ctx.save(); ctx.fillStyle='rgba(200,230,255,.09)'; ctx.fillRect(0,0,cv.width,cv.height); ctx.restore();
+  setTimeout(()=>{
+    if(cv&&rainAF){ctx.save();ctx.fillStyle='rgba(200,230,255,.05)';ctx.fillRect(0,0,cv.width,cv.height);ctx.restore();}
+  },75);
+}
+const rainLines=['rl0','rl1','rl2','rl3','rl4'];
+function s4Click(){
+  if(rDone) return;
+  document.getElementById('rainPmt').classList.add('off');
+  if(rStep<5){
+    document.getElementById(rainLines[rStep]).classList.add('on');
+    rStep++;
+    if(rStep===5){
+      setTimeout(()=>{
+        if(cur!==4) return;
+        document.getElementById('rainEmo').classList.add('on');
+        setTimeout(()=>{ if(cur===4) document.getElementById('s4cta').classList.add('show'); },900);
+        rDone=true;
+      },600);
+    }
+  }
+}
+
+/* ═══════════════ S5 SUN ═══════════════ */
+let sunAF=null, sunPts=[], sStep=0, sDone=false;
+
+function startSun(){
+  sStep=0; sDone=false;
+  document.getElementById('sunPmt').classList.remove('off');
+  document.getElementById('s5cta').classList.remove('show');
+  document.getElementById('sunEmo').classList.remove('on');
+  ['sl0','sl1','sl2','sl3','sl4'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.classList.remove('on');
+  });
+  buildBirds();
+  const cv=document.getElementById('sunCv');
+  if(!cv) return;
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d');
+  const wy=cv.height*.52;
+  sunPts=Array.from({length:72},()=>({
+    x:Math.random()*cv.width,
+    y:wy+Math.random()*(cv.height-wy),
+    r:.5+Math.random()*2.5,
+    ph:Math.random()*Math.PI*2,
+    spd:.4+Math.random()*.9,
+    ba:.1+Math.random()*.42,
+    gold:Math.random()<.55
+  }));
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const t=Date.now()*.001;
+    sunPts.forEach(p=>{
+      const a=p.ba*(.5+.5*Math.sin(t*p.spd+p.ph));
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.gold?`rgba(255,222,70,${a})`:`rgba(255,255,200,${a})`;
+      ctx.fill();
+    });
+    sunAF=requestAnimationFrame(frame);
+  }
+  if(sunAF) cancelAnimationFrame(sunAF);
+  frame();
+}
+function stopSun(){
+  if(sunAF){cancelAnimationFrame(sunAF);sunAF=null;}
+  const cv=document.getElementById('sunCv');
+  if(cv){cv.getContext('2d').clearRect(0,0,cv.width,cv.height);}
+}
+function buildBirds(){
+  const L=document.getElementById('bLayer'); L.innerHTML='';
+  [[15,20],[20,28],[13,60],[18,65],[11,75],[23,42]].forEach(([t,l])=>{
+    const p=document.createElement('div'); p.className='bpair';
+    p.style.cssText=`top:${t}%;left:${l}%;animation:bDrift ${(5.5+Math.random()*4.5).toFixed(1)}s ease-in-out infinite alternate`;
+    p.innerHTML='<div class="bp-l"></div><div class="bp-r"></div>';
+    L.appendChild(p);
+  });
+  if(!document.getElementById('bDriftKf')){
+    const s=document.createElement('style');s.id='bDriftKf';
+    s.textContent='@keyframes bDrift{from{transform:translate(0,0)}to{transform:translate(18px,-7px)}}';
+    document.head.appendChild(s);
+  }
+}
+const sunLines=['sl0','sl1','sl2','sl3','sl4'];
+function s5Click(){
+  if(sDone) return;
+  document.getElementById('sunPmt').classList.add('off');
+  if(sStep<5){
+    document.getElementById(sunLines[sStep]).classList.add('on');
+    sStep++;
+    if(sStep===5){
+      setTimeout(()=>{
+        if(cur!==5) return;
+        document.getElementById('sunEmo').classList.add('on');
+        setTimeout(()=>{ if(cur===5) document.getElementById('s5cta').classList.add('show'); },900);
+        sDone=true;
+      },600);
+    }
+  }
+}
+
+/* ═══════════════ S6 COMPARE ═══════════════ */
+let cmpDone=false;
+function resetCmp(){
+  cmpDone=false;
+  const btn=document.getElementById('s6btn');
+  btn.style.opacity=''; btn.style.pointerEvents='';
+  document.getElementById('s6L').classList.remove('show');
+  document.getElementById('s6R').classList.remove('show');
+  document.getElementById('s6rev').classList.remove('show');
+  document.getElementById('s6cta').classList.remove('show');
+}
+function revealCmp(){
+  if(cmpDone) return; cmpDone=true;
+  const btn=document.getElementById('s6btn');
+  btn.style.opacity='0'; btn.style.pointerEvents='none';
+  document.getElementById('s6L').classList.add('show');
+  document.getElementById('s6R').classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('s6rev').classList.add('show');
+    setTimeout(()=>document.getElementById('s6cta').classList.add('show'),500);
+  },700);
+}
+
+/* ═══════════════ S7 QUOTE REVEAL ═══════════════ */
+let quoteDone=false;
+function startQuote(){
+  if(quoteDone) return; quoteDone=true;
+  // reset DOM state for replay
+  const line=document.getElementById('qLine');
+  line.innerHTML='';
+  document.getElementById('s7ctx').classList.remove('show');
+  document.getElementById('s7end').classList.remove('show');
+  document.getElementById('s7cta').classList.remove('show');
+  const text='先天下之忧而忧，后天下之乐而乐';
+  let last=0;
+  [...text].forEach((ch,i)=>{
+    const s=document.createElement('span');
+    const isPunct=(ch==='，'||ch==='。'||ch==='、');
+    s.className='qc'+(isPunct?' p':'');
+    s.textContent=ch;
+    const delay=i*275;
+    s.style.animationDelay=delay+'ms';
+    line.appendChild(s);
+    last=delay+480;
+  });
+  setTimeout(()=>{
+    document.getElementById('s7ctx').classList.add('show');
+    setTimeout(()=>{
+      document.getElementById('s7end').classList.add('show');
+      setTimeout(()=>document.getElementById('s7cta').classList.add('show'),650);
+    },900);
+  }, last+800);
+}
+
+/* ═══════════════ S8 END CANVAS ═══════════════ */
+function initEnd(){
+  const cv=document.getElementById('cvEnd');
+  if(!cv||cv._done) return; cv._done=true;
+  const ctx=cv.getContext('2d');
+  cv.width=cv.offsetWidth; cv.height=cv.offsetHeight;
+  const W=cv.width,H=cv.height;
+  ctx.globalAlpha=.08;
+  for(let m=0;m<6;m++){
+    ctx.beginPath();
+    const bx=(m/6)*W*1.1-W*.05;
+    const mh=H*(.28+m*.04+(m%2)*.05);
+    ctx.moveTo(bx,H);ctx.quadraticCurveTo(bx+W*.11,H-mh,bx+W*.22,H);
+    ctx.fillStyle='rgba(200,160,60,.9)';ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+/* init */
+initCover();
+</script>
+</body>
+</html>
