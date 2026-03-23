@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>桃花源记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Noto+Sans+SC:wght@400;700;900&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f0e8; --ink:#1a1410; --ink2:#3d2c1e; --ink3:#7a5c3a;
+  --accent1:#c8432a; --accent2:#2a5fc8; --accent3:#e8a020;
+  --accent4:#2a8c4a; --accent5:#6b3fa0;
+  --white:#fff; --cream:#fdf8ef;
+  --card-bg:#fff; --card-border:2px solid var(--ink);
+  --card-shadow:5px 5px 0 var(--ink); --card-radius:4px;
+  --texture:radial-gradient(circle,rgba(26,20,16,.09) 1.5px,transparent 1.5px);
+  --font-d:'Caveat',cursive; --font-b:'Noto Sans SC',sans-serif; --font-m:'Space Mono',monospace;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a1008;
+  font-family:var(--font-b);}
+
+/* ── STAGE ── */
+#stage{width:100%;height:100%;position:relative;overflow:hidden;}
+.scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .7s ease,filter .7s ease;
+  filter:blur(6px); padding:14px 20px 72px; overflow:hidden;
+}
+.scene.active{opacity:1;pointer-events:all;filter:none;}
+
+/* ── DOTS ── */
+#dots{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:9999;}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(26,20,16,.15);border:1.5px solid rgba(26,20,16,.2);transition:all .4s;cursor:pointer;}
+.dot.done{background:rgba(26,20,16,.3);}
+.dot.cur{background:var(--ink);border-color:var(--ink);transform:scale(1.5);}
+
+/* ── BACK ── */
+#back{position:fixed;top:10px;left:16px;z-index:9999;
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid rgba(26,20,16,.2);background:rgba(245,240,232,.85);
+  color:var(--ink3);font-size:16px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;transition:all .2s;
+  backdrop-filter:blur(4px);}
+#back.show{display:flex;}
+#back:hover{background:var(--white);color:var(--ink);}
+
+/* ── CTA ── */
+.cta{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  padding:11px 32px;
+  border:2px solid var(--ink);background:var(--ink);
+  color:var(--cream);font-size:13px;letter-spacing:4px;cursor:pointer;
+  border-radius:2px;font-family:var(--font-b);transition:all .25s;
+  white-space:nowrap;display:none;z-index:20;
+  box-shadow:4px 4px 0 rgba(26,20,16,.35);
+}
+.cta.show{display:inline-block;}
+.cta:hover{background:var(--white);color:var(--ink);}
+.cta.light{background:var(--white);color:var(--ink);}
+.cta.light:hover{background:var(--ink);color:var(--white);}
+
+/* ── SHARED TEXT ── */
+.tag{font-size:11px;letter-spacing:5px;color:var(--accent1);margin-bottom:8px;font-family:var(--font-m);}
+.htag{font-size:11px;letter-spacing:4px;color:var(--ink3);margin-bottom:8px;font-family:var(--font-m);}
+.big{font-size:clamp(26px,5vw,48px);font-weight:900;letter-spacing:4px;color:var(--ink);font-family:var(--font-d);}
+.bigw{font-size:clamp(26px,5vw,48px);font-weight:900;letter-spacing:4px;color:var(--cream);font-family:var(--font-d);}
+.hint{font-size:12px;letter-spacing:4px;color:var(--ink3);animation:pulse 2.2s ease-in-out infinite;}
+.sep{width:60px;height:2px;margin:14px auto;background:linear-gradient(90deg,transparent,var(--ink3),transparent);}
+@keyframes pulse{50%{opacity:.2}}
+
+/* ── CARD ── */
+.card{
+  background:var(--card-bg);border:var(--card-border);
+  border-radius:var(--card-radius);box-shadow:var(--card-shadow);
+  padding:20px 24px;
+}
+
+/* ── DOT TEXTURE BG ── */
+.dotbg{
+  background-color:var(--bg);
+  background-image:var(--texture);
+  background-size:28px 28px;
+}
+
+/* ══════════════════════════════
+   S0 · 封面
+══════════════════════════════ */
+#s0{background:#1a1008;}
+#cvPetals{position:absolute;inset:0;width:100%;height:100%;}
+.cv{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.cv-dynasty{font-size:12px;letter-spacing:6px;color:rgba(232,160,32,.55);margin-bottom:16px;font-family:var(--font-m);}
+.cv-title{font-family:var(--font-d);font-size:clamp(72px,16vw,148px);font-weight:700;letter-spacing:18px;
+  color:#f5f0e8;text-shadow:0 2px 40px rgba(200,100,40,.25);line-height:1;}
+.cv-author{font-size:14px;letter-spacing:8px;color:rgba(232,160,32,.7);margin-top:14px;}
+.cv-line{width:1px;height:44px;background:linear-gradient(to bottom,transparent,rgba(232,160,32,.4),transparent);margin:18px auto;}
+.cv-hook{font-size:clamp(13px,2vw,16px);color:rgba(245,240,232,.45);letter-spacing:3px;line-height:2.4;font-family:var(--font-b);}
+.cv-btn{margin-top:28px;padding:11px 32px;border:1.5px solid rgba(232,160,32,.4);background:transparent;
+  color:rgba(232,160,32,.8);font-size:12px;letter-spacing:6px;cursor:pointer;
+  font-family:var(--font-b);border-radius:2px;transition:all .3s;}
+.cv-btn:hover{background:rgba(232,160,32,.1);}
+
+/* ══════════════════════════════
+   S1 · 渔人日记（卷轴）
+══════════════════════════════ */
+#s1{background:radial-gradient(ellipse at 50% 30%,#2a1c08 0%,#160e03 55%,#0a0600 100%);}
+.desk{position:relative;width:min(440px,88vw);}
+.candle-glow{position:absolute;top:-110px;left:50%;transform:translateX(-50%);
+  width:240px;height:240px;
+  background:radial-gradient(circle,rgba(232,140,40,.16) 0%,rgba(200,80,20,.05) 45%,transparent 70%);
+  border-radius:50%;pointer-events:none;animation:candleFlicker 3.4s ease-in-out infinite alternate;}
+@keyframes candleFlicker{0%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.1)}100%{opacity:.65;transform:translateX(-50%) scale(.95)}}
+.scroll-closed{width:200px;margin:0 auto;cursor:pointer;transition:transform .3s;}
+.scroll-closed:hover{transform:scale(1.05);}
+.scroll-hint{text-align:center;margin-top:10px;font-size:12px;letter-spacing:4px;color:rgba(232,160,32,.55);animation:pulse 2.2s infinite;}
+.scroll-body{background:linear-gradient(160deg,#ede0bc,#f0e5c8,#ead9b0);
+  border:1px solid rgba(154,110,20,.3);border-radius:4px;
+  padding:22px 24px;box-shadow:0 4px 24px rgba(0,0,0,.55);
+  max-height:0;overflow:hidden;opacity:0;transition:max-height 1.4s ease,opacity .6s ease;}
+.scroll-body.open{max-height:600px;opacity:1;}
+.diary-head{font-size:11px;letter-spacing:4px;color:rgba(120,80,20,.55);margin-bottom:12px;font-family:var(--font-m);}
+.diary-txt{font-size:clamp(12px,1.9vw,14px);color:#3a2814;line-height:2.1;letter-spacing:2px;}
+.diary-txt b{color:#8b4420;}
+.diary-note{margin-top:12px;font-size:11px;color:rgba(100,70,30,.5);letter-spacing:2px;line-height:1.9;
+  border-top:1px solid rgba(154,110,20,.18);padding-top:9px;}
+.diary-go{margin-top:10px;text-align:right;font-size:11px;letter-spacing:3px;color:rgba(139,68,32,.7);
+  cursor:pointer;opacity:0;transition:opacity .5s .9s;}
+.diary-go.show{opacity:1;}
+
+/* ══════════════════════════════
+   S2 · 桃花林（点击揭幕）
+══════════════════════════════ */
+#s2{cursor:pointer;user-select:none;-webkit-user-select:none;position:relative;overflow:hidden;}
+.forest-bg{position:absolute;inset:0;z-index:1;pointer-events:none;}
+.forest-ui{position:relative;z-index:10;max-width:560px;width:92%;text-align:center;
+  display:flex;flex-direction:column;align-items:center;}
+.forest-lines{min-height:clamp(160px,28vh,220px);display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;gap:6px;margin-bottom:12px;}
+.fl{font-size:clamp(16px,3vw,26px);color:rgba(245,240,232,.0);letter-spacing:6px;line-height:1.65;
+  transition:color .7s,text-shadow .7s;font-family:var(--font-d);}
+.fl.on{color:rgba(245,240,232,.92);text-shadow:0 0 18px rgba(232,160,32,.4);}
+.forest-feel{font-size:clamp(13px,2.5vw,20px);color:rgba(245,240,232,.0);letter-spacing:6px;
+  margin-top:16px;transition:color .9s;font-style:italic;}
+.forest-feel.on{color:rgba(245,240,232,.78);}
+.forest-prompt{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);
+  font-size:11px;letter-spacing:4px;color:rgba(245,240,232,.32);z-index:10;
+  animation:pulse 2.2s infinite;white-space:nowrap;transition:opacity .4s;}
+.forest-prompt.off{opacity:0;pointer-events:none;}
+
+/* ══════════════════════════════
+   S3 · 解码古语（配对游戏）
+══════════════════════════════ */
+#s3{background:var(--bg);background-image:var(--texture);background-size:28px 28px;}
+.s3wrap{max-width:760px;width:96%;}
+.game-score{font-family:var(--font-d);font-size:36px;color:var(--accent3);
+  text-align:center;margin-bottom:14px;}
+.vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.vocab-col-label{font-size:11px;letter-spacing:4px;color:var(--ink3);
+  text-align:center;margin-bottom:8px;font-family:var(--font-m);}
+.vitem{padding:12px 16px;border:var(--card-border);border-radius:var(--card-radius);
+  cursor:pointer;text-align:center;font-size:clamp(13px,1.8vw,16px);
+  background:var(--white);transition:all .2s;box-shadow:3px 3px 0 var(--ink);
+  margin-bottom:8px;font-family:var(--font-b);}
+.vitem:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink);}
+.vitem.sel{background:var(--accent2);color:var(--white);border-color:var(--accent2);box-shadow:3px 3px 0 var(--accent2);}
+.vitem.ok{background:var(--accent4);color:var(--white);border-color:var(--accent4);
+  box-shadow:3px 3px 0 var(--accent4);cursor:default;animation:popIn .4s ease;}
+.vitem.err{animation:shake .4s ease;}
+.game-done{text-align:center;padding:24px;display:none;}
+.game-done.show{display:block;animation:fadeUp .5s ease;}
+@keyframes popIn{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════
+   S4 · 社会图景（填档案）
+══════════════════════════════ */
+#s4{background:var(--bg);background-image:var(--texture);background-size:28px 28px;overflow-y:auto;}
+.s4wrap{max-width:720px;width:96%;padding:10px 0 20px;}
+.archive-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+.archive-item{background:var(--white);border:var(--card-border);border-radius:var(--card-radius);
+  box-shadow:var(--card-shadow);padding:16px;}
+.a-label{font-size:11px;letter-spacing:3px;color:var(--accent2);margin-bottom:8px;font-family:var(--font-m);}
+.a-label span{color:var(--accent1);font-size:13px;font-family:var(--font-d);}
+textarea{width:100%;background:#fafaf8;border:1.5px solid rgba(26,20,16,.2);border-radius:3px;
+  padding:10px;font-size:13px;font-family:var(--font-b);resize:vertical;color:var(--ink);
+  transition:border-color .2s;}
+textarea:focus{outline:none;border-color:var(--accent2);}
+.submit-row{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;}
+.btn{padding:10px 24px;border:2px solid var(--ink);background:var(--ink);color:var(--cream);
+  font-family:var(--font-b);font-size:13px;letter-spacing:3px;cursor:pointer;
+  border-radius:2px;transition:all .2s;box-shadow:4px 4px 0 rgba(26,20,16,.3);}
+.btn:hover{background:var(--white);color:var(--ink);}
+.btn.outline{background:var(--white);color:var(--ink);}
+.btn.outline:hover{background:var(--ink);color:var(--white);}
+.archive-result{display:none;margin-top:14px;}
+.archive-result.show{display:block;animation:fadeUp .5s ease;}
+.result-table{width:100%;border-collapse:collapse;font-size:13px;}
+.result-table th{background:var(--ink);color:var(--cream);padding:8px 12px;text-align:left;font-weight:700;}
+.result-table td{padding:8px 12px;border-bottom:1.5px solid rgba(26,20,16,.12);}
+.result-table tr:nth-child(even) td{background:rgba(26,20,16,.03);}
+
+/* ══════════════════════════════
+   S5 · 最大谜题（证据链+投票）
+══════════════════════════════ */
+#s5{background:var(--bg);background-image:var(--texture);background-size:28px 28px;overflow-y:auto;}
+.s5wrap{max-width:680px;width:96%;padding:10px 0 20px;}
+.clue-chain{margin-top:14px;}
+.clue-step{border:var(--card-border);border-radius:var(--card-radius);
+  background:var(--white);padding:14px 18px;margin-bottom:10px;
+  box-shadow:var(--card-shadow);
+  opacity:.2;transform:translateY(8px);transition:all .5s;cursor:pointer;}
+.clue-step.lit{opacity:1;transform:translateY(0);border-left:4px solid var(--accent1);}
+.clue-step.clickable:not(.lit){cursor:pointer;}
+.clue-step.clickable:not(.lit):hover{opacity:.5;}
+.step-num{font-size:10px;letter-spacing:3px;color:var(--accent1);margin-bottom:4px;font-family:var(--font-m);}
+.step-txt{font-size:clamp(13px,1.8vw,15px);color:var(--ink);line-height:1.8;}
+.step-txt strong{color:var(--accent1);}
+.step-q{font-size:12px;color:var(--ink3);margin-top:6px;font-style:italic;}
+.vote-wrap{margin-top:18px;}
+.vote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
+.vote-card{border:var(--card-border);border-radius:var(--card-radius);background:var(--white);
+  box-shadow:var(--card-shadow);padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;}
+.vote-card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink);}
+.vote-card.voted{background:var(--ink);color:var(--cream);}
+.vote-emoji{font-size:28px;margin-bottom:6px;}
+.vote-label{font-size:14px;font-weight:700;font-family:var(--font-d);letter-spacing:2px;}
+.vote-sub{font-size:11px;color:var(--ink3);margin-top:4px;}
+.vote-card.voted .vote-sub{color:rgba(245,240,232,.6);}
+.vote-bar-wrap{margin-top:8px;}
+.vote-bar{height:5px;background:rgba(26,20,16,.1);border-radius:3px;overflow:hidden;margin-top:4px;}
+.vote-bar-fill{height:100%;background:var(--accent3);border-radius:3px;width:0;transition:width 1s ease;}
+.vote-count{font-size:11px;color:var(--ink3);font-family:var(--font-m);}
+
+/* ══════════════════════════════
+   S6 · 档案揭秘（对比动画）
+══════════════════════════════ */
+#s6{background:var(--bg);background-image:var(--texture);background-size:28px 28px;overflow-y:auto;}
+.s6wrap{max-width:760px;width:96%;padding:10px 0 20px;}
+.compare-header{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px;}
+.compare-col-title{text-align:center;padding:10px;border:2px solid;border-radius:3px;
+  font-size:13px;font-weight:700;font-family:var(--font-m);letter-spacing:2px;}
+.compare-col-title.ideal{border-color:var(--accent4);color:var(--accent4);background:rgba(42,140,74,.07);}
+.compare-col-title.real{border-color:var(--accent1);color:var(--accent1);background:rgba(200,67,42,.07);}
+.compare-rows{display:flex;flex-direction:column;gap:10px;}
+.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  opacity:0;transform:translateY(12px);transition:all .55s;}
+.compare-row.show{opacity:1;transform:translateY(0);}
+.compare-cell{padding:14px 16px;border-radius:3px;font-size:clamp(12px,1.7vw,14px);line-height:1.8;}
+.compare-cell.ideal{background:rgba(42,140,74,.07);border:1.5px solid rgba(42,140,74,.3);color:var(--ink);}
+.compare-cell.real{background:rgba(200,67,42,.07);border:1.5px solid rgba(200,67,42,.3);color:var(--ink);}
+.compare-cell strong{display:block;font-family:var(--font-d);font-size:1.1em;margin-bottom:4px;}
+.reveal-quote{margin-top:18px;border-left:4px solid var(--accent3);padding:16px 20px;
+  background:rgba(232,160,32,.07);border-radius:0 4px 4px 0;
+  font-size:clamp(15px,2.2vw,19px);font-family:var(--font-d);color:var(--ink);
+  letter-spacing:3px;line-height:1.9;
+  opacity:0;transition:opacity .7s;}
+.reveal-quote.show{opacity:1;}
+
+/* ══════════════════════════════
+   S7 · 调查报告（学生填写）
+══════════════════════════════ */
+#s7{background:var(--bg);background-image:var(--texture);background-size:28px 28px;overflow-y:auto;}
+.s7wrap{max-width:680px;width:96%;padding:10px 0 20px;}
+.report-fields{margin-top:14px;display:flex;flex-direction:column;gap:14px;}
+.rfield{background:var(--white);border:var(--card-border);border-radius:var(--card-radius);
+  box-shadow:var(--card-shadow);padding:16px;}
+.rfield-label{font-size:11px;letter-spacing:3px;color:var(--accent2);margin-bottom:8px;font-family:var(--font-m);}
+.report-submitted{display:none;text-align:center;padding:28px 20px;}
+.report-submitted.show{display:block;animation:fadeUp .5s ease;}
+.achieve-icon{font-size:64px;margin-bottom:14px;}
+.achieve-title{font-family:var(--font-d);font-size:clamp(22px,4vw,34px);color:var(--accent3);margin-bottom:10px;}
+.achieve-msg{font-size:clamp(13px,1.8vw,15px);color:var(--ink2);line-height:1.9;max-width:480px;margin:0 auto;}
+.teacher-confirm{margin-top:20px;border:var(--card-border);border-radius:var(--card-radius);
+  box-shadow:var(--card-shadow);padding:16px 20px;background:var(--white);
+  font-size:clamp(13px,1.8vw,15px);color:var(--ink);line-height:1.9;}
+.teacher-confirm strong{color:var(--accent2);font-family:var(--font-d);}
+
+/* ══════════════════════════════
+   S8 · 总结 + 延伸
+══════════════════════════════ */
+#s8{background:#1a1008;overflow-y:auto;}
+#cvEnd{position:absolute;inset:0;width:100%;height:100%;}
+.s8wrap{position:relative;z-index:2;max-width:720px;width:96%;text-align:center;padding:20px 0;}
+.s8-lbl{font-size:11px;letter-spacing:6px;color:rgba(232,160,32,.45);margin-bottom:14px;font-family:var(--font-m);}
+.s8-hd{font-family:var(--font-d);font-size:clamp(20px,3.5vw,30px);color:rgba(245,240,232,.8);
+  letter-spacing:5px;margin-bottom:20px;}
+.s8-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.s8-card{background:rgba(232,160,32,.09);border:1px solid rgba(232,160,32,.2);
+  border-radius:4px;padding:18px 20px;text-align:left;}
+.s8-who{font-size:11px;letter-spacing:4px;color:rgba(232,160,32,.7);margin-bottom:8px;font-family:var(--font-m);}
+.s8-body{font-size:clamp(12px,1.7vw,14px);color:rgba(245,240,232,.72);line-height:1.9;}
+.s8-body b{color:rgba(232,160,32,.9);}
+.s8-quote{font-family:var(--font-d);font-size:clamp(16px,3vw,28px);color:rgba(232,160,32,.9);
+  letter-spacing:6px;line-height:1.9;border-top:1px solid rgba(232,160,32,.15);
+  padding-top:18px;}
+.s8-sub{font-size:12px;color:rgba(232,160,32,.38);letter-spacing:3px;margin-top:6px;font-family:var(--font-m);}
+.s8-hw{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.hw-card{background:rgba(232,160,32,.06);border:1px solid rgba(232,160,32,.18);
+  border-radius:4px;padding:14px;cursor:pointer;transition:all .2s;text-align:left;}
+.hw-card:hover{background:rgba(232,160,32,.15);}
+.hw-card.sel{background:rgba(232,160,32,.18);border-color:rgba(232,160,32,.5);}
+.hw-type{font-size:10px;letter-spacing:3px;color:rgba(232,160,32,.55);margin-bottom:6px;font-family:var(--font-m);}
+.hw-txt{font-size:clamp(11px,1.5vw,13px);color:rgba(245,240,232,.72);line-height:1.7;}
+
+/* responsive */
+@media(max-width:540px){
+  .vocab-grid,.archive-grid,.vote-grid,.compare-header,.compare-row,.s8-cards,.s8-hw{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+<div id="dots"></div>
+<div id="back" onclick="goBack()">‹</div>
+
+<!-- ══════════════════════════════
+     S0 · 封面
+══════════════════════════════ -->
+<div class="scene active" id="s0">
+  <canvas id="cvPetals"></canvas>
+  <div class="cv">
+    <div class="cv-dynasty">八年级语文 · 部编版 · 陶渊明</div>
+    <div class="cv-title">桃花源记</div>
+    <div class="cv-author">东晋 · 陶渊明</div>
+    <div class="cv-line"></div>
+    <div class="cv-hook">一个渔人，一次意外进入<br>一个他再也找不到的地方</div>
+    <button class="cv-btn" onclick="go(1)">开始探索 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     S1 · 渔人日记
+══════════════════════════════ -->
+<div class="scene" id="s1">
+  <div class="desk">
+    <div class="candle-glow"></div>
+    <div class="scroll-closed" id="scrollClosed" onclick="openScroll()">
+      <svg viewBox="0 0 190 100" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="14" width="150" height="72" rx="4" fill="#DDD0A0" stroke="rgba(139,100,28,.4)" stroke-width="1.2"/>
+        <rect x="6" y="14" width="16" height="72" rx="8" fill="#C4A060" stroke="rgba(120,80,20,.38)" stroke-width="1"/>
+        <rect x="168" y="14" width="16" height="72" rx="8" fill="#C4A060" stroke="rgba(120,80,20,.38)" stroke-width="1"/>
+        <circle cx="95" cy="50" r="14" fill="rgba(200,67,42,.2)" stroke="rgba(200,67,42,.5)" stroke-width="1.2"/>
+        <text x="95" y="54" text-anchor="middle" font-size="10" fill="rgba(200,67,42,.85)" font-family="STKaiti,serif">记</text>
+        <line x1="40" y1="36" x2="80" y2="36" stroke="rgba(100,80,40,.16)" stroke-width="1"/>
+        <line x1="40" y1="48" x2="74" y2="48" stroke="rgba(100,80,40,.12)" stroke-width="1"/>
+        <line x1="110" y1="36" x2="150" y2="36" stroke="rgba(100,80,40,.16)" stroke-width="1"/>
+        <line x1="110" y1="48" x2="146" y2="48" stroke="rgba(100,80,40,.12)" stroke-width="1"/>
+      </svg>
+      <div class="scroll-hint">✦ 点击展开日记 ✦</div>
+    </div>
+    <div class="scroll-body" id="scrollBody">
+      <div class="diary-head">晋太元年间 · 武陵渔人笔记</div>
+      <div class="diary-txt">
+        今日沿溪而行，<b>忘路之远近</b>。<br>
+        忽逢桃花林，夹岸数百步，中无杂树，<b>芳草鲜美，落英缤纷</b>。<br>
+        甚异之——从未见此景象。<br><br>
+        林尽处，有山，山有小口，<b>仿佛若有光</b>。<br>
+        舍船入洞，初极狭，才通人。<br>
+        复行数十步，<b>豁然开朗</b>。<br><br>
+        眼前之景，令我呆立……
+      </div>
+      <div class="diary-note">
+        这是渔人可能写下的笔记。<br>他进去了。看见了。又出来了。然后——再也找不到了。<br>
+        <b style="color:#8b4420;">为什么？</b> 这是我们今天要调查的问题。
+      </div>
+      <div class="diary-go" id="diaryGo" onclick="go(2)">接受调查任务，继续 →</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     S2 · 桃花林（点击揭幕）
+══════════════════════════════ -->
+<div class="scene" id="s2" onclick="forestClick()">
+  <canvas id="cvForest" class="forest-bg"></canvas>
+  <div class="forest-ui">
+    <div class="forest-lines">
+      <div class="fl" id="fl0">忘路之远近</div>
+      <div class="fl" id="fl1">忽逢桃花林</div>
+      <div class="fl" id="fl2">夹岸数百步，中无杂树</div>
+      <div class="fl" id="fl3">芳草鲜美，落英缤纷</div>
+      <div class="fl" id="fl4">林尽水源，便得一山</div>
+      <div class="fl" id="fl5">山有小口，仿佛若有光</div>
+    </div>
+    <div class="forest-feel" id="forestFeel">你站在洞口。要进去吗？</div>
+  </div>
+  <div class="forest-prompt" id="forestPmt">点击 · 跟随渔人前行</div>
+  <button class="cta" id="s2cta" onclick="event.stopPropagation();go(3)">进入桃花源 →</button>
+</div>
+
+<!-- ══════════════════════════════
+     S3 · 解码古语
+══════════════════════════════ -->
+<div class="scene dotbg" id="s3">
+  <div class="s3wrap">
+    <div class="tag">任务 · 解码古语</div>
+    <div class="big">这里的话，你真的听懂了吗？</div>
+    <div class="sep"></div>
+    <div class="game-score">得分：<span id="gameScore">0</span> / 6</div>
+    <div class="vocab-grid">
+      <div>
+        <div class="vocab-col-label">▶ 文中原词（点击选择）</div>
+        <div class="vitem" id="w0" onclick="selWord(0)">妻子</div>
+        <div class="vitem" id="w1" onclick="selWord(1)">绝境</div>
+        <div class="vitem" id="w2" onclick="selWord(2)">交通</div>
+        <div class="vitem" id="w3" onclick="selWord(3)">不足</div>
+        <div class="vitem" id="w4" onclick="selWord(4)">鲜美</div>
+        <div class="vitem" id="w5" onclick="selWord(5)">无论</div>
+      </div>
+      <div>
+        <div class="vocab-col-label">▶ 正确古义（点击匹配）</div>
+        <div class="vitem" id="m0" onclick="selMeaning(0)" data-id="0">妻子和儿女</div>
+        <div class="vitem" id="m1" onclick="selMeaning(3)" data-id="3">不值得</div>
+        <div class="vitem" id="m2" onclick="selMeaning(2)" data-id="2">田间小路交错相通</div>
+        <div class="vitem" id="m3" onclick="selMeaning(5)" data-id="5">不必说，更不必说</div>
+        <div class="vitem" id="m4" onclick="selMeaning(1)" data-id="1">与世隔绝之地</div>
+        <div class="vitem" id="m5" onclick="selMeaning(4)" data-id="4">鲜艳美丽</div>
+      </div>
+    </div>
+    <div class="game-done" id="gameDone">
+      <div style="font-size:48px;margin-bottom:10px;">🎉</div>
+      <div style="font-family:var(--font-d);font-size:28px;color:var(--accent4);">全部破解！</div>
+      <p style="color:var(--ink3);margin-top:8px;font-size:14px;">你已掌握文言古今异义词的核心读法</p>
+    </div>
+  </div>
+  <button class="cta light" id="s3cta" onclick="go(4)">继续调查 →</button>
+</div>
+
+<!-- ══════════════════════════════
+     S4 · 社会档案
+══════════════════════════════ -->
+<div class="scene dotbg" id="s4">
+  <div class="s4wrap">
+    <div class="tag">任务 · 绘制社会地图</div>
+    <div class="big">这是一个什么样的社会？</div>
+    <div class="sep"></div>
+    <p style="font-size:13px;color:var(--ink3);letter-spacing:2px;">从课文找原文证据，填写调查档案（4人小组，5分钟）</p>
+    <div class="archive-grid" id="archiveForm">
+      <div class="archive-item">
+        <div class="a-label"><span>①</span> 自然环境</div>
+        <textarea id="a1" rows="3" placeholder="原文词句 + 3个描述词…"></textarea>
+      </div>
+      <div class="archive-item">
+        <div class="a-label"><span>②</span> 人们的生活</div>
+        <textarea id="a2" rows="3" placeholder="原文：… 与我的生活不同的是…"></textarea>
+      </div>
+      <div class="archive-item">
+        <div class="a-label"><span>③</span> 阶级与贫富</div>
+        <textarea id="a3" rows="3" placeholder="我认为（有/没有），因为原文说…"></textarea>
+      </div>
+      <div class="archive-item">
+        <div class="a-label"><span>④</span> 是否有政府/官员</div>
+        <textarea id="a4" rows="3" placeholder="原文中（有/没有）…我推断…"></textarea>
+      </div>
+      <div class="archive-item" style="grid-column:1/-1;">
+        <div class="a-label"><span>⑤</span> 用一个词概括这里</div>
+        <textarea id="a5" rows="2" placeholder="我们小组的关键词是…（世外桃源？乌托邦？理想社会？）"></textarea>
+      </div>
+    </div>
+    <div class="submit-row">
+      <button class="btn" onclick="submitArchive()">提交档案 →</button>
+      <span style="font-size:12px;color:var(--ink3);">提交后查看课文分析</span>
+    </div>
+    <div class="archive-result" id="archiveResult">
+      <p style="font-size:12px;color:var(--accent4);letter-spacing:2px;margin-bottom:10px;">✓ 课文给出的答案</p>
+      <table class="result-table">
+        <tr><th>档案项目</th><th>课文原文</th><th>特征</th></tr>
+        <tr><td>自然环境</td><td>土地平旷，良田美池桑竹之属</td><td>富饶、宁静、美丽</td></tr>
+        <tr><td>生活状态</td><td>往来种作，黄发垂髫，怡然自乐</td><td>自给自足，老幼皆乐</td></tr>
+        <tr><td>阶级差距</td><td>全文无官吏/贵族/赋税描写</td><td>人人平等，无剥削</td></tr>
+        <tr><td>权力结构</td><td>全文无政府/军队出现</td><td>无国家机器，自治</td></tr>
+      </table>
+    </div>
+  </div>
+  <button class="cta light" id="s4cta" onclick="go(5)">进入最大谜题 →</button>
+</div>
+
+<!-- ══════════════════════════════
+     S5 · 最大谜题
+══════════════════════════════ -->
+<div class="scene dotbg" id="s5">
+  <div class="s5wrap">
+    <div class="tag">任务 · 破解谜题</div>
+    <div class="big" style="color:var(--accent1);">为什么再也找不到了？</div>
+    <div class="sep"></div>
+    <div class="clue-chain" id="clueChain">
+      <div class="clue-step lit" id="cs0">
+        <div class="step-num">证据 ①</div>
+        <div class="step-txt">「便扶向路，<strong>处处志之</strong>」——他做了路标，理论上可以找回来</div>
+      </div>
+      <div class="clue-step clickable" id="cs1" onclick="unlockClue(1)">
+        <div class="step-num">证据 ② <small style="color:var(--ink3);font-size:10px;">（点击解锁）</small></div>
+        <div class="step-txt">「及郡下，<strong>诣太守，说如此</strong>」——他告诉了官府，有人力支持</div>
+      </div>
+      <div class="clue-step clickable" id="cs2" onclick="unlockClue(2)">
+        <div class="step-num">证据 ③ <small style="color:var(--ink3);font-size:10px;">（点击解锁）</small></div>
+        <div class="step-txt">「<strong>寻向所志，遂迷，不复得路</strong>」——专业队伍，全部迷路</div>
+      </div>
+      <div class="clue-step clickable" id="cs3" onclick="unlockClue(3)">
+        <div class="step-num">证据 ④ <small style="color:var(--ink3);font-size:10px;">（点击解锁）</small></div>
+        <div class="step-txt">「未果，<strong>寻病终。后遂无问津者</strong>」——最后一个人死了，从此无人再寻</div>
+        <div class="step-q">❓ 路标失效了？还是桃花源根本就不存在？</div>
+      </div>
+    </div>
+    <div class="vote-wrap" id="voteWrap">
+      <div class="htag">你的判断</div>
+      <div class="vote-grid">
+        <div class="vote-card" id="vc0" onclick="castVote(0)">
+          <div class="vote-emoji">🌍</div>
+          <div class="vote-label">真实存在</div>
+          <div class="vote-sub">只是没人找到</div>
+          <div class="vote-bar-wrap"><div class="vote-count" id="vn0">0票</div><div class="vote-bar"><div class="vote-bar-fill" id="vf0"></div></div></div>
+        </div>
+        <div class="vote-card" id="vc1" onclick="castVote(1)">
+          <div class="vote-emoji">✍️</div>
+          <div class="vote-label">作者虚构</div>
+          <div class="vote-sub">寄托理想之地</div>
+          <div class="vote-bar-wrap"><div class="vote-count" id="vn1">0票</div><div class="vote-bar"><div class="vote-bar-fill" id="vf1"></div></div></div>
+        </div>
+        <div class="vote-card" id="vc2" onclick="castVote(2)">
+          <div class="vote-emoji">🤔</div>
+          <div class="vote-label">半真半假</div>
+          <div class="vote-sub">有深意在里面</div>
+          <div class="vote-bar-wrap"><div class="vote-count" id="vn2">0票</div><div class="vote-bar"><div class="vote-bar-fill" id="vf2"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="cta light" id="s5cta" onclick="go(6)">揭秘真相 →</button>
+</div>
+
+<!-- ══════════════════════════════
+     S6 · 档案揭秘
+══════════════════════════════ -->
+<div class="scene dotbg" id="s6">
+  <div class="s6wrap">
+    <div class="tag">任务 · 档案揭秘</div>
+    <div class="big">创造者的世界长什么样？</div>
+    <div class="sep"></div>
+    <div class="compare-header">
+      <div class="compare-col-title ideal">🌸 桃花源（你们描述的）</div>
+      <div class="compare-col-title real">⚔ 陶渊明所在的东晋（现实）</div>
+    </div>
+    <div class="compare-rows" id="compareRows"></div>
+    <button class="btn outline" id="revealBtn" onclick="startReveal()" style="margin-top:14px;">▶ 开始对比揭秘</button>
+    <div class="reveal-quote" id="revealQuote">
+      他找不到桃花源，因为它本来就不存在。<br>
+      他写它，是因为他太需要它存在了。<br>
+      <span style="font-size:.72em;color:var(--ink3);">—— 这种写法叫：<strong style="color:var(--accent2);">虚实相生</strong></span>
+    </div>
+  </div>
+  <button class="cta light" id="s6cta" onclick="go(7)">提交调查报告 →</button>
+</div>
+
+<!-- ══════════════════════════════
+     S7 · 调查报告
+══════════════════════════════ -->
+<div class="scene dotbg" id="s7">
+  <div class="s7wrap">
+    <div class="tag">任务 · 调查报告</div>
+    <div class="big">你们发现了什么？</div>
+    <div class="sep"></div>
+    <div id="reportForm">
+      <div class="report-fields">
+        <div class="rfield">
+          <div class="rfield-label">① 桃花源是个什么样的社会？（用自己的话，不抄课文）</div>
+          <textarea id="r1" rows="3" placeholder="桃花源是一个…的地方，那里的人…"></textarea>
+        </div>
+        <div class="rfield">
+          <div class="rfield-label">② 为什么再也找不到了？（说说你的理解）</div>
+          <textarea id="r2" rows="3" placeholder="我认为找不到是因为…作者这样写是想说…"></textarea>
+        </div>
+        <div class="rfield">
+          <div class="rfield-label">③ 陶渊明最想说的一句话是什么？</div>
+          <textarea id="r3" rows="2" placeholder="我觉得他想说：…"></textarea>
+        </div>
+      </div>
+      <div class="submit-row">
+        <button class="btn" onclick="submitReport()">提交报告 →</button>
+      </div>
+    </div>
+    <div class="report-submitted" id="reportDone">
+      <div class="achieve-icon">🏆</div>
+      <div class="achieve-title">调查报告已提交</div>
+      <div class="achieve-msg">你们刚才说的这些，就是这篇文章的<br>主旨、写法和价值。你们自己得出来的。</div>
+      <div class="teacher-confirm">
+        古代文学家管这种手法叫「<strong>虚实相生</strong>」。<br>
+        陶渊明大概没想到，1600年后，<br>还有一群人会这么认真地去"寻访"他的桃花源。
+      </div>
+    </div>
+  </div>
+  <button class="cta light" id="s7cta" onclick="go(8)">完成任务 →</button>
+</div>
+
+<!-- ══════════════════════════════
+     S8 · 总结
+══════════════════════════════ -->
+<div class="scene" id="s8">
+  <canvas id="cvEnd"></canvas>
+  <div class="s8wrap">
+    <div class="s8-lbl">课堂总结</div>
+    <div class="s8-hd">一个消失的地方，一个永恒的问题</div>
+    <div class="s8-cards">
+      <div class="s8-card">
+        <div class="s8-who">桃花源</div>
+        <div class="s8-body">平等、和谐、无官府、无赋税、无战乱。<br>渔人进去了，再也找不到。<br>这是<b>虚实相生</b>的写法。</div>
+      </div>
+      <div class="s8-card">
+        <div class="s8-who">陶渊明</div>
+        <div class="s8-body">东晋末年，乱世文人。<br>无力改变现实，以文寄志。<br>他的回答是<b>想象与书写</b>。</div>
+      </div>
+    </div>
+    <div class="s8-quote">此中人语云：不足为外人道也</div>
+    <div class="s8-sub">你们今天找到了它存在的意义</div>
+    <div class="s8-hw">
+      <div class="s8-card hw-card sel" id="hw0" onclick="toggleHW(0)">
+        <div class="hw-type">必做</div>
+        <div class="hw-txt">背诵全文 + 整理古今异义词卡片</div>
+      </div>
+      <div class="s8-card hw-card" id="hw1" onclick="toggleHW(1)">
+        <div class="hw-type">选做 A</div>
+        <div class="hw-txt">写200字：穿越回东晋，你会对陶渊明说什么？</div>
+      </div>
+      <div class="s8-card hw-card" id="hw2" onclick="toggleHW(2)">
+        <div class="hw-type">选做 B</div>
+        <div class="hw-txt">设计你的"现代桃花源"：在哪里？有什么规则？</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /stage -->
+<script>
+/* ══════════════ ENGINE ══════════════ */
+const scenes = [...document.querySelectorAll('.scene')];
+const N = scenes.length;
+let cur = 0;
+
+const dotBox = document.getElementById('dots');
+for(let i=0;i<N;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' cur':'');
+  d.id='D'+i; d.onclick=()=>goTo(i);
+  dotBox.appendChild(d);
+}
+
+function go(to){
+  if(to<0||to>=N)return;
+  onLeave(cur);
+  scenes[cur].classList.remove('active');
+  document.getElementById('D'+cur).className='dot done';
+  cur=to;
+  scenes[cur].classList.add('active');
+  document.getElementById('D'+cur).className='dot cur';
+  document.getElementById('back').className=cur>0?'show':'';
+  onEnter(cur);
+  window.scrollTo(0,0);
+}
+function goBack(){if(cur>0)go(cur-1);}
+function goTo(i){go(i);}
+function onLeave(i){if(i===2)stopForest();}
+function onEnter(i){
+  if(i===0)initCover();
+  if(i===1)resetScroll();
+  if(i===2)startForest();
+  if(i===3)setTimeout(()=>document.getElementById('s3cta').classList.add('show'),800);
+  if(i===4)setTimeout(()=>document.getElementById('s4cta').classList.add('show'),600);
+  if(i===5)setTimeout(()=>document.getElementById('s5cta').classList.add('show'),400);
+  if(i===6){compareIdx=0;document.getElementById('compareRows').innerHTML='';
+    document.getElementById('revealBtn').style.display='';
+    document.getElementById('revealQuote').classList.remove('show');
+    document.getElementById('s6cta').classList.remove('show');}
+  if(i===7)setTimeout(()=>document.getElementById('s7cta').classList.add('show'),600);
+  if(i===8)initEnd();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'&&cur>0)goBack();
+  if(e.key==='ArrowRight'||e.key===' '){
+    const c=scenes[cur].querySelector('.cta.show');
+    if(c)c.click();
+  }
+});
+
+/* ══════════════ S0 · 落英缤纷 Canvas ══════════════ */
+let petalAF=null;
+function initCover(){
+  const cv=document.getElementById('cvPetals');
+  if(!cv||cv._done)return; cv._done=true;
+  const ctx=cv.getContext('2d');
+  const petals=[];
+  function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;makePetals();}
+  function makePetals(){
+    petals.length=0;
+    for(let i=0;i<60;i++) petals.push(newPetal(cv.width,cv.height,true));
+  }
+  function newPetal(W,H,init){
+    return{
+      x:Math.random()*W, y:init?Math.random()*H:-20,
+      r:3+Math.random()*5, vx:(Math.random()-.5)*1.2,
+      vy:.6+Math.random()*1.4, rot:Math.random()*Math.PI*2,
+      vr:(Math.random()-.5)*.06,
+      a:.4+Math.random()*.5,
+      c:[`rgba(255,180,190,`,`rgba(255,150,170,`,`rgba(240,130,160,`][Math.floor(Math.random()*3)]
+    };
+  }
+  function frame(){
+    const W=cv.width,H=cv.height;
+    ctx.clearRect(0,0,W,H);
+    petals.forEach((p,i)=>{
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+      if(p.y>H+20)petals[i]=newPetal(W,H,false);
+      ctx.save();
+      ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha=p.a;
+      ctx.beginPath();
+      ctx.ellipse(0,0,p.r,p.r*.5,0,0,Math.PI*2);
+      ctx.fillStyle=p.c+p.a+')';
+      ctx.fill();
+      ctx.restore();
+    });
+    petalAF=requestAnimationFrame(frame);
+  }
+  resize(); window.addEventListener('resize',resize); frame();
+}
+
+/* ══════════════ S1 · 卷轴 ══════════════ */
+function resetScroll(){
+  document.getElementById('scrollClosed').style.display='';
+  document.getElementById('scrollBody').classList.remove('open');
+  document.getElementById('diaryGo').classList.remove('show');
+}
+function openScroll(){
+  document.getElementById('scrollClosed').style.display='none';
+  document.getElementById('scrollBody').classList.add('open');
+  setTimeout(()=>document.getElementById('diaryGo').classList.add('show'),1300);
+}
+
+/* ══════════════ S2 · 桃花林 ══════════════ */
+let forestAF=null, forestStep=0;
+const forestLines=['fl0','fl1','fl2','fl3','fl4','fl5'];
+function startForest(){
+  forestStep=0;
+  forestLines.forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('forestFeel').classList.remove('on');
+  document.getElementById('forestPmt').classList.remove('off');
+  document.getElementById('s2cta').classList.remove('show');
+  const cv=document.getElementById('cvForest');
+  if(!cv)return;
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d');
+  // Pink gradient forest background
+  const grad=ctx.createLinearGradient(0,0,0,cv.height);
+  grad.addColorStop(0,'#2a1018'); grad.addColorStop(.5,'#3a1828'); grad.addColorStop(1,'#1a080e');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,cv.width,cv.height);
+  // Falling petals
+  const fps=[];
+  for(let i=0;i<80;i++) fps.push({x:Math.random()*cv.width,y:Math.random()*cv.height,
+    r:2+Math.random()*4,vx:(Math.random()-.5)*.8,vy:.4+Math.random()*1.2,
+    rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.05,a:.3+Math.random()*.5});
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.fillStyle=grad; ctx.fillRect(0,0,cv.width,cv.height);
+    fps.forEach((p,i)=>{
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+      if(p.y>cv.height+10){p.y=-10;p.x=Math.random()*cv.width;}
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha=p.a;
+      ctx.beginPath(); ctx.ellipse(0,0,p.r,p.r*.45,0,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,160,180,${p.a})`; ctx.fill();
+      ctx.restore();
+    });
+    forestAF=requestAnimationFrame(frame);
+  }
+  frame();
+}
+function stopForest(){if(forestAF){cancelAnimationFrame(forestAF);forestAF=null;}}
+function forestClick(){
+  if(forestStep<forestLines.length){
+    document.getElementById(forestLines[forestStep]).classList.add('on');
+    forestStep++;
+    if(forestStep===3)document.getElementById('forestPmt').classList.add('off');
+    if(forestStep===forestLines.length){
+      setTimeout(()=>{
+        document.getElementById('forestFeel').classList.add('on');
+        setTimeout(()=>document.getElementById('s2cta').classList.add('show'),800);
+      },500);
+    }
+  }
+}
+
+/* ══════════════ S3 · 词语配对 ══════════════ */
+let selW=null,selM=null,matched=new Set(),score=0;
+function selWord(id){
+  if(matched.has(id))return;
+  if(selW!==null)document.getElementById('w'+selW).classList.remove('sel');
+  selW=id; document.getElementById('w'+id).classList.add('sel'); tryMatch();
+}
+function selMeaning(id){
+  const els=document.querySelectorAll('[id^="m"]');
+  if(matched.has(id))return;
+  if(selM!==null){els.forEach(e=>{if(+e.dataset.id===selM)e.classList.remove('sel');});}
+  selM=id;
+  els.forEach(e=>{if(+e.dataset.id===id)e.classList.add('sel');}); tryMatch();
+}
+function tryMatch(){
+  if(selW===null||selM===null)return;
+  const wEl=document.getElementById('w'+selW);
+  const mEl=[...document.querySelectorAll('[id^="m"]')].find(e=>+e.dataset.id===selM);
+  if(selW===selM){
+    wEl.classList.remove('sel'); wEl.classList.add('ok');
+    mEl.classList.remove('sel'); mEl.classList.add('ok');
+    wEl.onclick=null; mEl.onclick=null;
+    matched.add(selW); score++;
+    document.getElementById('gameScore').textContent=score;
+    if(score===6)document.getElementById('gameDone').classList.add('show');
+  } else {
+    wEl.classList.add('err'); mEl.classList.add('err');
+    setTimeout(()=>{wEl.classList.remove('err','sel');mEl.classList.remove('err','sel');},500);
+  }
+  selW=null; selM=null;
+}
+
+/* ══════════════ S4 · 档案 ══════════════ */
+function submitArchive(){
+  document.getElementById('archiveResult').classList.add('show');
+  document.getElementById('archiveForm').querySelectorAll('textarea').forEach(t=>t.disabled=true);
+}
+
+/* ══════════════ S5 · 证据链 + 投票 ══════════════ */
+let unlockedClues=1;
+function unlockClue(n){
+  if(n!==unlockedClues)return;
+  document.getElementById('cs'+n).classList.add('lit');
+  document.getElementById('cs'+n).onclick=null;
+  unlockedClues++;
+}
+let votes=[0,0,0],hasVoted=false;
+function castVote(i){
+  votes[i]++;
+  [0,1,2].forEach(j=>document.getElementById('vc'+j).classList.remove('voted'));
+  document.getElementById('vc'+i).classList.add('voted');
+  const tot=votes.reduce((a,b)=>a+b,0);
+  [0,1,2].forEach(j=>{
+    const pct=tot>0?votes[j]/tot*100:0;
+    document.getElementById('vf'+j).style.width=pct+'%';
+    document.getElementById('vn'+j).textContent=votes[j]+'票';
+  });
+}
+
+/* ══════════════ S6 · 对比揭秘 ══════════════ */
+const compareData=[
+  ['🌸 土地平旷，人人自由耕作','⚔ 军阀混战，百姓流离失所'],
+  ['🌸 黄发垂髫，怡然自乐','⚔ 赋税沉重，老弱无力生存'],
+  ['🌸 无官吏，无战争，无剥削','⚔ 政权频繁更迭，有志之士报国无门'],
+  ['🌸 村人热情，同等相待','⚔ 官场腐败，人情冷漠'],
+];
+let compareIdx=0;
+function startReveal(){
+  document.getElementById('revealBtn').style.display='none';
+  revealNext();
+}
+function revealNext(){
+  if(compareIdx>=compareData.length){
+    setTimeout(()=>{
+      document.getElementById('revealQuote').classList.add('show');
+      setTimeout(()=>document.getElementById('s6cta').classList.add('show'),700);
+    },400);
+    return;
+  }
+  const row=document.createElement('div');
+  row.className='compare-row';
+  row.innerHTML=`<div class="compare-cell ideal">${compareData[compareIdx][0]}</div>
+    <div class="compare-cell real">${compareData[compareIdx][1]}</div>`;
+  document.getElementById('compareRows').appendChild(row);
+  setTimeout(()=>row.classList.add('show'),50);
+  compareIdx++;
+  setTimeout(revealNext,750);
+}
+
+/* ══════════════ S7 · 报告 ══════════════ */
+function submitReport(){
+  document.getElementById('reportForm').style.display='none';
+  document.getElementById('reportDone').classList.add('show');
+}
+
+/* ══════════════ S8 · 作业 ══════════════ */
+function toggleHW(i){
+  const c=document.getElementById('hw'+i);
+  c.classList.toggle('sel');
+}
+
+/* ══════════════ S8 · 结尾 Canvas ══════════════ */
+function initEnd(){
+  const cv=document.getElementById('cvEnd');
+  if(!cv||cv._done)return; cv._done=true;
+  const ctx=cv.getContext('2d');
+  function resize(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;draw();}
+  function draw(){
+    const W=cv.width,H=cv.height;
+    ctx.clearRect(0,0,W,H);
+    // floating petal silhouettes
+    ctx.globalAlpha=.06;
+    for(let i=0;i<10;i++){
+      const x=(i/10)*W+W*.05, y=H*.15+Math.sin(i*.8)*H*.12;
+      ctx.beginPath(); ctx.ellipse(x,y,40+i*5,18+i*2,i*.3,0,Math.PI*2);
+      ctx.fillStyle='rgba(232,160,32,.8)'; ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+  resize(); window.addEventListener('resize',resize);
+}
+
+// init
+initCover();
+</script>
+</body>
+</html>
