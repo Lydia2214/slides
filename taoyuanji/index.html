@@ -2,917 +2,834 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>桃花源记 · 时空调查</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>桃花源记 · 时空调查任务</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --void:#08060f;
-  --void2:#100c1e;
-  --gold:#e8a020;
-  --gold-dim:rgba(232,160,32,.15);
-  --pink:#ff8faa;
-  --red:#c8432a;
-  --teal:#20c8b0;
-  --cream:#f0e8d0;
-  --cream2:rgba(240,232,208,.72);
-  --cream3:rgba(240,232,208,.35);
-  --glass:rgba(255,255,255,.04);
-  --glass2:rgba(255,255,255,.08);
-  --gb:rgba(255,255,255,.09);
-  --gold-b:rgba(232,160,32,.3);
-  --pink-b:rgba(255,143,170,.3);
-  --gg:0 0 18px rgba(232,160,32,.35),0 0 36px rgba(232,160,32,.12);
-  --gp:0 0 18px rgba(255,143,170,.3),0 0 36px rgba(255,143,170,.1);
-  --fs:'Space Mono',monospace;
-  --fc:'Noto Serif SC',serif;
-  --fb:'Noto Sans SC',sans-serif;
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1f2937;
+  --accent:#06b6d4;--accent2:#8b5cf6;--gold:#f59e0b;
+  --text:#e2e8f0;--muted:#94a3b8;--success:#10b981;
+  --error:#ef4444;--border:rgba(6,182,212,0.2);
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--void);font-family:var(--fb);}
-#stage{width:100%;height:100%;position:relative;overflow:hidden;}
-.scene{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;
-  transition:opacity .8s ease,filter .8s ease;
-  filter:blur(8px) brightness(.5);
-  padding:14px 20px 72px;overflow:hidden;
-}
-.scene.active{opacity:1;pointer-events:all;filter:none;}
-.scene::before{
-  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);
-  opacity:.35;
-}
-#dots{position:fixed;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:9px;z-index:9999;}
-.dot{width:6px;height:6px;border-radius:50%;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.22);transition:all .4s;cursor:pointer;}
-.dot.done{background:rgba(232,160,32,.32);border-color:rgba(232,160,32,.38);}
-.dot.cur{background:var(--gold);border-color:var(--gold);transform:scale(1.6);box-shadow:0 0 6px rgba(232,160,32,.55);}
-#back{
-  position:fixed;top:10px;left:14px;z-index:9999;
-  width:30px;height:30px;border-radius:50%;
-  border:1px solid var(--gold-b);background:rgba(8,6,15,.7);
-  color:var(--gold);font-size:16px;cursor:pointer;
-  display:none;align-items:center;justify-content:center;
-  transition:all .2s;backdrop-filter:blur(6px);
-}
-#back.show{display:flex;}
-#back:hover{background:var(--gold-dim);box-shadow:var(--gg);}
-.cta{
-  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
-  padding:10px 30px;
-  border:1px solid var(--gold-b);background:rgba(232,160,32,.08);
-  color:var(--gold);font-size:11px;letter-spacing:5px;cursor:pointer;
-  border-radius:2px;font-family:var(--fs);transition:all .3s;
-  white-space:nowrap;display:none;z-index:20;
-  box-shadow:var(--gg);
-}
-.cta.show{display:inline-block;}
-.cta:hover{background:rgba(232,160,32,.18);letter-spacing:6px;}
-.tag{font-size:10px;letter-spacing:5px;color:var(--gold);font-family:var(--fs);margin-bottom:8px;
-  text-shadow:0 0 10px rgba(232,160,32,.45);}
-.big{font-size:clamp(20px,3.8vw,40px);font-weight:900;letter-spacing:4px;color:var(--cream);
-  font-family:var(--fc);line-height:1.25;}
-.sep{width:48px;height:1px;margin:13px auto;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  box-shadow:0 0 5px rgba(232,160,32,.35);}
-@keyframes pulse{50%{opacity:.12}}
-@keyframes popIn{0%{transform:scale(.88)}60%{transform:scale(1.07)}100%{transform:scale(1)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes candleFlicker{0%{opacity:.6;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.08)}100%{opacity:.55;transform:translateX(-50%) scale(.93)}}
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-/* S0 cover */
-#s0{background:var(--void);}
-#cvPortal{position:absolute;inset:0;width:100%;height:100%;}
-.cv{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;}
-.cv-status{font-size:10px;letter-spacing:6px;color:rgba(32,200,176,.45);margin-bottom:18px;font-family:var(--fs);}
-.cv-title{
-  font-family:var(--fc);font-size:clamp(60px,13vw,130px);font-weight:900;letter-spacing:16px;
-  color:var(--cream);
-  text-shadow:0 0 28px rgba(255,143,170,.3),0 0 70px rgba(255,143,170,.12);
-  line-height:1;
-}
-.cv-author{font-size:12px;letter-spacing:8px;color:rgba(232,160,32,.55);margin-top:12px;font-family:var(--fs);}
-.cv-line{width:1px;height:38px;background:linear-gradient(to bottom,transparent,var(--gold),transparent);
-  margin:16px auto;box-shadow:0 0 7px rgba(232,160,32,.35);}
-.cv-hook{font-size:clamp(11px,1.7vw,14px);color:rgba(240,232,208,.38);letter-spacing:4px;line-height:2.7;font-family:var(--fb);}
-.cv-btn{
-  margin-top:26px;padding:10px 32px;
-  border:1px solid rgba(255,143,170,.35);background:rgba(255,143,170,.05);
-  color:rgba(255,143,170,.75);font-size:11px;letter-spacing:7px;cursor:pointer;
-  font-family:var(--fs);border-radius:2px;transition:all .35s;
-  box-shadow:0 0 14px rgba(255,143,170,.18);
-}
-.cv-btn:hover{background:rgba(255,143,170,.12);box-shadow:var(--gp);}
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,26,0.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-title{color:var(--accent);font-size:13px;letter-spacing:2px;font-weight:700;white-space:nowrap}
+.nav-dots{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.nav-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--muted);background:transparent;cursor:pointer;transition:all .3s;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.nav-dot.active{border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px rgba(6,182,212,0.4)}
+.nav-dot.done{border-color:var(--success);color:var(--success)}
+.nav-btns{display:flex;gap:6px}
+.nav-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--accent);cursor:pointer;font-size:12px;transition:all .2s;font-family:inherit}
+.nav-btn:hover:not(:disabled){background:var(--accent);color:var(--bg)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.progress-bar{position:fixed;top:49px;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;z-index:99}
 
-/* S1 scroll */
-#s1{background:radial-gradient(ellipse at 50% 30%,#1e1208 0%,#0e0904 55%,#080604 100%);}
-.desk{position:relative;width:min(440px,90vw);}
-.candle-glow{
-  position:absolute;top:-100px;left:50%;transform:translateX(-50%);
-  width:250px;height:250px;
-  background:radial-gradient(circle,rgba(232,140,40,.13) 0%,rgba(200,80,20,.04) 50%,transparent 70%);
-  border-radius:50%;pointer-events:none;animation:candleFlicker 3.2s ease-in-out infinite alternate;
-}
-.scroll-closed{width:190px;margin:0 auto;cursor:pointer;transition:transform .3s,filter .3s;}
-.scroll-closed:hover{transform:scale(1.05);filter:drop-shadow(0 0 9px rgba(232,160,32,.38));}
-.scroll-body{
-  background:linear-gradient(160deg,#1c1508,#201a0a,#181206);
-  border:1px solid rgba(232,160,32,.18);border-radius:4px;
-  padding:20px 22px;
-  box-shadow:0 4px 28px rgba(0,0,0,.85),inset 0 1px 0 rgba(232,160,32,.08),0 0 18px rgba(232,160,32,.06);
-  max-height:0;overflow:hidden;opacity:0;transition:max-height 1.4s ease,opacity .6s ease;
-}
-.scroll-body.open{max-height:600px;opacity:1;}
-.diary-head{font-size:10px;letter-spacing:5px;color:rgba(232,160,32,.38);margin-bottom:13px;font-family:var(--fs);}
-.diary-txt{font-size:clamp(12px,1.9vw,14px);color:rgba(240,232,208,.8);line-height:2.2;letter-spacing:2px;font-family:var(--fc);}
-.diary-txt b{color:var(--gold);text-shadow:0 0 7px rgba(232,160,32,.38);}
-.diary-note{
-  margin-top:13px;font-size:11px;color:rgba(240,232,208,.38);letter-spacing:2px;line-height:1.9;
-  border-top:1px solid rgba(232,160,32,.1);padding-top:9px;font-family:var(--fb);
-}
-.diary-go{
-  margin-top:10px;text-align:right;font-size:11px;letter-spacing:4px;
-  color:rgba(232,160,32,.6);cursor:pointer;opacity:0;transition:opacity .5s .9s;font-family:var(--fs);
-}
-.diary-go.show{opacity:1;}
-.diary-go:hover{color:var(--gold);text-shadow:0 0 7px rgba(232,160,32,.45);}
+/* SECTIONS */
+.section{display:none;min-height:100vh;padding:70px 20px 60px;max-width:860px;margin:0 auto}
+.section.active{display:block;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-/* S2 forest */
-#s2{cursor:pointer;user-select:none;-webkit-user-select:none;position:relative;overflow:hidden;}
-.forest-bg{position:absolute;inset:0;z-index:1;pointer-events:none;}
-.forest-ui{position:relative;z-index:10;max-width:560px;width:92%;text-align:center;display:flex;flex-direction:column;align-items:center;}
-.forest-lines{min-height:clamp(160px,28vh,220px);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;margin-bottom:12px;}
-.fl{font-size:clamp(14px,2.6vw,22px);color:rgba(255,143,170,.0);letter-spacing:7px;line-height:1.7;
-  transition:color .7s,text-shadow .7s;font-family:var(--fc);font-weight:700;}
-.fl.on{color:rgba(255,192,208,.88);text-shadow:0 0 18px rgba(255,143,170,.45),0 0 36px rgba(255,143,170,.18);}
-.forest-feel{font-size:clamp(12px,2.2vw,18px);color:rgba(255,143,170,.0);letter-spacing:6px;
-  margin-top:14px;transition:color .9s;font-style:italic;font-family:var(--fc);}
-.forest-feel.on{color:rgba(255,192,208,.72);text-shadow:0 0 14px rgba(255,143,170,.35);}
-.forest-prompt{
-  position:absolute;bottom:58px;left:50%;transform:translateX(-50%);
-  font-size:10px;letter-spacing:5px;color:rgba(255,143,170,.28);z-index:10;
-  animation:pulse 2.2s infinite;white-space:nowrap;transition:opacity .4s;font-family:var(--fs);
+/* HEADER */
+.sec-header{text-align:center;margin-bottom:28px}
+.sec-tag{display:inline-block;padding:3px 12px;background:rgba(6,182,212,0.1);border:1px solid var(--accent);border-radius:20px;font-size:11px;letter-spacing:2px;color:var(--accent);margin-bottom:10px}
+.sec-title{font-size:26px;font-weight:800;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.sec-desc{color:var(--muted);font-size:13px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px;flex-shrink:0}
+
+/* ALERTS */
+.alert{padding:14px 18px;border-radius:8px;margin-bottom:14px;border-left:3px solid;font-size:13px;line-height:1.7}
+.alert-info{background:rgba(6,182,212,0.08);border-color:var(--accent);color:#a5f3fc}
+.alert-warn{background:rgba(245,158,11,0.08);border-color:var(--gold);color:#fde68a}
+.alert-success{background:rgba(16,185,129,0.08);border-color:var(--success);color:#a7f3d0}
+.alert-red{background:rgba(239,68,68,0.08);border-color:var(--error);color:#fecaca}
+
+/* BUTTONS */
+.btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:700;transition:all .2s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(6,182,212,0.35)}
+.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+.btn-outline:hover{background:var(--accent);color:var(--bg)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#f97316);color:var(--bg)}
+.btn-gold:hover{transform:translateY(-2px)}
+
+/* INPUTS */
+textarea,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;transition:border-color .2s;line-height:1.6}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--accent)}
+.report-item{margin-bottom:16px}
+.report-label{font-size:12px;color:var(--accent);margin-bottom:7px;font-weight:700}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);padding:9px 12px;text-align:left;color:var(--accent);font-weight:700}
+td{padding:9px 12px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(6,182,212,0.04)}
+
+/* TERMINAL */
+.terminal{background:#000;border:1px solid var(--accent);border-radius:8px;padding:20px;font-family:'Courier New',monospace;font-size:13px;color:var(--accent);margin-bottom:16px;min-height:180px;position:relative;overflow:hidden}
+.terminal::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);pointer-events:none}
+.tl{opacity:0;margin-bottom:5px;transition:opacity .4s}
+.tl.show{opacity:1}
+.cursor{display:inline-block;width:7px;height:12px;background:var(--accent);animation:blink 1s infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+/* CLUE CARDS */
+.clue-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;user-select:none}
+.clue-card.locked .clue-body{filter:blur(6px);pointer-events:none}
+.clue-card.unlocked{border-color:var(--accent);cursor:default}
+.clue-card.unlocked:hover{transform:none}
+.clue-card:hover{transform:translateY(-2px);border-color:rgba(6,182,212,0.5)}
+.lock-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:12px;background:rgba(10,14,26,0.9);padding:5px 12px;border-radius:20px;border:1px solid var(--accent);white-space:nowrap}
+.clue-card.unlocked .lock-hint{display:none}
+.clue-quote{font-size:15px;color:#fcd34d;margin:8px 0;line-height:1.8}
+.clue-hint{font-size:12px;color:var(--muted)}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700}
+.badge-cyan{background:rgba(6,182,212,0.15);color:var(--accent);border:1px solid rgba(6,182,212,0.3)}
+.badge-gold{background:rgba(245,158,11,0.15);color:var(--gold);border:1px solid rgba(245,158,11,0.3)}
+
+/* TEXT PANEL */
+.text-panel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:14px;line-height:2.2;color:#cbd5e1;margin-bottom:14px}
+.hl{color:var(--gold);font-weight:700}
+
+/* VOCAB GAME */
+.vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.vocab-col-label{font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px;letter-spacing:1px}
+.vi{padding:11px 14px;border-radius:8px;border:2px solid var(--border);cursor:pointer;transition:all .2s;text-align:center;font-size:13px;background:var(--surface);margin-bottom:7px}
+.vi:hover:not(.correct):not(.disabled){border-color:var(--accent);transform:translateY(-1px)}
+.vi.selected{border-color:var(--accent2);background:rgba(139,92,246,0.15);box-shadow:0 0 10px rgba(139,92,246,0.25)}
+.vi.correct{border-color:var(--success);background:rgba(16,185,129,0.15);cursor:default;animation:popGreen .4s}
+.vi.wrong{border-color:var(--error);background:rgba(239,68,68,0.15);animation:shake .35s}
+.vi.disabled{opacity:.35;cursor:default}
+@keyframes popGreen{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.score-box{text-align:center;font-size:22px;color:var(--gold);font-weight:800;margin-bottom:14px}
+.game-done{display:none;text-align:center;padding:16px;background:rgba(16,185,129,0.08);border-radius:8px;border:1px solid var(--success)}
+
+/* ARCHIVE */
+.compare-label-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;opacity:0;transform:translateY(8px);transition:all .5s}
+.compare-row.show{opacity:1;transform:translateY(0)}
+.cc{padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6}
+.cc.ideal{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7}
+.cc.reality{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+
+/* VOTE */
+.vote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.vbtn{padding:16px 12px;border-radius:10px;border:2px solid var(--border);background:var(--surface);cursor:pointer;text-align:center;transition:all .2s;font-family:inherit;color:var(--text)}
+.vbtn:hover{border-color:var(--accent);transform:translateY(-2px)}
+.vbtn.voted{border-color:var(--accent2);background:rgba(139,92,246,0.12)}
+.vote-emoji{font-size:24px;display:block;margin-bottom:6px}
+.vote-name{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.vote-sub{display:block;font-size:11px;color:var(--muted);margin-bottom:8px}
+.vbar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px}
+.vbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;width:0;transition:width .8s ease}
+.vcount{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* STEP CLUES */
+.step-item{padding:14px 16px;border-radius:8px;border-left:3px solid var(--border);background:var(--surface);margin-bottom:10px;opacity:.2;transition:all .4s;cursor:pointer}
+.step-item.active{opacity:1;border-left-color:var(--accent)}
+.step-item.done{opacity:1;border-left-color:var(--success);cursor:default}
+.step-num{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:700}
+.step-unlock-hint{font-size:11px;color:var(--accent);margin-left:8px}
+
+/* TASK CARDS */
+.task-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.task-card{padding:16px;border-radius:10px;border:2px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s}
+.task-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.task-card.selected{border-color:var(--accent2);background:rgba(139,92,246,0.1)}
+.task-card.locked-task{border-color:var(--gold);cursor:default}
+.task-type{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:800;margin-bottom:7px}
+.task-type.req{background:rgba(245,158,11,0.15);color:var(--gold)}
+.task-type.opt{background:rgba(139,92,246,0.15);color:#c4b5fd}
+.task-card h4{font-size:13px;margin-bottom:5px}
+.task-card p{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* QUOTE */
+.quote{border-left:3px solid var(--gold);padding:10px 16px;margin:14px 0;color:#fcd34d;font-style:italic;font-size:15px;line-height:1.8}
+
+/* REPORT SUBMITTED */
+.submitted-view{display:none;text-align:center;padding:24px}
+.submitted-view.show{display:block;animation:fadeIn .5s}
+.ach-icon{font-size:56px;margin-bottom:12px}
+
+/* FINAL CARD */
+.final-card{text-align:center;border:1px solid var(--gold);background:rgba(245,158,11,0.05);padding:24px;border-radius:12px;margin-top:14px}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .vocab-grid{grid-template-columns:1fr}
+  .vote-grid{grid-template-columns:1fr}
+  .task-grid{grid-template-columns:1fr}
+  .compare-label-row,.compare-row{grid-template-columns:1fr}
 }
-.forest-prompt.off{opacity:0;pointer-events:none;}
 
-/* S3 vocab game */
-#s3{background:radial-gradient(ellipse at 50% 0%,#1a0e22 0%,var(--void2) 60%,var(--void) 100%);}
-.s3wrap{max-width:760px;width:96%;position:relative;z-index:1;}
-.game-score{font-family:var(--fs);font-size:26px;color:var(--gold);text-align:center;margin-bottom:14px;text-shadow:var(--gg);}
-.vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
-.vocab-col-label{font-size:10px;letter-spacing:4px;color:rgba(232,160,32,.45);text-align:center;margin-bottom:8px;font-family:var(--fs);}
-.vitem{
-  padding:11px 13px;
-  border:1px solid var(--gb);border-radius:3px;
-  cursor:pointer;text-align:center;font-size:clamp(12px,1.7vw,15px);
-  background:var(--glass);transition:all .2s;
-  margin-bottom:7px;font-family:var(--fb);color:var(--cream2);
-  backdrop-filter:blur(4px);
-}
-.vitem:hover{background:var(--glass2);border-color:var(--gold-b);color:var(--cream);box-shadow:0 0 10px rgba(232,160,32,.12);}
-.vitem.sel{background:rgba(232,160,32,.1);color:var(--gold);border-color:var(--gold-b);box-shadow:var(--gg);}
-.vitem.ok{background:rgba(32,200,176,.09);color:rgba(32,200,176,.88);border-color:rgba(32,200,176,.35);cursor:default;animation:popIn .4s ease;box-shadow:0 0 12px rgba(32,200,176,.18);}
-.vitem.err{animation:shake .4s ease;border-color:rgba(200,67,42,.45);background:rgba(200,67,42,.07);}
-.game-done{text-align:center;padding:20px;display:none;}
-.game-done.show{display:block;animation:fadeUp .5s ease;}
+/* GRID UTIL */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.g2{grid-template-columns:1fr}}
 
-/* S4 archive */
-#s4{background:radial-gradient(ellipse at 30% 100%,#0e1a22 0%,var(--void2) 55%,var(--void) 100%);overflow-y:auto;}
-.s4wrap{max-width:720px;width:96%;padding:10px 0 20px;position:relative;z-index:1;}
-.archive-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:13px;}
-.archive-item{background:var(--glass);border:1px solid var(--gb);border-radius:4px;backdrop-filter:blur(5px);padding:13px 15px;transition:border-color .2s;}
-.archive-item:hover{border-color:var(--gold-b);}
-.a-label{font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:7px;font-family:var(--fs);}
-.a-label span{color:var(--pink);font-size:13px;}
-textarea{width:100%;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.07);border-radius:3px;
-  padding:8px 10px;font-size:13px;font-family:var(--fb);resize:vertical;color:var(--cream2);transition:border-color .2s;}
-textarea::placeholder{color:rgba(240,232,208,.22);}
-textarea:focus{outline:none;border-color:var(--gold-b);background:rgba(0,0,0,.38);}
-.submit-row{display:flex;align-items:center;gap:13px;margin-top:13px;flex-wrap:wrap;}
-.btn{padding:9px 20px;border:1px solid var(--gold-b);background:rgba(232,160,32,.08);
-  color:var(--gold);font-family:var(--fs);font-size:11px;letter-spacing:4px;cursor:pointer;border-radius:2px;transition:all .2s;}
-.btn:hover{background:rgba(232,160,32,.18);box-shadow:var(--gg);}
-.btn.outline{background:transparent;color:var(--cream2);border-color:var(--gb);}
-.btn.outline:hover{border-color:var(--gold-b);color:var(--gold);}
-.archive-result{display:none;margin-top:13px;}
-.archive-result.show{display:block;animation:fadeUp .5s ease;}
-.result-table{width:100%;border-collapse:collapse;font-size:12px;}
-.result-table th{background:rgba(232,160,32,.1);color:var(--gold);padding:7px 11px;text-align:left;font-weight:700;font-family:var(--fs);border-bottom:1px solid var(--gold-b);letter-spacing:2px;font-size:10px;}
-.result-table td{padding:7px 11px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--cream2);}
-.result-table tr:nth-child(even) td{background:rgba(255,255,255,.02);}
-
-/* S5 clues + vote */
-#s5{background:radial-gradient(ellipse at 70% 0%,#22080e 0%,var(--void2) 55%,var(--void) 100%);overflow-y:auto;}
-.s5wrap{max-width:680px;width:96%;padding:10px 0 20px;position:relative;z-index:1;}
-.clue-chain{margin-top:11px;}
-.clue-step{border:1px solid rgba(255,255,255,.06);border-radius:4px;background:var(--glass);padding:12px 15px;margin-bottom:8px;backdrop-filter:blur(5px);
-  opacity:.16;transform:translateY(8px);transition:all .55s;cursor:pointer;}
-.clue-step.lit{opacity:1;transform:translateY(0);border-left:3px solid var(--red);background:rgba(200,67,42,.05);border-color:rgba(200,67,42,.28);}
-.clue-step.clickable:not(.lit):hover{opacity:.42;}
-.step-num{font-size:10px;letter-spacing:4px;color:var(--red);margin-bottom:3px;font-family:var(--fs);text-shadow:0 0 7px rgba(200,67,42,.35);}
-.step-txt{font-size:clamp(12px,1.7vw,14px);color:var(--cream2);line-height:1.9;}
-.step-txt strong{color:var(--gold);text-shadow:0 0 5px rgba(232,160,32,.3);}
-.step-q{font-size:11px;color:var(--cream3);margin-top:5px;font-style:italic;letter-spacing:1px;}
-.vote-wrap{margin-top:14px;}
-.vote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px;}
-.vote-card{border:1px solid var(--gb);border-radius:4px;background:var(--glass);backdrop-filter:blur(5px);padding:15px 9px;text-align:center;cursor:pointer;transition:all .25s;}
-.vote-card:hover{border-color:var(--gold-b);background:var(--gold-dim);transform:translateY(-3px);box-shadow:var(--gg);}
-.vote-card.voted{background:rgba(232,160,32,.1);border-color:var(--gold-b);box-shadow:var(--gg);}
-.vote-emoji{font-size:24px;margin-bottom:5px;}
-.vote-label{font-size:12px;font-weight:700;font-family:var(--fc);letter-spacing:2px;color:var(--cream);}
-.vote-sub{font-size:10px;color:var(--cream3);margin-top:3px;font-family:var(--fs);}
-.vote-card.voted .vote-label{color:var(--gold);text-shadow:0 0 7px rgba(232,160,32,.35);}
-.vote-bar-wrap{margin-top:7px;}
-.vote-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-top:3px;}
-.vote-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0;transition:width 1s ease;box-shadow:0 0 5px rgba(232,160,32,.45);}
-.vote-count{font-size:10px;color:var(--cream3);font-family:var(--fs);}
-
-/* S6 compare */
-#s6{background:radial-gradient(ellipse at 50% 50%,#0e1a10 0%,var(--void2) 55%,var(--void) 100%);overflow-y:auto;}
-.s6wrap{max-width:760px;width:96%;padding:10px 0 20px;position:relative;z-index:1;}
-.compare-header{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:9px;}
-.compare-col-title{text-align:center;padding:8px;border:1px solid;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--fs);letter-spacing:3px;}
-.compare-col-title.ideal{border-color:rgba(32,200,176,.3);color:var(--teal);background:rgba(32,200,176,.05);}
-.compare-col-title.real{border-color:rgba(200,67,42,.3);color:var(--red);background:rgba(200,67,42,.05);}
-.compare-rows{display:flex;flex-direction:column;gap:8px;}
-.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;opacity:0;transform:translateY(12px);transition:all .55s;}
-.compare-row.show{opacity:1;transform:translateY(0);}
-.compare-cell{padding:11px 13px;border-radius:3px;font-size:clamp(11px,1.5vw,13px);line-height:1.9;backdrop-filter:blur(4px);}
-.compare-cell.ideal{background:rgba(32,200,176,.05);border:1px solid rgba(32,200,176,.18);color:var(--cream2);}
-.compare-cell.real{background:rgba(200,67,42,.05);border:1px solid rgba(200,67,42,.18);color:var(--cream2);}
-.compare-cell strong{display:block;font-family:var(--fc);font-size:1.1em;margin-bottom:2px;}
-.compare-cell.ideal strong{color:var(--teal);}
-.compare-cell.real strong{color:rgba(200,67,42,.82);}
-.reveal-quote{margin-top:14px;border-left:2px solid var(--gold);padding:13px 16px;
-  background:var(--gold-dim);border-radius:0 4px 4px 0;
-  font-size:clamp(13px,1.9vw,17px);font-family:var(--fc);color:var(--cream);
-  letter-spacing:3px;line-height:2.0;opacity:0;transition:opacity .7s;}
-.reveal-quote.show{opacity:1;}
-
-/* S7 report */
-#s7{background:radial-gradient(ellipse at 50% 100%,#1a1208 0%,var(--void2) 55%,var(--void) 100%);overflow-y:auto;}
-.s7wrap{max-width:680px;width:96%;padding:10px 0 20px;position:relative;z-index:1;}
-.report-fields{margin-top:13px;display:flex;flex-direction:column;gap:11px;}
-.rfield{background:var(--glass);border:1px solid var(--gb);border-radius:4px;backdrop-filter:blur(5px);padding:13px 15px;transition:border-color .2s;}
-.rfield:hover{border-color:var(--gold-b);}
-.rfield-label{font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:7px;font-family:var(--fs);}
-.report-submitted{display:none;text-align:center;padding:22px 14px;}
-.report-submitted.show{display:block;animation:fadeUp .5s ease;}
-.achieve-icon{font-size:54px;margin-bottom:11px;}
-.achieve-title{font-family:var(--fc);font-size:clamp(18px,3.2vw,30px);color:var(--gold);margin-bottom:9px;text-shadow:var(--gg);}
-.achieve-msg{font-size:clamp(12px,1.6vw,14px);color:var(--cream2);line-height:1.9;max-width:480px;margin:0 auto;}
-.teacher-confirm{margin-top:16px;border:1px solid var(--gold-b);border-radius:4px;padding:13px 16px;background:var(--gold-dim);
-  font-size:clamp(12px,1.6vw,14px);color:var(--cream2);line-height:2.0;}
-.teacher-confirm strong{color:var(--gold);font-family:var(--fc);}
-
-/* S8 end */
-#s8{background:var(--void);overflow-y:auto;}
-#cvEnd{position:absolute;inset:0;width:100%;height:100%;}
-.s8wrap{position:relative;z-index:2;max-width:720px;width:96%;text-align:center;padding:20px 0;}
-.s8-lbl{font-size:10px;letter-spacing:7px;color:rgba(232,160,32,.38);margin-bottom:13px;font-family:var(--fs);}
-.s8-hd{font-family:var(--fc);font-size:clamp(16px,2.8vw,26px);color:rgba(240,232,208,.72);letter-spacing:5px;margin-bottom:18px;}
-.s8-cards{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px;}
-.s8-card{background:rgba(232,160,32,.05);border:1px solid rgba(232,160,32,.16);border-radius:4px;padding:15px 17px;text-align:left;backdrop-filter:blur(4px);}
-.s8-who{font-size:9px;letter-spacing:5px;color:rgba(232,160,32,.55);margin-bottom:7px;font-family:var(--fs);}
-.s8-body{font-size:clamp(11px,1.5vw,13px);color:rgba(240,232,208,.62);line-height:1.95;}
-.s8-body b{color:var(--gold);}
-.s8-quote{font-family:var(--fc);font-size:clamp(13px,2.2vw,22px);color:rgba(232,160,32,.82);
-  letter-spacing:6px;line-height:2.0;border-top:1px solid rgba(232,160,32,.1);padding-top:14px;text-shadow:0 0 14px rgba(232,160,32,.22);}
-.s8-sub{font-size:10px;color:rgba(232,160,32,.28);letter-spacing:4px;margin-top:5px;font-family:var(--fs);}
-.s8-hw{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.hw-card{background:rgba(232,160,32,.03);border:1px solid rgba(232,160,32,.12);border-radius:4px;padding:11px;cursor:pointer;transition:all .25s;text-align:left;}
-.hw-card:hover{background:rgba(232,160,32,.09);border-color:var(--gold-b);}
-.hw-card.sel{background:rgba(232,160,32,.1);border-color:rgba(232,160,32,.38);box-shadow:0 0 10px rgba(232,160,32,.1);}
-.hw-type{font-size:9px;letter-spacing:3px;color:rgba(232,160,32,.45);margin-bottom:4px;font-family:var(--fs);}
-.hw-txt{font-size:clamp(10px,1.3vw,12px);color:rgba(240,232,208,.55);line-height:1.75;}
-@media(max-width:540px){
-  .vocab-grid,.archive-grid,.vote-grid,.compare-header,.compare-row,.s8-cards,.s8-hw{grid-template-columns:1fr;}
-}
+.sec-end{text-align:center;padding:20px 0 8px}
 </style>
 </head>
 <body>
-<div id="stage">
-<div id="dots"></div>
-<div id="back" onclick="goBack()">&#8249;</div>
 
-<!-- S0 cover -->
-<div class="scene active" id="s0">
-  <canvas id="cvPortal"></canvas>
-  <div class="cv">
-    <div class="cv-status" id="cvStatus">// 正在建立时空连接...</div>
-    <div class="cv-title">桃花源记</div>
-    <div class="cv-author">EASTERN JIN &nbsp;·&nbsp; 陶渊明 &nbsp;·&nbsp; 公元421年</div>
-    <div class="cv-line"></div>
-    <div class="cv-hook">一个渔人消失于桃花林深处<br>再也无人找到那条路</div>
-    <button class="cv-btn" onclick="go(1)">进入调查 →</button>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-title">🌸 桃花源记 · 时空调查</div>
+  <div class="nav-dots" id="navDots"></div>
+  <div class="nav-btns">
+    <button class="nav-btn" id="prevBtn" onclick="go(-1)" disabled>← 上一节</button>
+    <button class="nav-btn" id="nextBtn" onclick="go(1)">下一节 →</button>
   </div>
-</div>
+</nav>
+<div class="progress-bar" id="pbar"></div>
 
-<!-- S1 diary scroll -->
-<div class="scene" id="s1">
-  <div class="desk">
-    <div class="candle-glow"></div>
-    <div class="scroll-closed" id="scrollClosed" onclick="openScroll()">
-      <svg viewBox="0 0 190 100" width="100%" xmlns="http://www.w3.org/2000/svg">
-        <defs><linearGradient id="sg" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#3a2a10;stop-opacity:1"/>
-          <stop offset="100%" style="stop-color:#1e1608;stop-opacity:1"/>
-        </linearGradient></defs>
-        <rect x="20" y="14" width="150" height="72" rx="3" fill="url(#sg)" stroke="rgba(232,160,32,.28)" stroke-width="1"/>
-        <rect x="6" y="14" width="16" height="72" rx="8" fill="#4a3418" stroke="rgba(232,160,32,.22)" stroke-width="1"/>
-        <rect x="168" y="14" width="16" height="72" rx="8" fill="#4a3418" stroke="rgba(232,160,32,.22)" stroke-width="1"/>
-        <circle cx="95" cy="50" r="13" fill="rgba(200,67,42,.14)" stroke="rgba(200,67,42,.42)" stroke-width="1.2"/>
-        <text x="95" y="54" text-anchor="middle" font-size="10" fill="rgba(200,67,42,.78)" font-family="Noto Serif SC,serif">记</text>
-        <line x1="40" y1="36" x2="78" y2="36" stroke="rgba(232,160,32,.1)" stroke-width="1"/>
-        <line x1="40" y1="48" x2="72" y2="48" stroke="rgba(232,160,32,.08)" stroke-width="1"/>
-        <line x1="112" y1="36" x2="150" y2="36" stroke="rgba(232,160,32,.1)" stroke-width="1"/>
-        <line x1="112" y1="48" x2="148" y2="48" stroke="rgba(232,160,32,.08)" stroke-width="1"/>
-      </svg>
-      <div class="scroll-hint">✦ 点击展开渔人日记 ✦</div>
-    </div>
-    <div class="scroll-body" id="scrollBody">
-      <div class="diary-head">// FILE: WULING_LOG · 晋太元年间</div>
-      <div class="diary-txt">
-        今日沿溪而行，<b>忘路之远近</b>。<br>
-        忽逢桃花林，夹岸数百步，中无杂树，<b>芳草鲜美，落英缤纷</b>。<br>
-        甚异之——从未见此景象。<br><br>
-        林尽处，有山，山有小口，<b>仿佛若有光</b>。<br>
-        舍船入洞，初极狭，才通人。复行数十步，<b>豁然开朗</b>。<br><br>
-        眼前之景，令我呆立……
+<!-- ============ S0: 穿越警报 ============ -->
+<section class="section active" id="s0">
+  <div class="sec-header">
+    <div class="sec-tag">任务 01 · 入场</div>
+    <h1 class="sec-title">⚡ 穿越警报</h1>
+    <p class="sec-desc">你刚刚经历了一次时空传送，落在了一个陌生的地方</p>
+  </div>
+
+  <div class="terminal" id="terminal">
+    <div class="tl" id="tl0">&gt; 系统检测到时空异常...</div>
+    <div class="tl" id="tl1">&gt; 传送目标：未知坐标</div>
+    <div class="tl" id="tl2">&gt; 当前时间：<span style="color:#fcd34d">[无法读取]</span></div>
+    <div class="tl" id="tl3">&gt; 当前位置：<span style="color:#fcd34d">[无法定位]</span></div>
+    <div class="tl" id="tl4">&gt; <span style="color:#fca5a5">⚠ 警告：你已与现代世界失去联系</span></div>
+    <div class="tl" id="tl5">&gt; 任务：<strong style="color:#fff">查明你在哪里，然后找到回去的路</strong></div>
+    <div class="tl" id="tl6">&gt; 系统已扫描到 4 个环境线索 — 点击逐一解锁 <span class="cursor"></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔍 现场扫描 · 4 个线索（点击每张卡解锁）</div>
+    <div class="clue-card locked" id="cc0" onclick="unlockClue(0)">
+      <div class="lock-hint">👆 点击解锁线索 1</div>
+      <div class="clue-body">
+        <span class="badge badge-cyan">线索 1 · 自然环境</span>
+        <p class="clue-quote">「忽逢桃花林，夹岸数百步，中无杂树，芳草鲜美，落英缤纷。」</p>
+        <p class="clue-hint">这是什么季节？你感受到的是什么气氛？</p>
       </div>
-      <div class="diary-note">
-        他进去了。看见了。又出来了。然后——再也找不到了。<br>
-        <b style="color:var(--gold);">为什么？</b>&nbsp; 这是我们今天要调查的问题。
+    </div>
+    <div class="clue-card locked" id="cc1" onclick="unlockClue(1)">
+      <div class="lock-hint">👆 点击解锁线索 2</div>
+      <div class="clue-body">
+        <span class="badge badge-cyan">线索 2 · 聚落风貌</span>
+        <p class="clue-quote">「土地平旷，屋舍俨然，有良田美池桑竹之属。阡陌交通，鸡犬相闻。」</p>
+        <p class="clue-hint">这里像城市还是乡村？有没有你意想不到的东西？</p>
       </div>
-      <div class="diary-go" id="diaryGo" onclick="go(2)">接受调查任务 → 继续</div>
+    </div>
+    <div class="clue-card locked" id="cc2" onclick="unlockClue(2)">
+      <div class="lock-hint">👆 点击解锁线索 3</div>
+      <div class="clue-body">
+        <span class="badge badge-cyan">线索 3 · 居民状态</span>
+        <p class="clue-quote">「其中往来种作，男女衣着，悉如外人，黄发垂髫，并怡然自乐。」</p>
+        <p class="clue-hint">老人和孩子都在。他们的状态是什么？</p>
+      </div>
+    </div>
+    <div class="clue-card locked" id="cc3" onclick="unlockClue(3)">
+      <div class="lock-hint">👆 点击解锁线索 4</div>
+      <div class="clue-body">
+        <span class="badge badge-gold">线索 4 · 异常反应 ⚠</span>
+        <p class="clue-quote">「此人一一为具言所闻，皆叹惋。」</p>
+        <p class="clue-hint">你跟他们说了你来的世界，他们都叹息惋惜。<strong>为什么？</strong></p>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- S2 forest -->
-<div class="scene" id="s2" onclick="forestClick()">
-  <canvas id="cvForest" class="forest-bg"></canvas>
-  <div class="forest-ui">
-    <div class="forest-lines">
-      <div class="fl" id="fl0">忘路之远近</div>
-      <div class="fl" id="fl1">忽逢桃花林</div>
-      <div class="fl" id="fl2">夹岸数百步，中无杂树</div>
-      <div class="fl" id="fl3">芳草鲜美，落英缤纷</div>
-      <div class="fl" id="fl4">林尽水源，便得一山</div>
-      <div class="fl" id="fl5">山有小口，仿佛若有光</div>
-    </div>
-    <div class="forest-feel" id="forestFeel">你站在洞口。要进去吗？</div>
+  <div class="card">
+    <div class="card-title">💭 你的第一判断</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:10px">看完这4个线索，你觉得这是什么样的地方？大胆猜：</p>
+    <textarea rows="3" id="s0t" placeholder="我觉得这里是一个…  这里的人…  最奇怪的是…"></textarea>
   </div>
-  <div class="forest-prompt" id="forestPmt">点击 · 跟随渔人前行</div>
-  <button class="cta" id="s2cta" onclick="event.stopPropagation();go(3)">进入桃花源 →</button>
-</div>
+  <div class="sec-end">
+    <button class="btn btn-primary" onclick="go(1)">开始调查 →</button>
+  </div>
+</section>
 
-<!-- S3 vocab game -->
-<div class="scene" id="s3">
-  <div class="s3wrap">
-    <div class="tag">// MISSION · 解码古语</div>
-    <div class="big">这里的话，你真的听懂了吗？</div>
-    <div class="sep"></div>
-    <div class="game-score">SCORE &nbsp;<span id="gameScore">0</span> / 6</div>
+<!-- ============ S1: 调查现场 ============ -->
+<section class="section" id="s1">
+  <div class="sec-header">
+    <div class="sec-tag">任务 02 · 读文</div>
+    <h1 class="sec-title">📋 调查现场</h1>
+    <p class="sec-desc">带着任务读全文，完成调查记录表</p>
+  </div>
+
+  <div class="alert alert-info">📌 调查员任务：读完下面全文，完成4项调查记录。遇到不懂的字先跳过——等会儿专门「解码」。</div>
+
+  <div class="card">
+    <div class="card-title">📖 原文全文</div>
+    <div class="text-panel">
+      晋太元中，武陵人捕鱼为业。<span class="hl">缘溪行，忘路之远近</span>。忽逢桃花林，夹岸数百步，中无杂树，芳草鲜美，落英缤纷。渔人甚异之，复前行，欲穷其林。<br><br>
+      林尽水源，便得一山，山有小口，<span class="hl">仿佛若有光</span>。便舍船，从口入。初极狭，才通人。复行数十步，豁然开朗。<br><br>
+      土地平旷，屋舍俨然，有良田美池桑竹之属。阡陌交通，鸡犬相闻。其中往来种作，男女衣着，悉如外人，<span class="hl">黄发垂髫，并怡然自乐</span>。<br><br>
+      见渔人，乃大惊，问所从来，具答之。便要还家，设酒杀鸡作食。村中闻有此人，咸来问讯。<span class="hl">自云先世避秦时乱，率妻子邑人来此绝境，不复出焉</span>，遂与外人间隔。问今是何世，乃不知有汉，无论魏晋。此人一一为具言所闻，皆叹惋。<br><br>
+      余人各复延至其家，皆出酒食。停数日，辞去。此中人语云："不足为外人道也。"<br><br>
+      既出，<span class="hl">得其船，便扶向路，处处志之</span>。及郡下，诣太守，说如此。太守即遣人随其往，<span class="hl">寻向所志，遂迷，不复得路</span>。<br><br>
+      南阳刘子骥，高尚士也，闻之，欣然规往。<span class="hl">未果，寻病终。后遂无问津者。</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📝 调查记录表（读文后填写）</div>
+    <div class="report-item">
+      <div class="report-label">① 这个地方长什么样？（自然环境，找3个关键词）</div>
+      <input type="text" id="i1" placeholder="关键词：___、___、___（从原文找）">
+    </div>
+    <div class="report-item">
+      <div class="report-label">② 这里的人过着什么样的生活？（找1-2个原文细节）</div>
+      <textarea rows="2" id="i2" placeholder="原文说：…   我的理解：…"></textarea>
+    </div>
+    <div class="report-item">
+      <div class="report-label">③ 你是怎么进来的？能再找到吗？</div>
+      <textarea rows="2" id="i3" placeholder="入口是：…   后来渔人做了：…   结果：…"></textarea>
+    </div>
+    <div class="report-item">
+      <div class="report-label">④ 这里的人为什么"叹惋"？（大胆推测！）</div>
+      <textarea rows="2" id="i4" placeholder="我猜是因为…（现在先猜，后面会揭秘）"></textarea>
+    </div>
+    <button class="btn btn-outline" onclick="saveRec(this)">保存记录 ✓</button>
+  </div>
+  <div class="sec-end"><button class="btn btn-primary" onclick="go(1)">进入下一关 →</button></div>
+</section>
+
+<!-- ============ S2: 解码古语 ============ -->
+<section class="section" id="s2">
+  <div class="sec-header">
+    <div class="sec-tag">任务 03 · 字词</div>
+    <h1 class="sec-title">🔐 解码古语</h1>
+    <p class="sec-desc">这里的语言是1600年前的中文 — 有些词你以为你懂，其实你已经掉坑了</p>
+  </div>
+
+  <div class="alert alert-warn">⚠ 语言陷阱：以下词语用现代汉语理解全部错误。你能破解多少？</div>
+
+  <div class="card">
+    <div class="card-title">🎮 配对挑战：把古义和正确解释连起来（点击选择）</div>
+    <div class="score-box">得分：<span id="scoreNum">0</span> / 6</div>
     <div class="vocab-grid">
       <div>
         <div class="vocab-col-label">▶ 文中原词</div>
-        <div class="vitem" id="w0" onclick="selWord(0)">妻子</div>
-        <div class="vitem" id="w1" onclick="selWord(1)">绝境</div>
-        <div class="vitem" id="w2" onclick="selWord(2)">交通</div>
-        <div class="vitem" id="w3" onclick="selWord(3)">不足</div>
-        <div class="vitem" id="w4" onclick="selWord(4)">鲜美</div>
-        <div class="vitem" id="w5" onclick="selWord(5)">无论</div>
+        <div class="vi" id="w0" onclick="pickW(0)">妻子</div>
+        <div class="vi" id="w1" onclick="pickW(1)">绝境</div>
+        <div class="vi" id="w2" onclick="pickW(2)">交通</div>
+        <div class="vi" id="w3" onclick="pickW(3)">不足</div>
+        <div class="vi" id="w4" onclick="pickW(4)">鲜美</div>
+        <div class="vi" id="w5" onclick="pickW(5)">无论</div>
       </div>
       <div>
-        <div class="vocab-col-label">▶ 正确古义</div>
-        <div class="vitem" id="m0" onclick="selMeaning(0)" data-id="0">妻子和儿女</div>
-        <div class="vitem" id="m1" onclick="selMeaning(3)" data-id="3">不值得</div>
-        <div class="vitem" id="m2" onclick="selMeaning(2)" data-id="2">田间小路交错相通</div>
-        <div class="vitem" id="m3" onclick="selMeaning(5)" data-id="5">不必说，更不必说</div>
-        <div class="vitem" id="m4" onclick="selMeaning(1)" data-id="1">与世隔绝之地</div>
-        <div class="vitem" id="m5" onclick="selMeaning(4)" data-id="4">鲜艳美丽</div>
+        <div class="vocab-col-label">▶ 正确古义（顺序已打乱）</div>
+        <div class="vi" id="m0" onclick="pickM(0)" data-ans="0">妻子和儿女</div>
+        <div class="vi" id="m1" onclick="pickM(1)" data-ans="3">不值得</div>
+        <div class="vi" id="m2" onclick="pickM(2)" data-ans="2">田间小路交错相通</div>
+        <div class="vi" id="m3" onclick="pickM(3)" data-ans="5">不必说，更不必说</div>
+        <div class="vi" id="m4" onclick="pickM(4)" data-ans="1">与世隔绝之地</div>
+        <div class="vi" id="m5" onclick="pickM(5)" data-ans="4">鲜艳美丽</div>
       </div>
     </div>
     <div class="game-done" id="gameDone">
-      <div style="font-size:42px;margin-bottom:9px;">✦</div>
-      <div style="font-family:var(--fc);font-size:24px;color:var(--teal);text-shadow:0 0 14px rgba(32,200,176,.35);">全部破解！</div>
-      <p style="color:var(--cream3);margin-top:7px;font-size:12px;letter-spacing:2px;">古今异义核心词库已解锁</p>
+      <div style="font-size:36px;margin-bottom:8px">🎉</div>
+      <div style="color:var(--success);font-size:17px;font-weight:800">全部破解成功！</div>
+      <p style="color:var(--muted);margin-top:6px;font-size:13px">你已掌握文言文古今异义词的核心技能</p>
     </div>
   </div>
-  <button class="cta" id="s3cta" onclick="go(4)">继续调查 →</button>
-</div>
 
-<!-- S4 social archive -->
-<div class="scene" id="s4">
-  <div class="s4wrap">
-    <div class="tag">// MISSION · 绘制社会地图</div>
-    <div class="big">这是一个什么样的社会？</div>
-    <div class="sep"></div>
-    <p style="font-size:11px;color:var(--cream3);letter-spacing:2px;font-family:var(--fs);">从课文找原文证据 · 填写调查档案 · 4人小组 · 5分钟</p>
-    <div class="archive-grid" id="archiveForm">
-      <div class="archive-item">
-        <div class="a-label"><span>①</span> 自然环境</div>
-        <textarea id="a1" rows="3" placeholder="原文词句 + 3个描述词…"></textarea>
-      </div>
-      <div class="archive-item">
-        <div class="a-label"><span>②</span> 人们的生活</div>
-        <textarea id="a2" rows="3" placeholder="原文：… 与我的生活不同的是…"></textarea>
-      </div>
-      <div class="archive-item">
-        <div class="a-label"><span>③</span> 阶级与贫富</div>
-        <textarea id="a3" rows="3" placeholder="我认为（有/没有），因为原文说…"></textarea>
-      </div>
-      <div class="archive-item">
-        <div class="a-label"><span>④</span> 是否有政府/官员</div>
-        <textarea id="a4" rows="3" placeholder="原文中（有/没有）…我推断…"></textarea>
-      </div>
-      <div class="archive-item" style="grid-column:1/-1;">
-        <div class="a-label"><span>⑤</span> 用一个词概括这里</div>
-        <textarea id="a5" rows="2" placeholder="我们小组的关键词是…（世外桃源？乌托邦？理想社会？）"></textarea>
+  <div class="card">
+    <div class="card-title">🧩 进阶挑战：一词多义（填写后点击查看答案）</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px">同一个字，不同句子里意思不同——你能区分吗？</p>
+    <table>
+      <tr><th>句子</th><th>加点字</th><th>你认为的意思</th></tr>
+      <tr><td>处处<strong>志</strong>之</td><td>志（动词）</td><td><input type="text" placeholder="动词：___" style="width:130px;padding:5px 8px"></td></tr>
+      <tr><td>寻向所<strong>志</strong></td><td>志（名词）</td><td><input type="text" placeholder="名词：___" style="width:130px;padding:5px 8px"></td></tr>
+      <tr><td><strong>寻</strong>向所志</td><td>寻（动词）</td><td><input type="text" placeholder="动词：___" style="width:130px;padding:5px 8px"></td></tr>
+      <tr><td>未果，<strong>寻</strong>病终</td><td>寻（副词）</td><td><input type="text" placeholder="副词：___" style="width:130px;padding:5px 8px"></td></tr>
+    </table>
+    <button class="btn btn-outline" style="margin-top:12px" onclick="showAns()">查看答案</button>
+    <div id="ansBox" style="display:none;margin-top:12px">
+      <div class="alert alert-success">
+        <strong>答案：</strong><br>
+        处处<strong>志</strong>之 → 动词：做标记<br>
+        寻向所<strong>志</strong> → 名词：标记（做的记号）<br>
+        <strong>寻</strong>向所志 → 动词：寻找<br>
+        未果，<strong>寻</strong>病终 → 副词：不久
       </div>
     </div>
-    <div class="submit-row">
-      <button class="btn" onclick="submitArchive()">提交档案 →</button>
-      <span style="font-size:11px;color:var(--cream3);font-family:var(--fs);">提交后查看课文分析</span>
+  </div>
+  <div class="sec-end"><button class="btn btn-primary" onclick="go(1)">继续调查 →</button></div>
+</section>
+
+<!-- ============ S3: 绘制地图 ============ -->
+<section class="section" id="s3">
+  <div class="sec-header">
+    <div class="sec-tag">任务 04 · 分析</div>
+    <h1 class="sec-title">🗺 绘制社会档案</h1>
+    <p class="sec-desc">你需要向总部汇报这个地方的情况 — 从课文找证据</p>
+  </div>
+
+  <div class="alert alert-info">📌 小组任务（4人，5分钟）：从课文中找原文证据，填写社会档案。完成后点击「提交档案」对照分析。</div>
+
+  <div id="archiveForm">
+    <div class="card">
+      <div class="card-title">📂 神秘社会档案</div>
+      <div class="report-item">
+        <div class="report-label">① 自然环境如何？（原文词句 + 你的3个描述词）</div>
+        <textarea rows="2" id="a1" placeholder="原文：…   描述词：___、___、___"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">② 人们怎么生活？（和你的生活有什么不同？）</div>
+        <textarea rows="2" id="a2" placeholder="原文说他们在…   和我的生活不同的是…"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">③ 这里有没有贫富差距/阶级？（原文或推断，给出理由）</div>
+        <textarea rows="2" id="a3" placeholder="我认为（有/没有），因为原文说…"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">④ 这里的人快乐吗？（原文证据是什么？）</div>
+        <textarea rows="2" id="a4" placeholder="原文：…   说明他们…"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">⑤ 这里有政府/官员吗？（这意味着什么？）</div>
+        <textarea rows="2" id="a5" placeholder="原文中（有/没有）提到…   我推断…"></textarea>
+      </div>
+      <button class="btn btn-gold" onclick="submitArchive()">📤 提交档案，对比分析</button>
     </div>
-    <div class="archive-result" id="archiveResult">
-      <p style="font-size:10px;color:var(--teal);letter-spacing:3px;margin-bottom:9px;font-family:var(--fs);">// 解密完成</p>
-      <table class="result-table">
-        <tr><th>档案项目</th><th>课文原文</th><th>特征</th></tr>
-        <tr><td>自然环境</td><td>土地平旷，良田美池桑竹之属</td><td>富饶、宁静、美丽</td></tr>
-        <tr><td>生活状态</td><td>往来种作，黄发垂髫，怡然自乐</td><td>自给自足，老幼皆乐</td></tr>
-        <tr><td>阶级差距</td><td>全文无官吏/贵族/赋税描写</td><td>人人平等，无剥削</td></tr>
-        <tr><td>权力结构</td><td>全文无政府/军队出现</td><td>无国家机器，自治</td></tr>
+  </div>
+
+  <div id="archiveResult" style="display:none">
+    <div class="alert alert-success">✅ 档案已提交！对照课文分析如下：</div>
+    <div class="card">
+      <div class="card-title">课文社会图景 · 验证</div>
+      <table>
+        <tr><th>档案项目</th><th>课文原文</th><th>特征解读</th></tr>
+        <tr><td>自然环境</td><td>土地平旷，良田美池桑竹之属</td><td>富饶、宁静、生机勃勃</td></tr>
+        <tr><td>生活状态</td><td>往来种作，怡然自乐</td><td>自给自足，悠然自在</td></tr>
+        <tr><td>社会阶级</td><td>全文无官吏、贵族描写</td><td>人人平等，无剥削</td></tr>
+        <tr><td>情绪状态</td><td>黄发垂髫，并怡然自乐</td><td>老幼皆乐，无忧无虑</td></tr>
+        <tr><td>权力结构</td><td>全文无政府、军队出现</td><td>无国家机器，自治社区</td></tr>
       </table>
+      <div class="quote" style="margin-top:14px">如果让你用一个词概括这里——<br>你会用什么词？</div>
     </div>
   </div>
-  <button class="cta" id="s4cta" onclick="go(5)">进入最大谜题 →</button>
-</div>
+  <div class="sec-end"><button class="btn btn-primary" onclick="go(1)">进入最大谜题 →</button></div>
+</section>
 
-<!-- S5 clues + vote -->
-<div class="scene" id="s5">
-  <div class="s5wrap">
-    <div class="tag">// MISSION · 破解谜题</div>
-    <div class="big" style="color:var(--red);text-shadow:0 0 18px rgba(200,67,42,.28);">为什么再也找不到了？</div>
-    <div class="sep" style="background:linear-gradient(90deg,transparent,var(--red),transparent);"></div>
-    <div class="clue-chain" id="clueChain">
-      <div class="clue-step lit" id="cs0">
-        <div class="step-num">EVIDENCE · 01</div>
-        <div class="step-txt">「便扶向路，<strong>处处志之</strong>」——他做了路标，理论上可以找回来</div>
-      </div>
-      <div class="clue-step clickable" id="cs1" onclick="unlockClue(1)">
-        <div class="step-num">EVIDENCE · 02 &nbsp;<small style="color:var(--cream3);font-size:9px;">点击解锁</small></div>
-        <div class="step-txt">「及郡下，<strong>诣太守，说如此</strong>」——他告诉了官府，有人力支持</div>
-      </div>
-      <div class="clue-step clickable" id="cs2" onclick="unlockClue(2)">
-        <div class="step-num">EVIDENCE · 03 &nbsp;<small style="color:var(--cream3);font-size:9px;">点击解锁</small></div>
-        <div class="step-txt">「<strong>寻向所志，遂迷，不复得路</strong>」——专业队伍，全部迷路</div>
-      </div>
-      <div class="clue-step clickable" id="cs3" onclick="unlockClue(3)">
-        <div class="step-num">EVIDENCE · 04 &nbsp;<small style="color:var(--cream3);font-size:9px;">点击解锁</small></div>
-        <div class="step-txt">「未果，<strong>寻病终。后遂无问津者</strong>」——最后一个人死了，从此无人再寻</div>
-        <div class="step-q">❓ 路标失效了？还是桃花源根本就不存在？</div>
-      </div>
+<!-- ============ S4: 最大谜题 ============ -->
+<section class="section" id="s4">
+  <div class="sec-header">
+    <div class="sec-tag">任务 05 · 探究</div>
+    <h1 class="sec-title">❓ 最大谜题</h1>
+    <p class="sec-desc">渔人做了路标、官府派了向导、名士亲自去找 — 全部失败。为什么？</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔎 证据链（逐步解锁，点击下一条）</div>
+    <div class="step-item active done" id="step0">
+      <div class="step-num">证据 ①</div>
+      <p>「便扶向路，<strong>处处志之</strong>」—— 他做了路标，理论上应该能找回来</p>
     </div>
-    <div class="vote-wrap" id="voteWrap">
-      <div class="tag" style="margin-top:7px;">// 你的判断</div>
-      <div class="vote-grid">
-        <div class="vote-card" id="vc0" onclick="castVote(0)">
-          <div class="vote-emoji">🌍</div>
-          <div class="vote-label">真实存在</div>
-          <div class="vote-sub">只是没人找到</div>
-          <div class="vote-bar-wrap"><div class="vote-count" id="vn0">0票</div><div class="vote-bar"><div class="vote-bar-fill" id="vf0"></div></div></div>
-        </div>
-        <div class="vote-card" id="vc1" onclick="castVote(1)">
-          <div class="vote-emoji">✍️</div>
-          <div class="vote-label">作者虚构</div>
-          <div class="vote-sub">寄托理想之地</div>
-          <div class="vote-bar-wrap"><div class="vote-count" id="vn1">0票</div><div class="vote-bar"><div class="vote-bar-fill" id="vf1"></div></div></div>
-        </div>
-        <div class="vote-card" id="vc2" onclick="castVote(2)">
-          <div class="vote-emoji">🤔</div>
-          <div class="vote-label">半真半假</div>
-          <div class="vote-sub">有深意在里面</div>
-          <div class="vote-bar-wrap"><div class="vote-count" id="vn2">0票</div><div class="vote-bar"><div class="vote-bar-fill" id="vf2"></div></div></div>
-        </div>
-      </div>
+    <div class="step-item" id="step1" onclick="unlockStep(1)">
+      <div class="step-num">证据 ② <span class="step-unlock-hint">（点击解锁）</span></div>
+      <p>「及郡下，<strong>诣太守，说如此</strong>」—— 他告诉了官府，有人力资源支持</p>
+    </div>
+    <div class="step-item" id="step2" onclick="unlockStep(2)">
+      <div class="step-num">证据 ③ <span class="step-unlock-hint">（点击解锁）</span></div>
+      <p>「<strong>寻向所志，遂迷，不复得路</strong>」—— 专业队伍，全部迷路了</p>
+    </div>
+    <div class="step-item" id="step3" onclick="unlockStep(3)">
+      <div class="step-num">证据 ④ <span class="step-unlock-hint">（点击解锁）</span></div>
+      <p>「<strong>未果，寻病终。后遂无问津者。</strong>」—— 最后一个人也死了，从此无人再找</p>
     </div>
   </div>
-  <button class="cta" id="s5cta" onclick="go(6)">揭秘真相 →</button>
-</div>
 
-<!-- S6 compare reveal -->
-<div class="scene" id="s6">
-  <div class="s6wrap">
-    <div class="tag">// MISSION · 档案揭秘</div>
-    <div class="big">创造者的世界长什么样？</div>
-    <div class="sep"></div>
-    <div class="compare-header">
-      <div class="compare-col-title ideal">✦ 桃花源（理想）</div>
-      <div class="compare-col-title real">⚔ 东晋现实</div>
+  <div class="card">
+    <div class="card-title">💬 先思考这三个问题，再投票</div>
+    <div style="font-size:14px;line-height:2;margin-bottom:14px;color:var(--text)">
+      ❓ 渔人明明做了标记，为什么还会迷路？<br>
+      ❓ 作者是在写真实事件，还是故意让桃花源"消失"？<br>
+      ❓ 如果桃花源根本不存在，作者为什么要写它？
     </div>
-    <div class="compare-rows" id="compareRows"></div>
-    <button class="btn" id="revealBtn" onclick="startReveal()" style="margin-top:11px;">▶ 开始对比揭秘</button>
-    <div class="reveal-quote" id="revealQuote">
-      他找不到桃花源，因为它本来就不存在。<br>
-      他写它，是因为他太需要它存在了。<br>
-      <span style="font-size:.72em;color:var(--cream3);">—— 这种写法叫：<strong style="color:var(--gold);">虚实相生</strong></span>
+    <div class="card-title">🗳 你的判断（投票）</div>
+    <div class="vote-grid">
+      <button class="vbtn" id="vb0" onclick="vote(0)">
+        <span class="vote-emoji">🌍</span>
+        <span class="vote-name">真实存在</span>
+        <span class="vote-sub">只是后来没人找到了</span>
+        <div class="vcount" id="vc0">0 票</div>
+        <div class="vbar"><div class="vbar-fill" id="vf0"></div></div>
+      </button>
+      <button class="vbtn" id="vb1" onclick="vote(1)">
+        <span class="vote-emoji">✍️</span>
+        <span class="vote-name">作者虚构</span>
+        <span class="vote-sub">是陶渊明想象出来的</span>
+        <div class="vcount" id="vc1">0 票</div>
+        <div class="vbar"><div class="vbar-fill" id="vf1"></div></div>
+      </button>
+      <button class="vbtn" id="vb2" onclick="vote(2)">
+        <span class="vote-emoji">🤔</span>
+        <span class="vote-name">说不准</span>
+        <span class="vote-sub">半真半假，有深意</span>
+        <div class="vcount" id="vc2">0 票</div>
+        <div class="vbar"><div class="vbar-fill" id="vf2"></div></div>
+      </button>
+    </div>
+    <div id="voteMsg" style="display:none">
+      <div class="alert alert-info">📊 你们的投票体现了不同的直觉判断。接下来——揭秘真相。</div>
     </div>
   </div>
-  <button class="cta" id="s6cta" onclick="go(7)">提交调查报告 →</button>
-</div>
+  <div class="sec-end"><button class="btn btn-primary" onclick="go(1)">揭秘真相 →</button></div>
+</section>
 
-<!-- S7 report -->
-<div class="scene" id="s7">
-  <div class="s7wrap">
-    <div class="tag">// MISSION · 调查报告</div>
-    <div class="big">你们发现了什么？</div>
-    <div class="sep"></div>
-    <div id="reportForm">
-      <div class="report-fields">
-        <div class="rfield">
-          <div class="rfield-label">① 桃花源是个什么样的社会？（用自己的话，不抄课文）</div>
-          <textarea id="r1" rows="3" placeholder="桃花源是一个…的地方，那里的人…"></textarea>
-        </div>
-        <div class="rfield">
-          <div class="rfield-label">② 为什么再也找不到了？（说说你的理解）</div>
-          <textarea id="r2" rows="3" placeholder="我认为找不到是因为…作者这样写是想说…"></textarea>
-        </div>
-        <div class="rfield">
-          <div class="rfield-label">③ 陶渊明最想说的一句话是什么？</div>
-          <textarea id="r3" rows="2" placeholder="我觉得他想说：…"></textarea>
-        </div>
-      </div>
-      <div class="submit-row">
-        <button class="btn" onclick="submitReport()">提交报告 →</button>
-      </div>
-    </div>
-    <div class="report-submitted" id="reportDone">
-      <div class="achieve-icon">✦</div>
-      <div class="achieve-title">调查报告已提交</div>
-      <div class="achieve-msg">你们刚才说的这些，就是这篇文章的<br>主旨、写法和价值。你们自己得出来的。</div>
-      <div class="teacher-confirm">
-        古代文学家管这种手法叫「<strong>虚实相生</strong>」。<br>
-        陶渊明大概没想到，1600年后，<br>还有一群人会这么认真地去"寻访"他的桃花源。
-      </div>
+<!-- ============ S5: 档案揭秘 ============ -->
+<section class="section" id="s5">
+  <div class="sec-header">
+    <div class="sec-tag">任务 06 · 揭秘</div>
+    <h1 class="sec-title">📁 档案揭秘</h1>
+    <p class="sec-desc">这个世界的"创造者"是谁？他生活在什么样的世界里？</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👤 创造者档案</div>
+    <div class="alert alert-info" style="margin-bottom:0">
+      这个世界是 <strong>陶渊明</strong> 创造的。他生活在1600年前，一个和桃花源<strong>完全相反</strong>的世界。<br>
+      <span style="color:var(--muted);font-size:12px">字元亮，号五柳先生，东晋末年诗人。41岁后彻底归隐，田园诗派创始人。</span>
     </div>
   </div>
-  <button class="cta" id="s7cta" onclick="go(8)">完成任务 →</button>
-</div>
 
-<!-- S8 end -->
-<div class="scene" id="s8">
-  <canvas id="cvEnd"></canvas>
-  <div class="s8wrap">
-    <div class="s8-lbl">// MISSION COMPLETE</div>
-    <div class="s8-hd">一个消失的地方，一个永恒的问题</div>
-    <div class="s8-cards">
-      <div class="s8-card">
-        <div class="s8-who">PEACH BLOSSOM SPRING</div>
-        <div class="s8-body">平等、和谐、无官府、无赋税、无战乱。<br>渔人进去了，再也找不到。<br>这是<b>虚实相生</b>的写法。</div>
-      </div>
-      <div class="s8-card">
-        <div class="s8-who">TAO YUANMING · 陶渊明</div>
-        <div class="s8-body">东晋末年，乱世文人。<br>无力改变现实，以文寄志。<br>他的回答是<b>想象与书写</b>。</div>
-      </div>
+  <div class="card">
+    <div class="card-title">⚡ 对比揭秘（点击开始，逐条显示）</div>
+    <div class="compare-label-row">
+      <div style="text-align:center;padding:8px;background:rgba(16,185,129,0.1);border-radius:6px;color:#6ee7b7;font-size:13px;font-weight:700">🌸 桃花源（你们描述的）</div>
+      <div style="text-align:center;padding:8px;background:rgba(239,68,68,0.1);border-radius:6px;color:#fca5a5;font-size:13px;font-weight:700">⚔ 陶渊明所在的东晋（现实）</div>
     </div>
-    <div class="s8-quote">此中人语云：不足为外人道也</div>
-    <div class="s8-sub">你们今天找到了它存在的意义</div>
-    <div class="s8-hw">
-      <div class="hw-card s8-card sel" id="hw0" onclick="toggleHW(0)">
-        <div class="hw-type">必做</div>
-        <div class="hw-txt">背诵全文 + 整理古今异义词卡片</div>
+    <div id="compareRows"></div>
+    <button class="btn btn-outline" id="revealBtn" onclick="startReveal()">▶ 开始对比揭秘</button>
+  </div>
+
+  <div id="finalRevealBox" style="display:none">
+    <div class="card">
+      <div class="card-title">💡 现在你明白了</div>
+      <div class="quote">
+        他找不到桃花源，因为它本来就不存在。<br>
+        他写它，是因为他太需要它存在了。
       </div>
-      <div class="hw-card s8-card" id="hw1" onclick="toggleHW(1)">
-        <div class="hw-type">选做 A</div>
-        <div class="hw-txt">写200字：穿越回东晋，你会对陶渊明说什么？</div>
-      </div>
-      <div class="hw-card s8-card" id="hw2" onclick="toggleHW(2)">
-        <div class="hw-type">选做 B</div>
-        <div class="hw-txt">设计你的"现代桃花源"：在哪里？有什么规则？</div>
-      </div>
+      <p style="color:var(--muted);font-size:13px;margin-top:14px;line-height:1.8">
+        这种写法——前半段像真的，后半段让它消失——古代文学家叫它
+        <strong style="color:var(--accent)">「虚实相生」</strong>。<br>
+        你们刚才感受到的那种「它明明存在，又找不到」的遗憾感，就是这个手法的效果。
+      </p>
     </div>
   </div>
-</div>
+  <div class="sec-end"><button class="btn btn-primary" onclick="go(1)">提交调查报告 →</button></div>
+</section>
 
-</div>
+<!-- ============ S6: 调查报告 ============ -->
+<section class="section" id="s6">
+  <div class="sec-header">
+    <div class="sec-tag">任务 07 · 总结</div>
+    <h1 class="sec-title">📊 调查报告</h1>
+    <p class="sec-desc">你们发现了什么？用自己的话写下来</p>
+  </div>
+
+  <div id="reportForm">
+    <div class="alert alert-info">📌 现在不需要"标准答案"——把你们真正理解到的东西写出来，每组推一人口头汇报（3分钟）。</div>
+    <div class="card">
+      <div class="card-title">📝 时空调查报告</div>
+      <div class="report-item">
+        <div class="report-label">① 桃花源是个什么样的社会？（用自己的话，不要抄原文）</div>
+        <textarea rows="3" id="r1" placeholder="桃花源是一个…的地方，那里的人…最让我印象深刻的是…"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">② 为什么再也找不到了？（说说你的理解）</div>
+        <textarea rows="3" id="r2" placeholder="我认为找不到是因为…作者这样写的目的是…"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">③ 陶渊明最想说的一句话是什么？（用自己的话概括主旨）</div>
+        <textarea rows="2" id="r3" placeholder="我觉得他想说：…"></textarea>
+      </div>
+      <div class="report-item">
+        <div class="report-label">④ 这篇文章让你想到了什么？（自由发挥）</div>
+        <textarea rows="2" id="r4" placeholder="读完这篇文章，我想到了…因为…"></textarea>
+      </div>
+      <button class="btn btn-gold" onclick="submitReport()">📤 提交报告</button>
+    </div>
+  </div>
+
+  <div class="submitted-view" id="reportDone">
+    <div class="ach-icon">🏆</div>
+    <h2 style="font-size:22px;color:var(--gold);margin-bottom:10px">调查报告已提交！</h2>
+    <p style="color:var(--muted);margin-bottom:16px">你们刚才说的这些，就是这篇文章的主旨、写法和价值。</p>
+    <div class="alert alert-success" style="text-align:left">
+      古代文学家管这种手法叫「<strong>虚实相生</strong>」。<br>
+      陶渊明大概没想到，1600年后，还有一群人会这么认真地去"寻访"他的桃花源。
+    </div>
+    <button class="btn btn-primary" style="margin-top:18px" onclick="go(1)">最后一步 →</button>
+  </div>
+</section>
+
+<!-- ============ S7: 任务延伸 ============ -->
+<section class="section" id="s7">
+  <div class="sec-header">
+    <div class="sec-tag">任务 08 · 延伸</div>
+    <h1 class="sec-title">🚀 任务延伸</h1>
+    <p class="sec-desc">你的桃花源在哪里？</p>
+  </div>
+
+  <div class="card" style="border-color:rgba(245,158,11,0.3)">
+    <div class="card-title">💭 最后一问（不评分，只是想知道你的想法）</div>
+    <div class="quote">陶渊明的桃花源，是他在乱世里造的一个梦。<br>那你的时代里——有没有什么东西，是你特别希望存在、但又知道很难真正实现的？</div>
+    <textarea rows="3" id="finalT" placeholder="写下来…" style="margin-top:12px"></textarea>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 选择你的课后任务（点击选择，可多选）</div>
+    <div class="task-grid">
+      <div class="task-card locked-task selected" id="tc0">
+        <span class="task-type req">必做</span>
+        <h4>背诵全文 + 字词卡片</h4>
+        <p>背诵《桃花源记》全文；整理古今异义词和一词多义词卡片</p>
+      </div>
+      <div class="task-card locked-task selected" id="tc1">
+        <span class="task-type req">必做</span>
+        <h4>完成词语练习册</h4>
+        <p>完成课后词语解释和句子翻译练习题</p>
+      </div>
+      <div class="task-card" id="tc2" onclick="toggleTask(2)">
+        <span class="task-type opt">选做 A</span>
+        <h4>穿越对话</h4>
+        <p>你穿越回东晋遇到了陶渊明，你会对他说什么？（200字）</p>
+      </div>
+      <div class="task-card" id="tc3" onclick="toggleTask(3)">
+        <span class="task-type opt">选做 B</span>
+        <h4>设计现代桃花源</h4>
+        <p>它在哪里？有什么规则？为什么现实中不存在？（图文均可）</p>
+      </div>
+      <div class="task-card" id="tc4" onclick="toggleTask(4)">
+        <span class="task-type opt">选做 C</span>
+        <h4>对比阅读</h4>
+        <p>对比《礼记·大同篇》两个理想社会，谁更接近你的理想？写读后感</p>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmTasks()" style="margin-top:14px">✓ 确认任务</button>
+    <div id="taskConfirm" style="display:none;margin-top:10px">
+      <div class="alert alert-success" id="taskConfirmMsg"></div>
+    </div>
+  </div>
+
+  <div class="final-card">
+    <div style="font-size:40px;margin-bottom:10px">🌸</div>
+    <p style="font-size:15px;color:var(--gold);font-weight:700;margin-bottom:10px">下课前最后一句话</p>
+    <p style="font-size:15px;line-height:2;color:var(--text)">
+      「桃花源找不到，<br>但你们今天找到了它存在的意义。<br>这就够了。」
+    </p>
+  </div>
+</section>
+
+<!-- ============ JS ============ -->
 <script>
-const scenes=[...document.querySelectorAll('.scene')];
-const N=scenes.length;
-let cur=0;
-const dotBox=document.getElementById('dots');
-for(let i=0;i<N;i++){
-  const d=document.createElement('div');
-  d.className='dot'+(i===0?' cur':'');
-  d.id='D'+i; d.onclick=()=>goTo(i);
-  dotBox.appendChild(d);
-}
-function go(to){
-  if(to<0||to>=N)return;
-  onLeave(cur);
-  scenes[cur].classList.remove('active');
-  document.getElementById('D'+cur).className='dot done';
-  cur=to;
-  scenes[cur].classList.add('active');
-  document.getElementById('D'+cur).className='dot cur';
-  document.getElementById('back').className=cur>0?'show':'';
-  onEnter(cur);
-  window.scrollTo(0,0);
-}
-function goBack(){if(cur>0)go(cur-1);}
-function goTo(i){go(i);}
-function onLeave(i){if(i===2)stopForest();}
-function onEnter(i){
-  if(i===0)initPortal();
-  if(i===1)resetScroll();
-  if(i===2)startForest();
-  if(i===3)setTimeout(()=>document.getElementById('s3cta').classList.add('show'),800);
-  if(i===4)setTimeout(()=>document.getElementById('s4cta').classList.add('show'),600);
-  if(i===5)setTimeout(()=>document.getElementById('s5cta').classList.add('show'),400);
-  if(i===6){
-    compareIdx=0;
-    document.getElementById('compareRows').innerHTML='';
-    document.getElementById('revealBtn').style.display='';
-    document.getElementById('revealQuote').classList.remove('show');
-    document.getElementById('s6cta').classList.remove('show');
-  }
-  if(i===7)setTimeout(()=>document.getElementById('s7cta').classList.add('show'),600);
-  if(i===8)initEnd();
-}
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowLeft'&&cur>0)goBack();
-  if(e.key==='ArrowRight'||e.key===' '){
-    const c=scenes[cur].querySelector('.cta.show');
-    if(c)c.click();
-  }
-});
+// --- State ---
+var cur = 0, total = 8;
+var done = new Set();
+var selW = null, selM = null, matched = new Set(), score = 0;
+var votes = [0,0,0], voted = false;
+var cmpIdx = 0;
+var selTasks = new Set([0,1]);
+var stepsUnlocked = 1;
 
-/* S0 portal canvas */
-let portalAF=null;
-function initPortal(){
-  const cv=document.getElementById('cvPortal');
-  if(!cv||cv._done)return; cv._done=true;
-  const ctx=cv.getContext('2d');
-  let t=0;
-  function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
-  window.addEventListener('resize',resize); resize();
-  const statuses=['// 正在建立时空连接...','// 连接到东晋 · 公元421年','// 加载渔人档案中...','// 档案加载完成'];
-  let si=0;
-  const sEl=document.getElementById('cvStatus');
-  setInterval(()=>{si=(si+1)%statuses.length;if(sEl)sEl.textContent=statuses[si];},1800);
-  const petals=[];
-  for(let i=0;i<55;i++) petals.push(mkPetal(true));
-  function mkPetal(init){
-    return{x:Math.random()*window.innerWidth,y:init?Math.random()*window.innerHeight:-20,
-      r:2+Math.random()*4,vx:(Math.random()-.5)*1.0,vy:.5+Math.random()*1.2,
-      rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.05,a:.2+Math.random()*.42};
+var cmpData = [
+  ["土地平旷，人人自由耕作","军阀混战，百姓流离失所"],
+  ["黄发垂髫，怡然自乐","赋税沉重，老弱无力生存"],
+  ["乃不知有汉，无论魏晋","政权频繁更迭，战乱连年不止"],
+  ["村中人热情好客，无猜忌","官场腐败，有志之士报国无门"]
+];
+
+var secLabels = ['01','02','03','04','05','06','07','08'];
+
+// --- Nav ---
+function buildNav(){
+  var d = document.getElementById('navDots');
+  d.innerHTML = '';
+  for(var i=0;i<total;i++){
+    var el = document.createElement('div');
+    el.className = 'nav-dot' + (i===cur?' active':'') + (done.has(i)?' done':'');
+    el.textContent = secLabels[i];
+    el.onclick = (function(idx){return function(){goTo(idx)}})(i);
+    el.id = 'dot'+i;
+    d.appendChild(el);
   }
-  function frame(){
-    t+=.012;
-    const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
-    ctx.clearRect(0,0,W,H);
-    const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.7);
-    bg.addColorStop(0,'rgba(28,10,38,.32)');
-    bg.addColorStop(.5,'rgba(10,6,20,.6)');
-    bg.addColorStop(1,'rgba(8,6,15,.92)');
-    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-    const maxR=Math.min(W,H)*.27;
-    for(let ring=0;ring<5;ring++){
-      const r=maxR*(.3+ring*.18);
-      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-      const a=(.038-.005*ring)*(1+.28*Math.sin(t*2+ring));
-      ctx.strokeStyle='rgba(255,143,170,'+a+')';
-      ctx.lineWidth=ring===0?1.4:.7; ctx.stroke();
-    }
-    const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,maxR*.55);
-    grd.addColorStop(0,'rgba(255,143,170,.07)');
-    grd.addColorStop(.4,'rgba(232,100,140,.03)');
-    grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
-    for(let i=0;i<26;i++){
-      const angle=((i/26)*Math.PI*2)+t*.38;
-      const px=cx+Math.cos(angle)*maxR*.62,py=cy+Math.sin(angle)*maxR*.62;
-      const a=.12+.22*Math.sin(t*3+i);
-      ctx.beginPath(); ctx.arc(px,py,1.1,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,192,208,'+a+')'; ctx.fill();
-    }
-    for(let i=0;i<18;i++){
-      const angle=((i/18)*Math.PI*2)-t*.55;
-      const px=cx+Math.cos(angle)*maxR*.42,py=cy+Math.sin(angle)*maxR*.42;
-      const a=.08+.15*Math.sin(t*2.5+i*1.4);
-      ctx.beginPath(); ctx.arc(px,py,.8,0,Math.PI*2);
-      ctx.fillStyle='rgba(232,160,32,'+a+')'; ctx.fill();
-    }
-    petals.forEach((p,i)=>{
-      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
-      if(p.y>H+20)petals[i]=mkPetal(false);
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-      ctx.globalAlpha=p.a;
-      ctx.beginPath(); ctx.ellipse(0,0,p.r,p.r*.44,0,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,158,188,'+p.a+')'; ctx.fill(); ctx.restore();
-    });
-    portalAF=requestAnimationFrame(frame);
-  }
-  frame();
+  document.getElementById('prevBtn').disabled = cur===0;
+  document.getElementById('nextBtn').disabled = cur===total-1;
+  var pct = (cur/(total-1))*100;
+  document.getElementById('pbar').style.width = pct+'%';
 }
 
-/* S1 scroll */
-function resetScroll(){
-  document.getElementById('scrollClosed').style.display='';
-  document.getElementById('scrollBody').classList.remove('open');
-  document.getElementById('diaryGo').classList.remove('show');
-}
-function openScroll(){
-  document.getElementById('scrollClosed').style.display='none';
-  document.getElementById('scrollBody').classList.add('open');
-  setTimeout(()=>document.getElementById('diaryGo').classList.add('show'),1300);
+function updateView(){
+  document.querySelectorAll('.section').forEach(function(s,i){
+    s.classList.toggle('active', i===cur);
+  });
+  buildNav();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* S2 forest */
-let forestAF=null,forestStep=0;
-const forestLines=['fl0','fl1','fl2','fl3','fl4','fl5'];
-function startForest(){
-  forestStep=0;
-  forestLines.forEach(id=>document.getElementById(id).classList.remove('on'));
-  document.getElementById('forestFeel').classList.remove('on');
-  document.getElementById('forestPmt').classList.remove('off');
-  document.getElementById('s2cta').classList.remove('show');
-  const cv=document.getElementById('cvForest');
-  if(!cv)return;
-  cv.width=window.innerWidth; cv.height=window.innerHeight;
-  const ctx=cv.getContext('2d');
-  const grad=ctx.createLinearGradient(0,0,0,cv.height);
-  grad.addColorStop(0,'#1a0818'); grad.addColorStop(.5,'#2c1020'); grad.addColorStop(1,'#0e0610');
-  const fps=[];
-  for(let i=0;i<80;i++) fps.push({x:Math.random()*cv.width,y:Math.random()*cv.height,
-    r:1.5+Math.random()*4,vx:(Math.random()-.5)*.7,vy:.35+Math.random()*1.1,
-    rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.045,a:.2+Math.random()*.45});
-  function frame(){
-    ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.fillStyle=grad; ctx.fillRect(0,0,cv.width,cv.height);
-    const grd=ctx.createRadialGradient(cv.width/2,cv.height*.4,0,cv.width/2,cv.height*.4,cv.width*.34);
-    grd.addColorStop(0,'rgba(255,100,140,.06)'); grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd; ctx.fillRect(0,0,cv.width,cv.height);
-    fps.forEach((p,i)=>{
-      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
-      if(p.y>cv.height+10){p.y=-10;p.x=Math.random()*cv.width;}
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-      ctx.globalAlpha=p.a;
-      ctx.beginPath(); ctx.ellipse(0,0,p.r,p.r*.4,0,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,148,178,'+p.a+')'; ctx.fill(); ctx.restore();
-    });
-    forestAF=requestAnimationFrame(frame);
-  }
-  frame();
+function go(dir){
+  done.add(cur);
+  cur = Math.max(0,Math.min(total-1,cur+dir));
+  updateView();
 }
-function stopForest(){if(forestAF){cancelAnimationFrame(forestAF);forestAF=null;}}
-function forestClick(){
-  if(forestStep<forestLines.length){
-    document.getElementById(forestLines[forestStep]).classList.add('on');
-    forestStep++;
-    if(forestStep===3)document.getElementById('forestPmt').classList.add('off');
-    if(forestStep===forestLines.length){
-      setTimeout(()=>{
-        document.getElementById('forestFeel').classList.add('on');
-        setTimeout(()=>document.getElementById('s2cta').classList.add('show'),800);
-      },500);
-    }
+
+function goTo(idx){
+  done.add(cur); cur=idx; updateView();
+}
+
+// --- P1 Terminal animation ---
+function startTerminal(){
+  for(var i=0;i<7;i++){
+    (function(n){setTimeout(function(){
+      var el=document.getElementById('tl'+n);
+      if(el) el.classList.add('show');
+    },n*520)})(i);
   }
 }
 
-/* S3 vocab matching */
-let selW=null,selM=null,matched=new Set(),score=0;
-function selWord(id){
-  if(matched.has(id))return;
-  if(selW!==null)document.getElementById('w'+selW).classList.remove('sel');
-  selW=id; document.getElementById('w'+id).classList.add('sel'); tryMatch();
+// --- P1 Clue unlock ---
+function unlockClue(idx){
+  var c = document.getElementById('cc'+idx);
+  if(c.classList.contains('unlocked')) return;
+  c.classList.remove('locked');
+  c.classList.add('unlocked');
+  c.onclick = null;
 }
-function selMeaning(id){
-  const els=document.querySelectorAll('[id^="m"]');
-  if(matched.has(id))return;
-  if(selM!==null){els.forEach(e=>{if(+e.dataset.id===selM)e.classList.remove('sel');});}
-  selM=id; els.forEach(e=>{if(+e.dataset.id===id)e.classList.add('sel');}); tryMatch();
+
+// --- P2 Save ---
+function saveRec(btn){
+  btn.textContent = '✅ 已保存';
+  btn.style.borderColor='var(--success)';
+  btn.style.color='var(--success)';
+  setTimeout(function(){
+    btn.textContent='保存记录 ✓';
+    btn.style.borderColor='';btn.style.color='';
+  },2000);
 }
-function tryMatch(){
-  if(selW===null||selM===null)return;
-  const wEl=document.getElementById('w'+selW);
-  const mEl=[...document.querySelectorAll('[id^="m"]')].find(e=>+e.dataset.id===selM);
-  if(selW===selM){
-    wEl.classList.remove('sel'); wEl.classList.add('ok');
-    mEl.classList.remove('sel'); mEl.classList.add('ok');
-    wEl.onclick=null; mEl.onclick=null;
+
+// --- P3 Vocab game ---
+// m-elements: m0→ans=0, m1→ans=3, m2→ans=2, m3→ans=5, m4→ans=1, m5→ans=4
+var mAns = [0,3,2,5,1,4]; // mAns[mIndex] = wordIndex it matches
+
+function pickW(wid){
+  if(matched.has(wid)) return;
+  if(selW!==null) document.getElementById('w'+selW).classList.remove('selected');
+  selW=wid;
+  document.getElementById('w'+wid).classList.add('selected');
+  tryMatch2();
+}
+
+function pickM(mid){
+  if(matched.has(mAns[mid])) return;
+  if(selM!==null) document.getElementById('m'+selM).classList.remove('selected');
+  selM=mid;
+  document.getElementById('m'+mid).classList.add('selected');
+  tryMatch2();
+}
+
+function tryMatch2(){
+  if(selW===null||selM===null) return;
+  var wEl=document.getElementById('w'+selW);
+  var mEl=document.getElementById('m'+selM);
+  var correct=(mAns[selM]===selW);
+  if(correct){
+    wEl.classList.remove('selected'); wEl.classList.add('correct'); wEl.onclick=null;
+    mEl.classList.remove('selected'); mEl.classList.add('correct'); mEl.onclick=null;
     matched.add(selW); score++;
-    document.getElementById('gameScore').textContent=score;
-    if(score===6)document.getElementById('gameDone').classList.add('show');
+    document.getElementById('scoreNum').textContent=score;
+    if(score===6){ document.getElementById('gameDone').style.display='block'; }
   } else {
-    wEl.classList.add('err'); mEl.classList.add('err');
-    setTimeout(()=>{wEl.classList.remove('err','sel');mEl.classList.remove('err','sel');},500);
+    wEl.classList.add('wrong'); mEl.classList.add('wrong');
+    setTimeout(function(){ wEl.classList.remove('wrong','selected'); mEl.classList.remove('wrong','selected'); },500);
   }
   selW=null; selM=null;
 }
 
-/* S4 archive */
+function showAns(){
+  document.getElementById('ansBox').style.display='block';
+}
+
+// --- P4 Archive ---
 function submitArchive(){
-  document.getElementById('archiveResult').classList.add('show');
-  document.getElementById('archiveForm').querySelectorAll('textarea').forEach(t=>t.disabled=true);
+  document.getElementById('archiveForm').style.display='none';
+  document.getElementById('archiveResult').style.display='block';
 }
 
-/* S5 clues + vote */
-let unlockedClues=1;
-function unlockClue(n){
-  if(n!==unlockedClues)return;
-  document.getElementById('cs'+n).classList.add('lit');
-  document.getElementById('cs'+n).onclick=null;
-  unlockedClues++;
-}
-let votes=[0,0,0];
-function castVote(i){
-  votes[i]++;
-  [0,1,2].forEach(j=>document.getElementById('vc'+j).classList.remove('voted'));
-  document.getElementById('vc'+i).classList.add('voted');
-  const tot=votes.reduce((a,b)=>a+b,0);
-  [0,1,2].forEach(j=>{
-    const pct=tot>0?votes[j]/tot*100:0;
-    document.getElementById('vf'+j).style.width=pct+'%';
-    document.getElementById('vn'+j).textContent=votes[j]+'票';
-  });
+// --- P5 Steps ---
+function unlockStep(n){
+  if(n!==stepsUnlocked) return;
+  var el=document.getElementById('step'+n);
+  el.classList.add('done');
+  el.onclick=null;
+  stepsUnlocked++;
 }
 
-/* S6 compare */
-const compareData=[
-  ['✦ 土地平旷，人人自由耕作','⚔ 军阀混战，百姓流离失所'],
-  ['✦ 黄发垂髫，怡然自乐','⚔ 赋税沉重，老弱无力生存'],
-  ['✦ 无官吏，无战争，无剥削','⚔ 政权频繁更迭，有志之士报国无门'],
-  ['✦ 村人热情，同等相待','⚔ 官场腐败，人情冷漠'],
-];
-let compareIdx=0;
+// --- P5 Vote ---
+function vote(opt){
+  votes[opt]++;
+  document.querySelectorAll('.vbtn').forEach(function(b,i){ b.classList.toggle('voted',i===opt); });
+  var total2=votes[0]+votes[1]+votes[2];
+  for(var i=0;i<3;i++){
+    var pct=total2>0?(votes[i]/total2*100):0;
+    document.getElementById('vf'+i).style.width=pct+'%';
+    document.getElementById('vc'+i).textContent=votes[i]+' 票';
+  }
+  document.getElementById('voteMsg').style.display='block';
+}
+
+// --- P6 Compare reveal ---
 function startReveal(){
   document.getElementById('revealBtn').style.display='none';
-  revealNext();
+  showNextRow();
 }
-function revealNext(){
-  if(compareIdx>=compareData.length){
-    setTimeout(()=>{
-      document.getElementById('revealQuote').classList.add('show');
-      setTimeout(()=>document.getElementById('s6cta').classList.add('show'),700);
-    },400);
+function showNextRow(){
+  if(cmpIdx>=cmpData.length){
+    setTimeout(function(){ document.getElementById('finalRevealBox').style.display='block'; },400);
     return;
   }
-  const row=document.createElement('div');
+  var c=document.getElementById('compareRows');
+  var row=document.createElement('div');
   row.className='compare-row';
-  row.innerHTML='<div class="compare-cell ideal">'+compareData[compareIdx][0]+'</div><div class="compare-cell real">'+compareData[compareIdx][1]+'</div>';
-  document.getElementById('compareRows').appendChild(row);
-  setTimeout(()=>row.classList.add('show'),50);
-  compareIdx++;
-  setTimeout(revealNext,750);
+  row.innerHTML='<div class="cc ideal">🌸 '+cmpData[cmpIdx][0]+'</div><div class="cc reality">⚔ '+cmpData[cmpIdx][1]+'</div>';
+  c.appendChild(row);
+  setTimeout(function(){ row.classList.add('show'); },50);
+  cmpIdx++;
+  setTimeout(showNextRow,900);
 }
 
-/* S7 report */
+// --- P7 Report ---
 function submitReport(){
   document.getElementById('reportForm').style.display='none';
-  document.getElementById('reportDone').classList.add('show');
+  var d=document.getElementById('reportDone');
+  d.classList.add('show');
 }
 
-/* S8 homework */
-function toggleHW(i){document.getElementById('hw'+i).classList.toggle('sel');}
-
-/* S8 end canvas */
-function initEnd(){
-  const cv=document.getElementById('cvEnd');
-  if(!cv||cv._done)return; cv._done=true;
-  const ctx=cv.getContext('2d');
-  function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
-  window.addEventListener('resize',resize); resize();
-  const stars=[];
-  for(let i=0;i<120;i++) stars.push({
-    x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
-    r:.3+Math.random()*.85,a:Math.random(),va:(Math.random()-.5)*.011,
-    gold:Math.random()>.68
-  });
-  function frameEnd(){
-    const W=cv.width,H=cv.height;
-    ctx.clearRect(0,0,W,H);
-    const bg=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.65);
-    bg.addColorStop(0,'rgba(20,12,8,.38)');
-    bg.addColorStop(1,'rgba(8,6,15,.94)');
-    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-    stars.forEach(s=>{
-      s.a+=s.va; if(s.a>1||s.a<0)s.va*=-1;
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-      ctx.fillStyle=s.gold?'rgba(232,160,32,'+(s.a*.55)+')':'rgba(240,232,208,'+(s.a*.38)+')';
-      ctx.fill();
-    });
-    requestAnimationFrame(frameEnd);
-  }
-  frameEnd();
+// --- P8 Tasks ---
+function toggleTask(id){
+  var c=document.getElementById('tc'+id);
+  if(selTasks.has(id)){ selTasks.delete(id); c.classList.remove('selected'); }
+  else { selTasks.add(id); c.classList.add('selected'); }
+}
+function confirmTasks(){
+  var labels=['背诵全文+字词卡片','词语练习册','穿越对话（选做A）','现代桃花源（选做B）','对比阅读（选做C）'];
+  var sel=Array.from(selTasks).sort().map(function(i){ return labels[i]; }).join('、');
+  document.getElementById('taskConfirmMsg').textContent='✅ 已确认任务：'+sel;
+  document.getElementById('taskConfirm').style.display='block';
+  done.add(7); buildNav();
 }
 
-initPortal();
+// --- Init ---
+buildNav();
+startTerminal();
 </script>
 </body>
 </html>
